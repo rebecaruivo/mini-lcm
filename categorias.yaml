@@ -1,0 +1,34 @@
+# Categorias do catálogo. Nada no código é específico de uma categoria:
+# para adicionar uma nova, basta uma entrada aqui, baixar os arquivos e importar.
+#
+# Os dados vêm do Amazon Reviews 2023 (McAuley Lab, UC San Diego), que é dividido
+# em 33 "domínios" (Toys_and_Games, Electronics...). Cada categoria nossa é um
+# recorte de um domínio, definido pelo filtro.
+#
+# fonte_amazon:       nome do domínio, igual ao nome do arquivo (meta_<fonte>.jsonl.gz)
+# filtro:             o item entra se casar com QUALQUER regra:
+#   categorias_contem:  algum destes nomes aparece na árvore de categorias da Amazon
+#   titulo_contem:      algum destes trechos aparece no título (sem diferenciar maiúsculas)
+#   Para descobrir os nomes de categoria que existem: mini-lcm inspecionar Toys_and_Games
+# max_itens:          limite de itens importados (os arquivos têm centenas de milhares)
+# min_avaliacoes:     ignora produtos com menos avaliações que isso. Para personalização,
+#                     um produto sem ninguém interagindo com ele ensina pouco.
+
+categorias:
+  - slug: bonecas
+    nome: Bonecas
+    fonte_amazon: Toys_and_Games
+    filtro:
+      categorias_contem: [Dolls, Fashion Dolls]
+      titulo_contem: [monster high]
+    max_itens: 3000
+    min_avaliacoes: 5
+
+  - slug: placas-de-video
+    nome: Placas de vídeo
+    fonte_amazon: Electronics
+    filtro:
+      categorias_contem: [Graphics Cards]
+      titulo_contem: []
+    max_itens: 3000
+    min_avaliacoes: 3

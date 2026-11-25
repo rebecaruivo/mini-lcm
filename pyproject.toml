@@ -1,0 +1,31 @@
+[project]
+name = "mini-lcm"
+version = "0.1.0"
+description = "Motor de personalização em miniatura, inspirado no Large Commerce Model da Prosus"
+requires-python = ">=3.11"
+dependencies = [
+  "requests>=2.31",
+  "numpy>=1.26",
+  "pyyaml>=6.0",
+  "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+# Modelos de embedding locais (CLIP). Baixa ~1 GB de modelos na primeira execução.
+clip = ["sentence-transformers>=3.0", "pillow>=10.0"]
+# Banco Postgres com pgvector (Supabase).
+postgres = ["psycopg[binary]>=3.2"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+mini-lcm = "mini_lcm.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mini_lcm*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

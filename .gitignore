@@ -1,0 +1,13 @@
+# Segredos
+.env
+.ml_tokens.json
+
+# Dados coletados (anúncios de terceiros e vetores): ficam só na sua máquina
+dados/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
