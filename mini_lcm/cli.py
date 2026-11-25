@@ -5,8 +5,16 @@
     mini-lcm importar --categoria bonecas
     mini-lcm indexar                  # gera os embeddings que faltam
     mini-lcm buscar "draculaura antiga" --categoria bonecas --preco-max 200 --condicao usado
-    mini-lcm rotular "draculaura antiga" --categoria bonecas
-    mini-lcm avaliar                  # recall@10 e MRR de cada modo, a partir do gabarito
+
+    Avaliação (notas de 0 a 3; ver docs/decisoes.md):
+    mini-lcm rotular "boneca gótica" --categoria bonecas --perfil "colecionadora adulta"   # passo 1: você
+    mini-lcm julgar --apenas-rotulados    # passo 2: a IA julga os mesmos pares
+    mini-lcm concordancia                 # passo 3: kappa ponderado + intervalo de confiança
+    mini-lcm revisar                      # passo 4: você arbitra as discordâncias
+    mini-lcm julgar "outra busca" --categoria bonecas   # escala: só a IA
+    mini-lcm auditar --amostra 30         # confere uma amostra do que só a IA julgou
+    mini-lcm avaliar --fonte combinado    # recall@10, MRR e NDCG@10 de cada modo
+
     mini-lcm custos
     mini-lcm status
 """
@@ -20,18 +28,20 @@ import sys
 from pathlib import Path
 
 from .armazenamento import Armazenamento, ArmazenamentoLocal, ArmazenamentoPostgres
-from .avaliacao import (ConsultaRotulada, avaliar, carregar_gabarito, pool_para_rotular, relatorio_markdown,
-                        rotular, salvar_gabarito)
+from .avaliacao import (avaliar, carregar_gabarito, obter_ou_criar, pool_para_rotular, relatorio_markdown, rotular,
+                        salvar_gabarito)
+from .calibracao import (amostra_auditoria, auditar, concordancia, julgar_pendentes, relatorio_concordancia_texto,
+                         revisar)
 from .busca import MODOS, ConfigBusca, buscar
 from .amazon import importar_avaliacoes, importar_itens, inspecionar
-from .config import RAIZ, Config, carregar_config
+from .config import Config, carregar_config
 from .custo import RegistroCusto, cronometro, resumir
 from .embeddings import criar_embedder
 from .indexacao import gerar_embeddings
+from .juiz import JuizGemini, carregar_rubrica, hash_rubrica
 from .modelos import Filtros
 
 DIMENSOES = {"clip": 512, "fake": 256}  # para abrir o banco sem carregar o modelo (o CLIP pesa ~1 GB)
-GABARITO = RAIZ / "avaliacao" / "gabarito.json"
 
 
 def abrir_armazenamento(cfg: Config) -> Armazenamento:
@@ -109,26 +119,98 @@ def cmd_buscar(cfg: Config, arm: Armazenamento, args) -> None:
     print(f"\n{reg.segundos * 1000:.0f} ms")
 
 
+def _filtros_dict(args) -> dict:
+    return {k: v for k, v in vars(_filtros(args)).items() if v is not None}
+
+
+def _itens_do_gabarito(arm: Armazenamento, gabarito) -> dict:
+    ids = {i for c in gabarito for i in list(c.notas_humanas) + list(c.notas_ia)}
+    return arm.obter_itens(sorted(ids))
+
+
 def cmd_rotular(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder)
-    gabarito = carregar_gabarito(GABARITO)
-    filtros = {k: v for k, v in vars(_filtros(args)).items() if v is not None}
-    consulta = next((c for c in gabarito if c.texto == args.consulta and c.filtros == filtros), None)
-    if consulta is None:
-        consulta = ConsultaRotulada(id=f"c{len(gabarito) + 1}", texto=args.consulta, filtros=filtros)
-        gabarito.append(consulta)
+    gabarito = carregar_gabarito(cfg.gabarito)
+    consulta = obter_ou_criar(gabarito, args.consulta, _filtros_dict(args), args.perfil or "")
     itens = pool_para_rotular(arm, embedder, consulta.texto, consulta.filtros_obj(), args.profundidade)
     try:
         rotular(consulta, itens)
     finally:  # salva mesmo se você interromper com Ctrl+C
-        salvar_gabarito(GABARITO, gabarito)
-        print(f"\nSalvo em {GABARITO}: {len(consulta.relevantes)} relevantes de {len(consulta.avaliados)} avaliados.")
+        salvar_gabarito(cfg.gabarito, gabarito)
+        relevantes = sum(1 for n in consulta.notas_humanas.values() if n >= 2)
+        print(f"\nSalvo: {len(consulta.notas_humanas)} notas suas nesta consulta ({relevantes} com nota >= 2).")
+
+
+def _juiz(cfg: Config) -> JuizGemini:
+    j = cfg.juiz
+    return JuizGemini(j.api_key, carregar_rubrica(cfg.rubrica), j.modelo, j.preco_entrada_1m, j.preco_saida_1m)
+
+
+def cmd_julgar(cfg: Config, arm: Armazenamento, args) -> None:
+    embedder = criar_embedder(cfg.embedder)
+    juiz = _juiz(cfg)
+    gabarito = carregar_gabarito(cfg.gabarito)
+    if args.consulta:
+        alvo = [obter_ou_criar(gabarito, args.consulta, _filtros_dict(args), args.perfil or "")]
+    else:
+        alvo = gabarito
+    if not alvo:
+        sys.exit("O gabarito está vazio. Comece com `mini-lcm rotular` (ou passe uma consulta para `julgar`).")
+    reg = julgar_pendentes(alvo, arm, embedder, juiz, juiz.versao_rubrica, apenas_rotulados=args.apenas_rotulados,
+                           profundidade=args.profundidade, limite=args.limite,
+                           salvar=lambda: salvar_gabarito(cfg.gabarito, gabarito))
+    if reg.itens or reg.falhas:
+        arm.registrar_custo(reg)
+    custo = f"US$ {reg.custo_usd:.4f}" if cfg.juiz.preco_entrada_1m else "preço não configurado no .env"
+    print(f"{reg.itens} julgamentos novos com {juiz.modelo} ({reg.falhas} falhas), "
+          f"{reg.tokens} tokens, {custo}, {reg.segundos:.0f}s")
+
+
+def cmd_concordancia(cfg: Config, arm: Armazenamento, args) -> None:
+    gabarito = carregar_gabarito(cfg.gabarito)
+    rel = concordancia(gabarito, kappa_minimo=args.kappa_minimo, min_pares=args.min_pares, origem=args.origem)
+    print(f"Conjunto: {args.origem}\n")
+    print(relatorio_concordancia_texto(rel))
+    try:
+        versao = hash_rubrica(carregar_rubrica(cfg.rubrica))
+        antigas = sum(1 for c in gabarito for j in c.notas_ia.values() if j.get("rubrica") != versao)
+        if antigas:
+            print(f"\nAtenção: {antigas} notas da IA são de uma versão antiga da rubrica. Rode `mini-lcm julgar`.")
+    except FileNotFoundError:
+        pass
+
+
+def cmd_revisar(cfg: Config, arm: Armazenamento, args) -> None:
+    gabarito = carregar_gabarito(cfg.gabarito)
+    try:
+        alteradas = revisar(gabarito, _itens_do_gabarito(arm, gabarito), distancia_minima=args.distancia)
+    finally:
+        salvar_gabarito(cfg.gabarito, gabarito)
+    print(f"\n{alteradas} notas suas alteradas. Rode `mini-lcm concordancia` de novo.")
+
+
+def cmd_auditar(cfg: Config, arm: Armazenamento, args) -> None:
+    gabarito = carregar_gabarito(cfg.gabarito)
+    amostra = amostra_auditoria(gabarito, args.amostra)
+    if not amostra:
+        sys.exit("Não há pares julgados só pela IA. Rode `mini-lcm julgar` antes.")
+    try:
+        feitos = auditar(gabarito, _itens_do_gabarito(arm, gabarito), amostra)
+    finally:
+        salvar_gabarito(cfg.gabarito, gabarito)
+    print(f"\n{feitos} pares auditados. Veja: mini-lcm concordancia --origem auditoria --min-pares 20")
 
 
 def cmd_avaliar(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder)
+    gabarito = carregar_gabarito(cfg.gabarito)
+    if args.fonte != "humano":
+        calib = concordancia(gabarito)
+        if not calib.aprovado:
+            print(f"Atenção: o juiz ainda não passou na calibração ({calib.motivo}). "
+                  f"Use --fonte humano ou trate estes números como provisórios.\n")
     modos = tuple(m.strip() for m in args.modos.split(","))
-    rel = avaliar(arm, embedder, carregar_gabarito(GABARITO), modos, k=args.k, peso_imagem=args.peso_imagem)
+    rel = avaliar(arm, embedder, gabarito, modos, k=args.k, peso_imagem=args.peso_imagem, fonte=args.fonte)
     texto = relatorio_markdown(rel)
     print(texto)
     if args.salvar:
@@ -184,14 +266,39 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("-k", type=int, default=10)
     s.set_defaults(func=cmd_buscar)
 
-    s = sub.add_parser("rotular", help="marca à mão os resultados relevantes de uma consulta (gabarito)")
+    s = sub.add_parser("rotular", help="passo 1: você dá notas de 0 a 3 aos resultados de uma consulta")
     s.add_argument("consulta")
     _args_filtros(s)
+    s.add_argument("--perfil", help='quem busca e com que intenção, ex.: "colecionadora adulta"')
     s.add_argument("--profundidade", type=int, default=20, help="quantos resultados de cada modo entram no pool")
     s.set_defaults(func=cmd_rotular)
 
-    s = sub.add_parser("avaliar", help="recall@k e MRR de cada modo de busca")
+    s = sub.add_parser("julgar", help="passo 2 e escala: a IA dá notas de 0 a 3")
+    s.add_argument("consulta", nargs="?", help="sem consulta: julga todas as do gabarito")
+    _args_filtros(s)
+    s.add_argument("--perfil")
+    s.add_argument("--apenas-rotulados", action="store_true", help="só os pares que você já rotulou (calibração)")
+    s.add_argument("--profundidade", type=int, default=20)
+    s.add_argument("--limite", type=int, help="máximo de julgamentos nesta rodada (controle de custo)")
+    s.set_defaults(func=cmd_julgar)
+
+    s = sub.add_parser("concordancia", help="passo 3: o quanto a IA concorda com você")
+    s.add_argument("--origem", choices=["rotulagem", "auditoria", "todos"], default="rotulagem")
+    s.add_argument("--kappa-minimo", type=float, default=0.6)
+    s.add_argument("--min-pares", type=int, default=50)
+    s.set_defaults(func=cmd_concordancia)
+
+    s = sub.add_parser("revisar", help="passo 4: você arbitra as discordâncias, vendo a justificativa da IA")
+    s.add_argument("--distancia", type=int, default=1, help="só discordâncias de pelo menos N pontos")
+    s.set_defaults(func=cmd_revisar)
+
+    s = sub.add_parser("auditar", help="você dá nota, às cegas, a uma amostra do que só a IA julgou")
+    s.add_argument("--amostra", type=int, default=30)
+    s.set_defaults(func=cmd_auditar)
+
+    s = sub.add_parser("avaliar", help="recall@k, MRR e NDCG@k de cada modo de busca")
     s.add_argument("--modos", default=",".join(MODOS))
+    s.add_argument("--fonte", choices=["humano", "ia", "combinado"], default="combinado")
     s.add_argument("-k", type=int, default=10)
     s.add_argument("--peso-imagem", type=float, default=0.5)
     s.add_argument("--salvar", help="caminho de um .md para guardar o relatório")

@@ -37,12 +37,30 @@ class Categoria:
 
 
 @dataclass
+class ConfigJuiz:
+    api_key: str | None = None
+    modelo: str = "gemini-3.5-flash-lite"
+    preco_entrada_1m: float = 0.0  # US$ por 1 milhão de tokens; 0 = custo não calculado
+    preco_saida_1m: float = 0.0
+
+
+@dataclass
 class Config:
     database_url: str | None
     embedder: str
     pasta_dados: Path  # dados processados (itens, vetores, custos)
     pasta_brutos: Path  # arquivos baixados da Amazon
     categorias: list[Categoria] = field(default_factory=list)
+    juiz: ConfigJuiz = field(default_factory=ConfigJuiz)
+    pasta_avaliacao: Path = RAIZ / "avaliacao"  # rubrica.md e gabarito.json
+
+    @property
+    def gabarito(self) -> Path:
+        return self.pasta_avaliacao / "gabarito.json"
+
+    @property
+    def rubrica(self) -> Path:
+        return self.pasta_avaliacao / "rubrica.md"
 
     def categoria(self, slug: str) -> Categoria:
         for c in self.categorias:
@@ -76,4 +94,10 @@ def carregar_config(raiz: Path = RAIZ) -> Config:
         pasta_dados=raiz / "dados",
         pasta_brutos=raiz / "dados" / "brutos",
         categorias=carregar_categorias(raiz / "categorias.yaml"),
+        juiz=ConfigJuiz(
+            api_key=os.getenv("GEMINI_API_KEY") or None,
+            modelo=os.getenv("JUIZ_MODELO") or "gemini-3.5-flash-lite",
+            preco_entrada_1m=float(os.getenv("JUIZ_PRECO_ENTRADA_1M") or 0),
+            preco_saida_1m=float(os.getenv("JUIZ_PRECO_SAIDA_1M") or 0),
+        ),
     )

@@ -7,7 +7,8 @@ para qualquer categoria de produto.
 
 > **Status: fase 1 de 5 (busca).** Catálogo de duas categorias, embeddings de
 > texto e de imagem, busca em linguagem natural com filtros, avaliação com
-> gabarito e medição de custo. A personalização entra na fase 2.
+> notas de relevância dadas por mim e por um juiz de IA calibrado contra as
+> minhas notas, e medição de custo. A personalização entra na fase 2.
 > Os números de avaliação e custo serão preenchidos depois da primeira
 > execução com os dados reais.
 
@@ -49,7 +50,22 @@ consulta "boneca gótica até US$ 30"
 - **Filtros antes da ordenação:** "até US$ 30" nunca devolve um produto mais caro.
 - **Nada é específico de categoria:** uma categoria nova é uma entrada em `categorias.yaml`.
 
+## Como a busca é avaliada
+
+Rotular relevância à mão não escala, e confiar cegamente numa IA também não.
+O projeto usa as duas coisas, nesta ordem:
+
+1. **Eu rotulo um conjunto pequeno** (notas de 0 a 3, rubrica em
+   [avaliacao/rubrica.md](avaliacao/rubrica.md)): o padrão-ouro.
+2. **Um juiz de IA** (Gemini, vendo texto + foto + perfil de quem busca) julga os mesmos pares.
+3. **Mede-se a concordância** com kappa ponderado e intervalo de confiança.
+   A IA só é usada em escala se o limite inferior do kappa passar de 0,6.
+4. **Eu arbitro as discordâncias** e audito às cegas uma amostra do que só a IA julgou.
+
+Métricas da busca: recall@10, MRR e NDCG@10, comparando os modos texto, imagem e fusão.
+
 Cada escolha, com alternativas e motivos, está em [docs/decisoes.md](docs/decisoes.md).
+O passo a passo completo de execução está em [docs/passo-a-passo.md](docs/passo-a-passo.md).
 
 ## Como rodar
 
@@ -58,7 +74,7 @@ Requer Python 3.11+.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[clip,dev]"            # + ".[postgres]" para usar o Supabase
-cp .env.example .env
+cp .env.example .env                     # preencha GEMINI_API_KEY
 
 # 1. Baixar os dados (arquivos grandes, vários GB)
 bash scripts/baixar_amazon.sh            # Toys_and_Games e Electronics
@@ -76,8 +92,11 @@ mini-lcm indexar
 mini-lcm buscar "boneca gótica de cabelo rosa" --categoria bonecas --preco-max 30
 mini-lcm buscar "placa para jogar em 1080p" --categoria placas-de-video --modo imagem
 
-# 6. Avaliar: marcar à mão o que é relevante, depois medir
-mini-lcm rotular "boneca gótica de cabelo rosa" --categoria bonecas
+# 6. Avaliar (detalhes em docs/passo-a-passo.md)
+mini-lcm rotular "boneca gótica de cabelo rosa" --categoria bonecas --perfil "colecionadora adulta"
+mini-lcm julgar --apenas-rotulados
+mini-lcm concordancia
+mini-lcm revisar
 mini-lcm avaliar --salvar docs/resultados-busca.md
 
 # Custos e tamanho dos dados
@@ -97,23 +116,38 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 
 *A preencher depois da primeira execução com os dados reais.*
 
+**Busca** (notas combinadas: minhas onde existem, do juiz no resto)
+
 | Métrica | texto | imagem | fusão |
 |---|---|---|---|
 | recall@10 | | | |
 | MRR | | | |
+| NDCG@10 | | | |
+
+**Juiz de IA**
+
+| | Pares | Acordo exato | Kappa ponderado (IC 95%) |
+|---|---|---|---|
+| Calibração | | | |
+| Auditoria às cegas | | | |
+
+**Custo**
 
 | Etapa | Itens | Tempo | ms/item | US$ |
 |---|---|---|---|---|
 | embeddings de texto | | | | 0 |
 | embeddings de imagem | | | | 0 |
 | busca (por consulta) | | | | 0 |
+| julgamento (por par) | | | | |
 
 ## Limitações
 
 - Os produtos da Amazon são novos e bem descritos. O caso típico de
   classificados (usado, título ruim) aparece pouco nestes dados.
-- O gabarito é feito por uma pessoa, a partir dos resultados dos próprios
-  modos (pooling). O recall medido é um teto otimista.
+- O padrão-ouro é de uma pessoa só. A concordância mede o quanto a IA
+  concorda comigo, não com "a verdade".
+- O gabarito sai dos resultados dos próprios modos (pooling): um produto
+  relevante que nenhum modo encontrou nunca é avaliado. O recall é um teto otimista.
 - O CLIP local é gratuito, mas fica abaixo dos modelos pagos de ponta em
   texto contra texto. A troca será medida, não suposta.
 - Preços em dólar, no momento da coleta do dataset (até 2023).
@@ -135,4 +169,7 @@ Chen, X., & McAuley, J. (2024). *Bridging Language and Items for Retrieval and
 Recommendation*. arXiv:2403.03952. Os dados não são redistribuídos aqui: o
 script baixa direto da fonte.
 
-Modelos: CLIP (OpenAI) e clip-ViT-B-32-multilingual-v1 (sentence-transformers).
+Modelos: CLIP (OpenAI) e clip-ViT-B-32-multilingual-v1 (sentence-transformers);
+juiz: Gemini (Google). Método de calibração do juiz inspirado em Thomas, Spielman,
+Craswell & Mitra (2024), *Large Language Models can Accurately Predict Searcher
+Preferences*, SIGIR.
