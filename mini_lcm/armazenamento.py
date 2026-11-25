@@ -184,12 +184,11 @@ def _vetor_sql(v: np.ndarray) -> str:
 
 
 class ArmazenamentoPostgres:
-    def __init__(self, url: str, dimensoes: int, categorias: list[tuple[str, str]] | None = None):
+    def __init__(self, url: str, categorias: list[tuple[str, str]] | None = None):
         try:
             import psycopg
         except ImportError as e:
             raise RuntimeError('Instale o driver do Postgres com: pip install -e ".[postgres]"') from e
-        self.dimensoes = dimensoes
         self.conn = psycopg.connect(url, autocommit=True)
         self._busca_iterativa = self._pgvector_versao() >= (0, 8, 0)
         if categorias:
@@ -208,7 +207,7 @@ class ArmazenamentoPostgres:
                 categorias,
             )
 
-    def garantir_indice(self, modelo: str, canal: Canal) -> None:
+    def garantir_indice(self, modelo: str, canal: Canal, dimensoes: int) -> None:
         """Índice HNSW parcial para um (modelo, canal), com o tamanho fixo que o índice exige.
 
         Comandos como CREATE INDEX não aceitam parâmetros (%s): os valores entram como
@@ -221,7 +220,7 @@ class ArmazenamentoPostgres:
             "create index if not exists {nome} on embeddings_itens "
             "using hnsw ((vetor::vector({d})) vector_cosine_ops) "
             "where modelo = {modelo} and canal = {canal}"
-        ).format(nome=sql.Identifier(nome), d=sql.Literal(int(self.dimensoes)),
+        ).format(nome=sql.Identifier(nome), d=sql.Literal(int(dimensoes)),
                  modelo=sql.Literal(modelo), canal=sql.Literal(canal)))
 
     def salvar_itens(self, itens: list[Item]) -> int:
@@ -290,10 +289,11 @@ class ArmazenamentoPostgres:
                      dimensoes = excluded.dimensoes, criado_em = now()""",
                 [(item_id, modelo, canal, len(v), _vetor_sql(v)) for item_id, v in vetores],
             )
-        self.garantir_indice(modelo, canal)
+        if vetores:  # cada modelo tem seu tamanho de vetor (CLIP: 512, e5-small: 384)
+            self.garantir_indice(modelo, canal, len(vetores[0][1]))
 
     def vizinhos(self, modelo: str, canal: Canal, vetor: np.ndarray, filtros: Filtros, n: int) -> list[tuple[str, float]]:
-        d = int(self.dimensoes)
+        d = len(vetor)  # o tamanho vem do modelo da consulta
         # `<=>` é a distância de cosseno do pgvector (0 = idênticos). Similaridade = 1 - distância.
         # A expressão `vetor::vector(d)` e o WHERE em modelo/canal precisam ser iguais aos do
         # índice parcial para o Postgres conseguir usá-lo.

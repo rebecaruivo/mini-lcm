@@ -59,6 +59,29 @@ mini-lcm buscar "placa boa para jogar em 1080p" --categoria placas-de-video --pr
 ```
 Anote buscas em que os modos dão resultados bem diferentes: são bons exemplos para a entrevista.
 
+## 6b. Escolher a variante de embedding do texto (antes de rotular)
+O primeiro teste mostrou o canal de texto fraco (ver `docs/decisoes.md`).
+Compare três variantes. Só o texto é reindexado; as fotos são reaproveitadas.
+```bash
+# variante atual
+mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas --salvar docs/sondagem.md
+
+# variante 1: só título + loja (~10 min de indexação)
+TEXTO_ITEM=titulo mini-lcm indexar --canal texto
+TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas --salvar docs/sondagem.md
+
+# variante 2: modelo de texto dedicado (baixa ~500 MB na 1ª vez)
+EMBEDDER=clip+e5 mini-lcm indexar --canal texto
+EMBEDDER=clip+e5 mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas --salvar docs/sondagem.md
+
+# variante 3: as duas mudanças juntas
+EMBEDDER=clip+e5 TEXTO_ITEM=titulo mini-lcm indexar --canal texto
+EMBEDDER=clip+e5 TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas --salvar docs/sondagem.md
+```
+Faça o mesmo para placas de vídeo, com termos como `"rtx 4060" "rx 7600" "gtx 1650" asus msi`.
+Escolha a variante com melhor acerto e faixa de similaridade mais larga,
+grave a escolha no `.env` (`EMBEDDER=` e `TEXTO_ITEM=`) e teste as buscas descritivas do passo 6 de novo.
+
 ## 7. Montar o gabarito humano (passo 1 da calibração)
 Escolha umas **10 consultas variadas** (5 de cada categoria): algumas fáceis
 ("monster high draculaura"), algumas descritivas ("boneca de vampira com

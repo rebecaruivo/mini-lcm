@@ -101,7 +101,33 @@ def test_dados_locais_sobrevivem_a_reabertura(indexado, tmp_path):
     assert len(reaberto.custos()) == 2  # texto e imagem
 
 
-def test_texto_do_item_limita_tamanho():
+def test_texto_do_item_limita_tamanho_e_tem_modo_so_titulo():
     longo = item("X", "palavra " * 100, Marca="Mattel")
     assert len(texto_do_item(longo).split()) == 40
-    assert texto_do_item(item("Y", "Draculaura", Marca="Mattel")) == "Draculaura . Marca: Mattel"
+    assert len(texto_do_item(longo, max_palavras=120).split()) == 103  # 100 do título + ". Marca: Mattel"
+    completo = item("Y", "Draculaura", Loja="Mattel", Categoria="Dolls", Destaques="Articulada ; com acessórios")
+    assert texto_do_item(completo) == "Draculaura . Loja: Mattel . Categoria: Dolls . Destaques: Articulada ; com acessórios"
+    assert texto_do_item(completo, "titulo") == "Draculaura . Loja: Mattel"
+    assert texto_do_item(item("Z", "Draculaura"), "titulo") == "Draculaura"
+
+
+def test_variante_de_texto_tem_vetores_proprios_e_reaproveita_imagem(indexado):
+    arm, _ = indexado
+    so_titulo = EmbedderFalso(texto_item="titulo")
+    regs = gerar_embeddings(arm, so_titulo)
+    assert regs["texto"].itens == 8  # chave nova: textos refeitos
+    assert regs["imagem"].itens == 0  # mesma chave de imagem: nada a refazer
+    assert {"falso-hash/texto", "falso-hash@titulo/texto", "falso-hash/imagem"} <= set(arm.estatisticas()["vetores"])
+    assert buscar(arm, so_titulo, "draculaura", k=3)
+
+
+def test_sondagem_mede_acerto_pelo_titulo(indexado):
+    from mini_lcm.sondagem import sondagem_markdown, sondar
+
+    arm, emb = indexado
+    linhas = sondar(arm, emb, ["monster high", "rtx"], Filtros(), k=2)
+    mh = linhas[0]
+    assert mh["texto"] == 1.0  # B1/B3 têm "monster high" no título
+    assert 0 <= mh["faixa_texto"] <= 2
+    md = sondagem_markdown(linhas, emb.nome, k=2)
+    assert "| monster high | 100%" in md and "média" in md

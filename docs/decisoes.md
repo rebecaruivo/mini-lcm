@@ -135,6 +135,53 @@ esperar a rede, não usar processador.
 
 ---
 
+## 2026-11-25 · Primeiro diagnóstico com os dados reais: o canal de texto está fraco
+
+**O que apareceu** (6.000 produtos indexados, CLIP com texto "completo"):
+- A busca "monster high draculaura" pôs em 1º no canal de texto uma boneca de
+  outra marca (Pullip) e, em 5º, um bebê de pano, embora existam 363 produtos
+  com "monster high" no título. O canal de imagem achou Monster High.
+- Em inglês ("gothic doll with pink hair") o texto também ignorou "gothic":
+  não é só um problema de tradução.
+- As similaridades do texto ficaram espremidas entre 0,85 e 0,91 para quase
+  tudo; as da imagem, entre 0,30 e 0,33.
+- Os dois canais quase não concordaram, e a fusão só intercalou os primeiros de cada um.
+
+**Hipóteses:**
+1. *Diluição do título:* o texto do produto juntava título + loja + categoria +
+   destaques, e o modelo faz a média das palavras. Os destaques (marketing,
+   parecido em todo produto) dominam a média e apagam o que distingue um
+   produto do outro. Isso também explicaria as similaridades espremidas.
+2. *Modelo inadequado:* o codificador de texto do CLIP foi treinado para
+   comparar texto com IMAGEM. Para texto contra texto, modelos treinados para
+   busca costumam ser bem melhores.
+
+**Experimento:** duas variantes, sem apagar a original:
+- `TEXTO_ITEM=titulo`: o texto do produto vira só título + loja.
+- `EMBEDDER=clip+e5`: textos com o `multilingual-e5-small`, um modelo
+  multilíngue treinado para busca assimétrica (consulta curta contra texto
+  longo, com os prefixos "query:" e "passage:"). As fotos continuam no CLIP.
+
+Cada canal pode ter um modelo diferente porque a fusão usa posições: a
+consulta é codificada no espaço de cada canal e só é comparada com vetores do
+mesmo espaço. Os vetores de imagem já calculados são reaproveitados (a chave
+deles não muda); só o canal de texto é reindexado.
+
+**Como comparar:** primeiro, `mini-lcm sondar` (sem rótulos): busca nomes que
+existem no catálogo e mede quantos dos 10 primeiros têm o nome no título,
+mais a faixa de similaridade do texto. Isso acha defeitos grosseiros, mas só
+cobre buscas pelo nome. A variante escolhida ainda passa pela avaliação com
+gabarito (`avaliar`), que cobre buscas descritivas.
+
+**Por que corrigir antes de rotular:** as notas valem para qualquer variante,
+mas o pool a rotular sai da própria busca. Com um canal de texto quebrado,
+o pool perde bons candidatos, e uma variante melhor traria depois muitos
+produtos sem nota no top 10.
+
+*Resultado: a preencher depois da sondagem.*
+
+---
+
 ## 2026-11-25 · Busca: dois canais combinados por Reciprocal Rank Fusion
 
 **Decisão:** cada produto tem dois vetores (texto e foto). A consulta é

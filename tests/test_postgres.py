@@ -29,7 +29,7 @@ def pg(catalogo):
     with psycopg.connect(URL, autocommit=True) as c:
         c.execute("drop table if exists eventos, usuarios, custos, avaliacoes, embeddings_itens, itens, categorias cascade")
         c.execute(SCHEMA)
-    arm = ArmazenamentoPostgres(URL, emb.dimensoes, categorias=[("bonecas", "Bonecas"), ("placas", "Placas")])
+    arm = ArmazenamentoPostgres(URL, categorias=[("bonecas", "Bonecas"), ("placas", "Placas")])
     arm.salvar_itens(itens)
     gerar_embeddings(arm, emb)
     yield arm, emb

@@ -15,8 +15,13 @@
     mini-lcm auditar --amostra 30         # confere uma amostra do que só a IA julgou
     mini-lcm avaliar --fonte combinado    # recall@10, MRR e NDCG@10 de cada modo
 
+    mini-lcm sondar "monster high" barbie --categoria bonecas   # teste rápido sem rótulos
     mini-lcm custos
     mini-lcm status
+
+    Variantes de embedding (no .env ou na frente do comando):
+    TEXTO_ITEM=titulo mini-lcm indexar --canal texto
+    EMBEDDER=clip+e5 mini-lcm indexar --canal texto
 """
 
 from __future__ import annotations
@@ -40,14 +45,13 @@ from .embeddings import criar_embedder
 from .indexacao import gerar_embeddings
 from .juiz import JuizGemini, carregar_rubrica, hash_rubrica
 from .modelos import Filtros
+from .sondagem import sondagem_markdown, sondar
 
-DIMENSOES = {"clip": 512, "fake": 256}  # para abrir o banco sem carregar o modelo (o CLIP pesa ~1 GB)
 
 
 def abrir_armazenamento(cfg: Config) -> Armazenamento:
     if cfg.database_url:
-        return ArmazenamentoPostgres(cfg.database_url, DIMENSOES[cfg.embedder],
-                                     categorias=[(c.slug, c.nome) for c in cfg.categorias])
+        return ArmazenamentoPostgres(cfg.database_url, categorias=[(c.slug, c.nome) for c in cfg.categorias])
     return ArmazenamentoLocal(cfg.pasta_dados)
 
 
@@ -98,14 +102,14 @@ def cmd_importar(cfg: Config, arm: Armazenamento, args) -> None:
 
 
 def cmd_indexar(cfg: Config, arm: Armazenamento, args) -> None:
-    embedder = criar_embedder(cfg.embedder)
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     canais = (args.canal,) if args.canal else ("texto", "imagem")
     for canal, reg in gerar_embeddings(arm, embedder, canais, args.categoria).items():
         print(f"{canal}: {reg.itens} itens em {reg.segundos:.1f}s ({reg.falhas} fotos com falha)")
 
 
 def cmd_buscar(cfg: Config, arm: Armazenamento, args) -> None:
-    embedder = criar_embedder(cfg.embedder)
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     reg = RegistroCusto(etapa="busca", modelo=embedder.nome)
     config = ConfigBusca(modo=args.modo, peso_imagem=args.peso_imagem)
     resultados = buscar(arm, embedder, args.consulta, _filtros(args), k=args.k, config=config, registro=reg)
@@ -129,7 +133,7 @@ def _itens_do_gabarito(arm: Armazenamento, gabarito) -> dict:
 
 
 def cmd_rotular(cfg: Config, arm: Armazenamento, args) -> None:
-    embedder = criar_embedder(cfg.embedder)
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     gabarito = carregar_gabarito(cfg.gabarito)
     consulta = obter_ou_criar(gabarito, args.consulta, _filtros_dict(args), args.perfil or "")
     itens = pool_para_rotular(arm, embedder, consulta.texto, consulta.filtros_obj(), args.profundidade)
@@ -147,7 +151,7 @@ def _juiz(cfg: Config) -> JuizGemini:
 
 
 def cmd_julgar(cfg: Config, arm: Armazenamento, args) -> None:
-    embedder = criar_embedder(cfg.embedder)
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     juiz = _juiz(cfg)
     gabarito = carregar_gabarito(cfg.gabarito)
     if args.consulta:
@@ -202,7 +206,7 @@ def cmd_auditar(cfg: Config, arm: Armazenamento, args) -> None:
 
 
 def cmd_avaliar(cfg: Config, arm: Armazenamento, args) -> None:
-    embedder = criar_embedder(cfg.embedder)
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     gabarito = carregar_gabarito(cfg.gabarito)
     if args.fonte != "humano":
         calib = concordancia(gabarito)
@@ -217,6 +221,22 @@ def cmd_avaliar(cfg: Config, arm: Armazenamento, args) -> None:
         Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
         Path(args.salvar).write_text(f"# Avaliação da busca ({embedder.nome})\n\n{texto}\n", encoding="utf-8")
         print(f"\nSalvo em {args.salvar}")
+
+
+def cmd_sondar(cfg: Config, arm: Armazenamento, args) -> None:
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
+    pendentes = arm.itens_sem_embedding(embedder.chave("texto"), "texto", args.categoria)
+    if pendentes:
+        sys.exit(f"{len(pendentes)} produtos ainda sem vetor de texto para esta variante "
+                 f"({embedder.chave('texto')}). Rode `mini-lcm indexar --canal texto` antes.")
+    linhas = sondar(arm, embedder, args.termos, _filtros(args), k=args.k)
+    texto = sondagem_markdown(linhas, embedder.nome, args.k)
+    print(texto)
+    if args.salvar:
+        Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.salvar, "a", encoding="utf-8") as f:
+            f.write(texto + "\n\n")
+        print(f"\nAcrescentado a {args.salvar}")
 
 
 def cmd_custos(cfg: Config, arm: Armazenamento, args) -> None:
@@ -303,6 +323,13 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--peso-imagem", type=float, default=0.5)
     s.add_argument("--salvar", help="caminho de um .md para guardar o relatório")
     s.set_defaults(func=cmd_avaliar)
+
+    s = sub.add_parser("sondar", help="teste rápido sem rótulos: buscar nomes e ver se eles aparecem no topo")
+    s.add_argument("termos", nargs="+", help='ex.: "monster high" barbie troll')
+    _args_filtros(s)
+    s.add_argument("-k", type=int, default=10)
+    s.add_argument("--salvar", help="acrescenta a tabela a um .md (para comparar variantes)")
+    s.set_defaults(func=cmd_sondar)
 
     sub.add_parser("custos", help="tempo e custo por etapa").set_defaults(func=cmd_custos)
     sub.add_parser("status", help="quantos itens e vetores existem").set_defaults(func=cmd_status)

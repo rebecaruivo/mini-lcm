@@ -47,11 +47,12 @@ class ConfigJuiz:
 @dataclass
 class Config:
     database_url: str | None
-    embedder: str
+    embedder: str  # "clip", "clip+e5" ou "fake"
     pasta_dados: Path  # dados processados (itens, vetores, custos)
     pasta_brutos: Path  # arquivos baixados da Amazon
     categorias: list[Categoria] = field(default_factory=list)
     juiz: ConfigJuiz = field(default_factory=ConfigJuiz)
+    texto_item: str = "completo"  # "completo" ou "titulo": que texto do produto vira vetor
     pasta_avaliacao: Path = RAIZ / "avaliacao"  # rubrica.md e gabarito.json
 
     @property
@@ -91,6 +92,7 @@ def carregar_config(raiz: Path = RAIZ) -> Config:
     return Config(
         database_url=os.getenv("DATABASE_URL") or None,
         embedder=os.getenv("EMBEDDER") or "clip",
+        texto_item=os.getenv("TEXTO_ITEM") or "completo",
         pasta_dados=raiz / "dados",
         pasta_brutos=raiz / "dados" / "brutos",
         categorias=carregar_categorias(raiz / "categorias.yaml"),

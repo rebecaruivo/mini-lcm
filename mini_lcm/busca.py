@@ -1,7 +1,7 @@
 """Busca: consulta em linguagem natural + filtros estruturados.
 
 Passos:
-1. A consulta vira um vetor (codificador de texto do CLIP).
+1. A consulta vira um vetor em cada canal (no espaço do modelo daquele canal).
 2. Para cada canal (texto do anúncio e foto do anúncio), o armazenamento devolve
    os `candidatos` itens mais parecidos que passam nos filtros (preço, condição,
    categoria).
@@ -71,9 +71,9 @@ def buscar(
     reg = registro or RegistroCusto(etapa="busca", modelo=embedder.nome)
 
     with cronometro(reg):
-        vetor = embedder.textos([consulta])[0]
         listas = {
-            canal: armazenamento.vizinhos(embedder.nome, canal, vetor, filtros, config.candidatos)
+            canal: armazenamento.vizinhos(embedder.chave(canal), canal, embedder.consulta(consulta, canal),
+                                          filtros, config.candidatos)
             for canal, peso in config.pesos().items() if peso > 0
         }
     reg.itens += 1

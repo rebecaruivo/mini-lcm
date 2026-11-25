@@ -13,8 +13,10 @@ from PIL import Image
 class ModeloFalso:
     def __init__(self, nome):
         self.nome = nome
+        self.recebidos = []
 
     def encode(self, entradas, **kw):
+        self.recebidos.extend(entradas)
         # devolve vetores NÃO normalizados, para conferir que a classe normaliza
         return np.array([[3.0, 4.0] + [0.0] * 510 for _ in entradas])
 
@@ -62,3 +64,30 @@ def test_textos_normaliza_e_registra(clip):
     m = clip.textos(["boneca", "placa"])
     assert m.shape == (2, 512) and np.allclose(np.linalg.norm(m, axis=1), 1.0)
     assert clip._st_texto.nome.endswith("multilingual-v1") and clip._st_imagem.nome == "clip-ViT-B-32"
+
+
+def test_chaves_por_canal_reaproveitam_os_vetores_de_imagem(clip, monkeypatch):
+    from mini_lcm.embeddings import ClipComE5, ClipLocal
+
+    assert clip.chave("texto") == clip.chave("imagem") == "clip-vit-b-32-multilingual"  # compatível com o já indexado
+    so_titulo = ClipLocal("titulo")
+    assert so_titulo.chave("texto") == "clip-vit-b-32-multilingual@titulo"
+    assert so_titulo.chave("imagem") == "clip-vit-b-32-multilingual"
+    e5 = ClipComE5("titulo")
+    assert e5.chave("texto") == "e5-small-multilingual@titulo" and e5.chave("imagem") == "clip-vit-b-32-multilingual"
+    with pytest.raises(ValueError):
+        ClipLocal("resumo")
+
+
+def test_e5_usa_prefixos_e_clip_continua_na_imagem(clip):
+    from mini_lcm.embeddings import ClipComE5
+
+    from .conftest import item
+
+    e5 = ClipComE5("completo")
+    e5.consulta("draculaura", "texto")
+    e5.textos_itens([item("B1", "Monster High Draculaura", Loja="Mattel")])
+    assert e5._st_e5.recebidos[0] == "query: draculaura"
+    assert e5._st_e5.recebidos[1].startswith("passage: Monster High Draculaura")
+    e5.consulta("draculaura", "imagem")
+    assert e5._st_texto.recebidos == ["draculaura"]  # para a imagem, a consulta vai para o CLIP

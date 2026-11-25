@@ -33,19 +33,37 @@ import numpy as np
 import requests
 
 from .custo import RegistroCusto, cronometro
-from .modelos import Item
+from .modelos import Canal, Item
 
 log = logging.getLogger(__name__)
 
 MAX_PALAVRAS_TEXTO = 40  # o codificador de texto do CLIP lê textos curtos; o resto seria cortado
+MODOS_TEXTO = ("completo", "titulo")
 
 
 class Embedder(Protocol):
-    nome: str  # identifica o modelo no banco; trocar de modelo = novo nome, vetores novos
-    dimensoes: int
+    """Transforma consultas, textos de produto e fotos em vetores.
 
-    def textos(self, textos: list[str], registro: RegistroCusto | None = None) -> np.ndarray:
-        """Matriz (n, dimensoes) com uma linha normalizada por texto."""
+    Cada canal (texto, imagem) pode usar um modelo diferente. Por isso a consulta
+    é codificada POR CANAL: para comparar com fotos, ela precisa estar no espaço
+    do CLIP; para comparar com textos, no espaço do modelo de texto. Isso só
+    funciona porque a fusão (RRF) usa posições, não similaridades: os dois
+    espaços não precisam ser comparáveis entre si.
+    """
+
+    nome: str  # descrição geral (aparece nos custos)
+
+    def chave(self, canal: Canal) -> str:
+        """Identifica os vetores deste canal no armazenamento. Mudou o modelo ou o texto
+        dos produtos, muda a chave: os vetores antigos ficam guardados e não se misturam."""
+        ...
+
+    def consulta(self, texto: str, canal: Canal) -> np.ndarray:
+        """Vetor da consulta, no espaço do canal."""
+        ...
+
+    def textos_itens(self, itens: list[Item], registro: RegistroCusto | None = None) -> np.ndarray:
+        """Matriz (n, d) com o vetor de texto de cada produto."""
         ...
 
     def imagens(self, urls: list[str], registro: RegistroCusto | None = None) -> list[np.ndarray | None]:
@@ -53,16 +71,28 @@ class Embedder(Protocol):
         ...
 
 
-def texto_do_item(item: Item) -> str:
-    """O texto que representa o anúncio: título + atributos ("Marca: Mattel").
+def texto_do_item(item: Item, modo: str = "completo", max_palavras: int = MAX_PALAVRAS_TEXTO) -> str:
+    """O texto que representa o produto.
 
-    Os atributos ajudam quando o título é pobre. Cortamos em MAX_PALAVRAS_TEXTO
-    palavras porque o modelo ignora o que passa do limite dele, e é melhor
-    escolhermos o que fica (o título vem primeiro) do que deixar o modelo cortar.
+    modo="completo": título + todos os atributos (loja, categoria, destaques).
+    modo="titulo": só título + loja.
+
+    Por que existe o modo "titulo": modelos como o CLIP fazem a MÉDIA dos vetores
+    das palavras. Se os destaques (texto de marketing, parecido em todo produto)
+    ocupam a maior parte das palavras, eles dominam a média, e todos os produtos
+    ficam com cara de "descrição genérica". O título, que é o que distingue um
+    produto do outro, se dilui.
+
+    Cortamos em `max_palavras` porque o modelo ignora o que passa do limite dele;
+    melhor escolhermos o que fica (o título vem primeiro).
     """
-    partes = [item.titulo] + [f"{nome}: {valor}" for nome, valor in item.atributos.items()]
+    if modo not in MODOS_TEXTO:
+        raise ValueError(f"modo de texto desconhecido: {modo}")
+    atributos = item.atributos.items() if modo == "completo" else (
+        [("Loja", item.atributos["Loja"])] if "Loja" in item.atributos else [])
+    partes = [item.titulo] + [f"{nome}: {valor}" for nome, valor in atributos]
     palavras = " . ".join(partes).split()
-    return " ".join(palavras[:MAX_PALAVRAS_TEXTO])
+    return " ".join(palavras[:max_palavras])
 
 
 def normalizar_linhas(m: np.ndarray) -> np.ndarray:
@@ -81,12 +111,16 @@ class ClipLocal:
     do Hugging Face. Roda em CPU; com GPU fica bem mais rápido, sem mudar nada aqui.
     """
 
-    nome = "clip-vit-b-32-multilingual"
-    dimensoes = 512
+    NOME_CLIP = "clip-vit-b-32-multilingual"
     MODELO_IMAGEM = "clip-ViT-B-32"
     MODELO_TEXTO = "sentence-transformers/clip-ViT-B-32-multilingual-v1"
 
-    def __init__(self, lote: int = 32, timeout_foto_s: float = 15, downloads_paralelos: int = 8):
+    def __init__(self, texto_item: str = "completo", lote: int = 32, timeout_foto_s: float = 15,
+                 downloads_paralelos: int = 8):
+        if texto_item not in MODOS_TEXTO:
+            raise ValueError(f"TEXTO_ITEM deve ser um de {MODOS_TEXTO}")
+        self.texto_item = texto_item
+        self.nome = self.NOME_CLIP if texto_item == "completo" else f"{self.NOME_CLIP}@{texto_item}"
         try:
             from sentence_transformers import SentenceTransformer
         except ImportError as e:
@@ -99,12 +133,24 @@ class ClipLocal:
         self._http = requests.Session()
         self._http.headers["User-Agent"] = "mini-lcm/0.1 (projeto de estudo)"
 
+    def chave(self, canal: Canal) -> str:
+        # As fotos não dependem do modo de texto: a chave da imagem é sempre a mesma,
+        # e os vetores de imagem já calculados são reaproveitados.
+        return self.NOME_CLIP if canal == "imagem" else self.nome
+
     def textos(self, textos: list[str], registro: RegistroCusto | None = None) -> np.ndarray:
+        """Codificador de texto do CLIP (multilíngue), para qualquer lista de textos."""
         reg = registro or RegistroCusto(etapa="embeddings:texto", modelo=self.nome)
         with cronometro(reg):
             m = self._st_texto.encode(textos, batch_size=self.lote, convert_to_numpy=True, show_progress_bar=False)
         reg.itens += len(textos)
         return normalizar_linhas(np.asarray(m))
+
+    def consulta(self, texto: str, canal: Canal) -> np.ndarray:
+        return self.textos([texto], RegistroCusto(etapa="_", modelo=self.nome))[0]
+
+    def textos_itens(self, itens: list[Item], registro: RegistroCusto | None = None) -> np.ndarray:
+        return self.textos([texto_do_item(i, self.texto_item) for i in itens], registro)
 
     def _baixar(self, url: str):
         from PIL import Image
@@ -141,6 +187,53 @@ class ClipLocal:
         return saida
 
 
+# ─────────────────────── CLIP + modelo de texto dedicado ───────────────────────
+
+
+class ClipComE5(ClipLocal):
+    """Fotos com o CLIP; textos com o multilingual-e5-small, um modelo treinado só para busca em texto.
+
+    O e5 foi treinado para busca ASSIMÉTRICA: uma consulta curta ("draculaura antiga")
+    contra um texto longo (título + descrição do produto). Por isso ele pede prefixos:
+    "query: " na consulta e "passage: " no texto do produto. Sem eles, a qualidade cai.
+
+    Ele aceita textos bem mais longos que o CLIP (até 512 tokens), então o limite de
+    palavras do texto do produto sobe para 120.
+
+    Vetores de 384 dimensões, num espaço diferente do CLIP. Não há problema: a fusão
+    usa posições, e cada canal compara a consulta só com vetores do próprio espaço.
+    """
+
+    MODELO_TEXTO_DEDICADO = "intfloat/multilingual-e5-small"
+    NOME_TEXTO = "e5-small-multilingual"
+    MAX_PALAVRAS = 120
+
+    def __init__(self, texto_item: str = "completo", **kw):
+        super().__init__(texto_item, **kw)
+        from sentence_transformers import SentenceTransformer
+
+        self._st_e5 = SentenceTransformer(self.MODELO_TEXTO_DEDICADO)
+        self.nome = f"{self.NOME_TEXTO}@{texto_item}+{self.NOME_CLIP}"
+
+    def chave(self, canal: Canal) -> str:
+        return self.NOME_CLIP if canal == "imagem" else f"{self.NOME_TEXTO}@{self.texto_item}"
+
+    def _e5(self, textos: list[str], registro: RegistroCusto | None) -> np.ndarray:
+        reg = registro or RegistroCusto(etapa="embeddings:texto", modelo=self.chave("texto"))
+        with cronometro(reg):
+            m = self._st_e5.encode(textos, batch_size=self.lote, convert_to_numpy=True, show_progress_bar=False)
+        reg.itens += len(textos)
+        return normalizar_linhas(np.asarray(m))
+
+    def consulta(self, texto: str, canal: Canal) -> np.ndarray:
+        if canal == "imagem":
+            return super().consulta(texto, canal)  # para comparar com fotos, o espaço do CLIP
+        return self._e5([f"query: {texto}"], RegistroCusto(etapa="_", modelo=self.nome))[0]
+
+    def textos_itens(self, itens: list[Item], registro: RegistroCusto | None = None) -> np.ndarray:
+        return self._e5([f"passage: {texto_do_item(i, self.texto_item, self.MAX_PALAVRAS)}" for i in itens], registro)
+
+
 # ─────────────────────────── Falso (testes) ───────────────────────────
 
 
@@ -151,7 +244,7 @@ class EmbedderFalso:
     Textos com palavras em comum ficam parecidos. Não entende sinônimos nem significado.
 
     Imagem: o "conteúdo" da foto é uma descrição em texto passada em `descricoes_fotos`
-    ({url: "boneca de cabelo rosa e preto"}). Assim os testes simulam um anúncio cujo
+    ({url: "boneca de cabelo rosa e preto"}). Assim os testes simulam um produto cujo
     título é ruim mas a foto mostra o produto. URL sem descrição gera um vetor aleatório
     (fixo para aquela URL); URL em `fotos_quebradas` falha como uma foto fora do ar.
     """
@@ -159,10 +252,14 @@ class EmbedderFalso:
     nome = "falso-hash"
 
     def __init__(self, dimensoes: int = 256, descricoes_fotos: dict[str, str] | None = None,
-                 fotos_quebradas: set[str] | None = None):
+                 fotos_quebradas: set[str] | None = None, texto_item: str = "completo"):
         self.dimensoes = dimensoes
         self.descricoes_fotos = descricoes_fotos or {}
         self.fotos_quebradas = fotos_quebradas or set()
+        self.texto_item = texto_item
+
+    def chave(self, canal: Canal) -> str:
+        return self.nome if canal == "imagem" or self.texto_item == "completo" else f"{self.nome}@{self.texto_item}"
 
     def _semente(self, texto: str) -> int:
         return int.from_bytes(hashlib.sha256(texto.encode()).digest()[:8], "little")
@@ -183,6 +280,12 @@ class EmbedderFalso:
             registro.itens += len(textos)
         return normalizar_linhas(np.array([self._vetor_texto(t) for t in textos]))
 
+    def consulta(self, texto: str, canal: Canal) -> np.ndarray:
+        return self.textos([texto])[0]
+
+    def textos_itens(self, itens: list[Item], registro: RegistroCusto | None = None) -> np.ndarray:
+        return self.textos([texto_do_item(i, self.texto_item) for i in itens], registro)
+
     def imagens(self, urls: list[str], registro: RegistroCusto | None = None) -> list[np.ndarray | None]:
         saida: list[np.ndarray | None] = []
         for url in urls:
@@ -200,9 +303,14 @@ class EmbedderFalso:
         return saida
 
 
-def criar_embedder(nome: str) -> Embedder:
+EMBEDDERS = ("clip", "clip+e5", "fake")
+
+
+def criar_embedder(nome: str, texto_item: str = "completo") -> Embedder:
     if nome == "clip":
-        return ClipLocal()
+        return ClipLocal(texto_item)
+    if nome == "clip+e5":
+        return ClipComE5(texto_item)
     if nome == "fake":
-        return EmbedderFalso()
-    raise ValueError(f"EMBEDDER desconhecido: '{nome}'. Use 'clip' ou 'fake'.")
+        return EmbedderFalso(texto_item=texto_item)
+    raise ValueError(f"EMBEDDER desconhecido: '{nome}'. Use um de {EMBEDDERS}.")
