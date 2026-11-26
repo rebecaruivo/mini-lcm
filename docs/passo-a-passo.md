@@ -122,32 +122,50 @@ Copie para o README e para a seção 10 do guia da fase 2: a tabela de métodos,
 curva e 1 ou 2 exemplos de `perfil` que mostrem a personalização funcionando (ou falhando).
 Commit: `git add -A && git commit -m "Resultados da fase 2: avaliação temporal da recomendação" && git push`
 
-## 7. Montar o gabarito humano (passo 1 da calibração)
-Escolha umas **10 consultas variadas** (5 de cada categoria): algumas fáceis
-("monster high draculaura"), algumas descritivas ("boneca de vampira com
-roupa rosa"), algumas difíceis ("presente para fã de terror de 10 anos").
-Para cada uma:
-```bash
-mini-lcm rotular "boneca de vampira com roupa rosa" --categoria bonecas --perfil "colecionadora adulta de Monster High"
-```
-Leia `avaliacao/rubrica.md` antes. Para cada produto, abra o link e a foto e
-dê a nota de 0 a 3. "q" para no meio e salva; rodar de novo continua de onde parou.
-Meta: pelo menos 50 pares no total (10 consultas × ~20 produtos dá bem mais).
+## 7. A IA julga todos os produtos das consultas
+As consultas ficam em `avaliacao/consultas.yaml`: 12 (6 de cada categoria), de quatro
+tipos (nome, visual, funcional, intenção com filtro de preço), cada uma com o perfil de
+quem busca. Use as variantes de embedding escolhidas (`.env` com `EMBEDDER=clip+e5` e
+`TEXTO_ITEM=titulo`) e a `GEMINI_API_KEY` preenchida.
 
-## 8. A IA julga os mesmos pares (passo 2)
 ```bash
-mini-lcm julgar --apenas-rotulados
+# cria as consultas no gabarito e julga o pool de cada uma (os 10 primeiros de cada modo)
+mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
+mini-lcm custos
+```
+O julgamento é salvo a cada 20 produtos; se for interrompido, rodar de novo continua de
+onde parou e não paga de novo pelo que já foi julgado.
+
+## 8. Você rotula uma amostra de 100 (sem ver a nota da IA)
+```bash
+mini-lcm rotular --lote avaliacao/consultas.yaml --html avaliacao/rotular.html --amostra 100
+```
+A página mostra 100 produtos, agrupados por consulta: 50 sorteados ao acaso (o conjunto
+de **calibração**) e 50 sorteados com a mesma quantidade de cada nota da IA (a
+**auditoria**). Os dois grupos aparecem misturados, e a nota da IA não aparece.
+
+Abra `avaliacao/rotular.html` no navegador, leia a rubrica no topo e dê as notas com o
+teclado (0 a 3 dá a nota e pula para o próximo; N vai ao próximo sem nota). O progresso
+fica salvo no navegador. Ao terminar, clique em **Baixar notas** e importe:
+```bash
+mini-lcm importar-notas /mnt/c/Users/<usuario>/Downloads/notas-rotulagem.json
 ```
 
-## 9. Medir a concordância (passo 3)
+## 9. Medir a concordância
 ```bash
-mini-lcm concordancia
+mini-lcm concordancia                                       # calibração: decide se o juiz é aprovado
+mini-lcm concordancia --origem auditoria --min-pares 20     # auditoria: onde ele erra nas notas raras
 ```
 - **APROVADO:** siga para o passo 11.
 - **NÃO APROVADO:** olhe a matriz e o viés. A IA é generosa demais? Confunde
   1 com 2? Faça o passo 10 e, se o problema for de critério, ajuste
   `avaliacao/rubrica.md` (ex.: deixe mais claro o que é "relacionado") e
-  repita os passos 8 e 9. Mudar a rubrica faz a IA rejulgar sozinha.
+  rode `mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10` de novo.
+  Mudar a rubrica faz a IA rejulgar sozinha; as suas notas continuam valendo.
+
+Sem `--amostra`, `rotular --lote` gera uma página com o pool inteiro de cada consulta
+(para rotular tudo à mão). Uma consulta avulsa também pode ser rotulada no terminal:
+`mini-lcm rotular "boneca de vampira" --categoria bonecas --perfil "colecionadora adulta"`.
 
 ## 10. Revisar as discordâncias (passo 4)
 ```bash

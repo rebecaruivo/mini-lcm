@@ -1,0 +1,76 @@
+# Consultas do gabarito da busca.
+#
+# Cada consulta tem o texto, os filtros (os mesmos da linha de comando) e o perfil de quem
+# busca, que explica a intenção e ajuda a decidir entre notas vizinhas (avaliacao/rubrica.md).
+#
+# A lista mistura tipos de busca de propósito, porque cada canal vai bem em um tipo:
+#   nome:       a pessoa sabe o nome do produto (o texto deveria bastar)
+#   visual:     descreve a aparência (a foto deveria ajudar)
+#   funcional:  descreve o que o produto faz ou para que serve (só o texto sabe)
+#   intenção:   descreve a necessidade, com filtro de preço
+# e consultas em português, contra produtos descritos em inglês.
+#
+# Preços em dólar (o dataset é da Amazon dos EUA).
+
+consultas:
+  # ───── bonecas ─────
+  - texto: monster high draculaura
+    tipo: nome
+    filtros: {categoria: bonecas}
+    perfil: colecionadora adulta de Monster High procurando a personagem Draculaura
+
+  - texto: boneca gótica de cabelo rosa
+    tipo: visual
+    filtros: {categoria: bonecas}
+    perfil: colecionadora adulta, gosta de estética gótica; a personagem não importa
+
+  - texto: boneca com vestido de noiva
+    tipo: visual
+    filtros: {categoria: bonecas}
+    perfil: quer uma boneca vestida de noiva para decorar um bolo de casamento
+
+  - texto: boneca bebê que chora e faz xixi
+    tipo: funcional
+    filtros: {categoria: bonecas}
+    perfil: mãe comprando uma boneca interativa para uma criança de 4 anos
+
+  - texto: boneca negra de cabelo cacheado
+    tipo: visual
+    filtros: {categoria: bonecas}
+    perfil: quer uma boneca com a qual a filha negra de cabelo cacheado se identifique
+
+  - texto: presente para menina de 6 anos
+    tipo: intenção
+    filtros: {categoria: bonecas, preco_max: 30}
+    perfil: tia procurando um presente de aniversário, sem uma personagem em mente
+
+  # ───── placas de vídeo ─────
+  - texto: rtx 3060 12gb
+    tipo: nome
+    filtros: {categoria: placas-de-video}
+    perfil: quer exatamente uma GeForce RTX 3060 com 12 GB; outra memória não serve
+
+  - texto: placa de vídeo branca
+    tipo: visual
+    filtros: {categoria: placas-de-video}
+    perfil: está montando um PC todo branco e quer que a placa combine
+
+  - texto: placa de vídeo low profile para pc pequeno
+    tipo: funcional
+    filtros: {categoria: placas-de-video}
+    perfil: tem um PC de escritório compacto em que só cabe placa de perfil baixo
+
+  - texto: placa silenciosa sem ventoinha
+    tipo: funcional
+    filtros: {categoria: placas-de-video}
+    perfil: quer uma placa passiva (fanless) para um PC de sala silencioso
+
+  - texto: radeon com 16gb de memória
+    tipo: nome
+    filtros: {categoria: placas-de-video}
+    perfil: quer uma placa AMD Radeon com 16 GB de memória de vídeo, qualquer modelo
+
+  - texto: placa barata para jogar em full hd
+    tipo: intenção
+    filtros: {categoria: placas-de-video, preco_max: 250}
+    perfil: primeira montagem de PC gamer, orçamento curto, jogos atuais em 1080p

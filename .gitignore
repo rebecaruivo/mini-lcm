@@ -12,3 +12,5 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 avaliacao/*.tmp
+# página de rotulagem gerada (refeita a qualquer momento a partir de consultas.yaml)
+avaliacao/rotular*.html

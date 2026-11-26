@@ -134,8 +134,9 @@ mini-lcm avaliar-recomendacao --categoria bonecas --curva
 mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90   # escolha de parâmetros
 
 # 7. Avaliar a busca (detalhes em docs/passo-a-passo.md)
-mini-lcm rotular "boneca gótica de cabelo rosa" --categoria bonecas --perfil "colecionadora adulta"
-mini-lcm julgar --apenas-rotulados
+mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10                  # a IA julga tudo
+mini-lcm rotular --lote avaliacao/consultas.yaml --html avaliacao/rotular.html --amostra 100  # você: 100 com foto
+mini-lcm importar-notas notas-rotulagem.json     # arquivo baixado da página
 mini-lcm concordancia
 mini-lcm revisar
 mini-lcm avaliar --salvar docs/resultados-busca.md

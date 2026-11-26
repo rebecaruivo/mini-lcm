@@ -295,6 +295,39 @@ def amostra_auditoria(consultas: list[ConsultaRotulada], tamanho: int, semente: 
     return escolhidos
 
 
+def amostra_calibracao(consultas: list[ConsultaRotulada], aleatoria: int, estratificada: int,
+                       semente: int | None = 0) -> list[tuple[str, str, bool]]:
+    """Sorteia pares julgados só pela IA para você rotular: (consulta_id, item_id, é_auditoria).
+
+    Duas partes, com papéis diferentes:
+    - `aleatoria` pares sorteados ao acaso: o conjunto de CALIBRAÇÃO. Representa a
+      distribuição real das notas, e é nele que o kappa decide se o juiz é aprovado.
+    - `estratificada` pares sorteados com a mesma quantidade de cada nota da IA: a
+      AUDITORIA. Mostra onde o juiz erra nas notas raras (os 3, quase sempre), mas tem
+      notas raras demais para representar a população, por isso é reportada à parte.
+    Na rotulagem as duas partes aparecem misturadas e sem a nota da IA.
+    """
+    rng = random.Random(semente)
+    candidatos = [(c.id, item_id) for c in consultas for item_id in c.notas_ia if item_id not in c.notas_humanas]
+    rng.shuffle(candidatos)
+    calibracao = candidatos[:aleatoria]
+    usados = set(calibracao)
+    por_nota: dict[int, list[tuple[str, str]]] = {n: [] for n in NOTAS}
+    for c in consultas:
+        for item_id, j in c.notas_ia.items():
+            if item_id not in c.notas_humanas and (c.id, item_id) not in usados:
+                por_nota[int(j["nota"])].append((c.id, item_id))
+    for lista in por_nota.values():
+        lista.sort()
+        rng.shuffle(lista)
+    auditoria: list[tuple[str, str]] = []
+    while len(auditoria) < estratificada and any(por_nota.values()):
+        for nota in NOTAS:
+            if por_nota[nota] and len(auditoria) < estratificada:
+                auditoria.append(por_nota[nota].pop())
+    return [(cid, i, False) for cid, i in calibracao] + [(cid, i, True) for cid, i in auditoria]
+
+
 def auditar(
     consultas: list[ConsultaRotulada],
     itens: dict[str, Item],

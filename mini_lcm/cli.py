@@ -21,6 +21,8 @@
     mini-lcm usuarios --categoria bonecas               # quem tem mais histórico
     mini-lcm perfil USUARIO --categoria bonecas         # histórico + recomendações com o motivo
     mini-lcm buscar "boneca" --categoria bonecas --usuario USUARIO   # busca reordenada pelo gosto
+    mini-lcm rotular --lote avaliacao/consultas.yaml --html avaliacao/rotular.html   # página com fotos
+    mini-lcm importar-notas ~/Downloads/notas-rotulagem.json
     mini-lcm avaliar-recomendacao --categoria bonecas --curva        # avaliação temporal
     mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90   # escolher parâmetro
     mini-lcm custos
@@ -36,17 +38,19 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import random
 import sys
 from pathlib import Path
 
 from .armazenamento import Armazenamento, ArmazenamentoLocal, ArmazenamentoPostgres
-from .avaliacao import (avaliar, carregar_gabarito, obter_ou_criar, pool_para_rotular, relatorio_markdown, rotular,
-                        salvar_gabarito)
-from .calibracao import (amostra_auditoria, auditar, concordancia, julgar_pendentes, relatorio_concordancia_texto,
-                         revisar)
+from .avaliacao import (ConsultaRotulada, avaliar, carregar_gabarito, obter_ou_criar, pool_para_rotular,
+                        relatorio_markdown, rotular, salvar_gabarito)
+from .calibracao import (amostra_auditoria, amostra_calibracao, auditar, concordancia, julgar_pendentes,
+                         relatorio_concordancia_texto, revisar)
 from .busca import MODOS, ConfigBusca, buscar
 from .amazon import importar_avaliacoes, importar_itens, importar_por_usuarios, inspecionar
 from .config import Config, ParametrosRecomendacao, carregar_config
+from .rotulagem_html import carregar_lote, gerar_pagina, importar_notas
 from .custo import RegistroCusto, cronometro, resumir
 from .embeddings import criar_embedder
 from .indexacao import gerar_embeddings
@@ -166,6 +170,12 @@ def _itens_do_gabarito(arm: Armazenamento, gabarito) -> dict:
 def cmd_rotular(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     gabarito = carregar_gabarito(cfg.gabarito)
+    if args.lote or args.html:
+        if not (args.lote and args.html):
+            sys.exit("Use --lote e --html juntos: --lote avaliacao/consultas.yaml --html avaliacao/rotular.html")
+        return _rotular_em_pagina(cfg, arm, embedder, gabarito, args)
+    if not args.consulta:
+        sys.exit("Passe uma consulta, ou --lote e --html para rotular várias numa página.")
     consulta = obter_ou_criar(gabarito, args.consulta, _filtros_dict(args), args.perfil or "")
     itens = pool_para_rotular(arm, embedder, consulta.texto, consulta.filtros_obj(), args.profundidade)
     try:
@@ -174,6 +184,60 @@ def cmd_rotular(cfg: Config, arm: Armazenamento, args) -> None:
         salvar_gabarito(cfg.gabarito, gabarito)
         relevantes = sum(1 for n in consulta.notas_humanas.values() if n >= 2)
         print(f"\nSalvo: {len(consulta.notas_humanas)} notas suas nesta consulta ({relevantes} com nota >= 2).")
+
+
+def _rotular_em_pagina(cfg: Config, arm: Armazenamento, embedder, gabarito, args) -> None:
+    if args.amostra:
+        return _rotular_amostra(cfg, arm, gabarito, args)
+    lote = []
+    for c in carregar_lote(Path(args.lote)):
+        consulta = next((g for g in gabarito if g.texto == c["texto"] and g.filtros == c["filtros"]), None)
+        consulta = consulta or ConsultaRotulada(id="", texto=c["texto"], filtros=c["filtros"], perfil=c["perfil"])
+        itens = pool_para_rotular(arm, embedder, consulta.texto, Filtros(**c["filtros"]), args.profundidade,
+                                  semente=0)
+        pendentes = [i for i in itens if i.id not in consulta.notas_humanas]
+        lote.append((consulta, c["tipo"], pendentes))
+        print(f'"{c["texto"]}": {len(itens)} produtos no pool, {len(pendentes)} sem nota sua')
+    Path(args.html).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.html).write_text(gerar_pagina(lote, cfg.rubrica.read_text(encoding="utf-8")), encoding="utf-8")
+    print(f"\nPágina gravada em {args.html} ({sum(len(i) for _, _, i in lote)} produtos). Abra no navegador, "
+          f"dê as notas e use 'Baixar notas'; depois: mini-lcm importar-notas <arquivo baixado>")
+
+
+def _consultas_do_lote(gabarito, caminho: Path) -> list[tuple[ConsultaRotulada, str]]:
+    """As consultas do YAML, criadas no gabarito se ainda não existirem."""
+    return [(obter_ou_criar(gabarito, c["texto"], c["filtros"], c["perfil"]), c["tipo"]) for c in carregar_lote(caminho)]
+
+
+def _rotular_amostra(cfg: Config, arm: Armazenamento, gabarito, args) -> None:
+    consultas = _consultas_do_lote(gabarito, Path(args.lote))
+    julgadas = [c for c, _ in consultas if c.notas_ia]
+    if not julgadas:
+        sys.exit("Nenhuma consulta do lote foi julgada pela IA ainda. Rode antes:\n"
+                 f"  mini-lcm julgar --lote {args.lote} --profundidade {args.profundidade}")
+    metade = args.amostra // 2
+    amostra = amostra_calibracao(julgadas, aleatoria=args.amostra - metade, estratificada=metade)
+    itens = arm.obter_itens(sorted({i for _, i, _ in amostra}))
+    lote = []
+    for c, tipo in consultas:
+        escolhidos = [(i, aud) for cid, i, aud in amostra if cid == c.id and i in itens]
+        if escolhidos:
+            random.Random(c.id).shuffle(escolhidos)
+            lote.append((c, tipo, [itens[i] for i, _ in escolhidos], {i for i, aud in escolhidos if aud}))
+    salvar_gabarito(cfg.gabarito, gabarito)
+    Path(args.html).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.html).write_text(gerar_pagina(lote, cfg.rubrica.read_text(encoding="utf-8")), encoding="utf-8")
+    n_aud = sum(1 for *_, aud in amostra if aud)
+    print(f"Página gravada em {args.html}: {len(amostra)} produtos de {len(lote)} consultas "
+          f"({len(amostra) - n_aud} sorteados ao acaso para a calibração, {n_aud} estratificados para a auditoria). "
+          f"Abra no navegador, dê as notas e use 'Baixar notas'; depois: mini-lcm importar-notas <arquivo baixado>")
+
+
+def cmd_importar_notas(cfg: Config, arm: Armazenamento, args) -> None:
+    gabarito = carregar_gabarito(cfg.gabarito)
+    notas, consultas = importar_notas(gabarito, Path(args.arquivo))
+    salvar_gabarito(cfg.gabarito, gabarito)
+    print(f"{notas} notas de {consultas} consultas juntadas a {cfg.gabarito}.")
 
 
 def _juiz(cfg: Config) -> JuizGemini:
@@ -185,7 +249,9 @@ def cmd_julgar(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     juiz = _juiz(cfg)
     gabarito = carregar_gabarito(cfg.gabarito)
-    if args.consulta:
+    if args.lote:
+        alvo = [c for c, _ in _consultas_do_lote(gabarito, Path(args.lote))]
+    elif args.consulta:
         alvo = [obter_ou_criar(gabarito, args.consulta, _filtros_dict(args), args.perfil or "")]
     else:
         alvo = gabarito
@@ -392,14 +458,23 @@ def main(argv: list[str] | None = None) -> None:
     s.set_defaults(func=cmd_buscar)
 
     s = sub.add_parser("rotular", help="passo 1: você dá notas de 0 a 3 aos resultados de uma consulta")
-    s.add_argument("consulta")
+    s.add_argument("consulta", nargs="?")
     _args_filtros(s)
     s.add_argument("--perfil", help='quem busca e com que intenção, ex.: "colecionadora adulta"')
     s.add_argument("--profundidade", type=int, default=20, help="quantos resultados de cada modo entram no pool")
+    s.add_argument("--lote", help="YAML com várias consultas (ex.: avaliacao/consultas.yaml); exige --html")
+    s.add_argument("--html", help="grava uma página de rotulagem com fotos em vez de perguntar no terminal")
+    s.add_argument("--amostra", type=int,
+                   help="só N produtos já julgados pela IA: metade ao acaso (calibração), metade estratificada (auditoria)")
     s.set_defaults(func=cmd_rotular)
+
+    s = sub.add_parser("importar-notas", help="junta ao gabarito as notas baixadas da página de rotulagem")
+    s.add_argument("arquivo")
+    s.set_defaults(func=cmd_importar_notas)
 
     s = sub.add_parser("julgar", help="passo 2 e escala: a IA dá notas de 0 a 3")
     s.add_argument("consulta", nargs="?", help="sem consulta: julga todas as do gabarito")
+    s.add_argument("--lote", help="YAML de consultas (ex.: avaliacao/consultas.yaml): cria e julga todas")
     _args_filtros(s)
     s.add_argument("--perfil")
     s.add_argument("--apenas-rotulados", action="store_true", help="só os pares que você já rotulou (calibração)")
