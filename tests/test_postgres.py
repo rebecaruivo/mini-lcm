@@ -86,6 +86,8 @@ def test_postgres_operacoes_da_fase_2(pg):
     ids, m = arm.matriz(emb.chave("texto"), "texto", "bonecas")
     assert len(ids) == 5 and m.shape == (5, emb.dimensoes)
     assert set(arm.vetores(emb.chave("imagem"), "imagem", ["B1", "P3"])) == {"B1"}  # P3 não tem foto
+    assert arm.remover_avaliacoes_dos_itens(["B3"]) == 1
+    assert [a.item_id for a in arm.avaliacoes_de(usuario="U1")] == ["B1"]
     arm.remover_itens(["B1"])
     assert "B1" not in arm.ids_categoria("bonecas")
-    assert [a.item_id for a in arm.avaliacoes_de(usuario="U1")] == ["B3"]  # a avaliação foi junto (cascade)
+    assert arm.avaliacoes_de(usuario="U1") == []  # a avaliação foi junto (cascade)

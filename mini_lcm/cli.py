@@ -88,10 +88,11 @@ def cmd_inspecionar(cfg: Config, arm: Armazenamento, args) -> None:
 
 
 def cmd_importar(cfg: Config, arm: Armazenamento, args) -> None:
-    """Importa uma categoria e SUBSTITUI o catálogo dela pelo resultado.
+    """Importa uma categoria e SUBSTITUI o catálogo e as avaliações dela pelo resultado.
 
     Produtos que saem levam junto vetores e avaliações; os que continuam mantêm os vetores
-    (o `indexar` seguinte só processa os novos).
+    (o `indexar` seguinte só processa os novos), mas as avaliações deles são trocadas pelas
+    da importação atual. Rodar a mesma importação duas vezes dá sempre o mesmo resultado.
     """
     categorias = [cfg.categoria(args.categoria)] if args.categoria else cfg.categorias
     for cat in categorias:
@@ -108,14 +109,17 @@ def cmd_importar(cfg: Config, arm: Armazenamento, args) -> None:
             novos_ids = {i.id for i in itens}
             saem = sorted(arm.ids_categoria(cat.slug) - novos_ids)
             arm.remover_itens(saem)
+            # As avaliações da categoria também são substituídas: sem isto, produtos que continuam
+            # no catálogo manteriam avaliações de importações anteriores (feitas com outra regra de
+            # seleção), e o resultado dependeria do histórico de importações.
+            arm.remover_avaliacoes_dos_itens(sorted(novos_ids))
             novos = arm.salvar_itens(itens)
-            novas = 0
             for inicio in range(0, len(avaliacoes), 50_000):
-                novas += arm.salvar_avaliacoes(avaliacoes[inicio : inicio + 50_000])
+                arm.salvar_avaliacoes(avaliacoes[inicio : inicio + 50_000])
             reg.itens = len(itens)
         arm.registrar_custo(reg)
         print(f"{cat.slug}: {len(itens)} produtos ({novos} novos, {len(saem)} removidos), "
-              f"{len(avaliacoes)} avaliações ({novas} novas)")
+              f"{len(avaliacoes)} avaliações")
         print(f"  detalhes: {json.dumps(contagem, ensure_ascii=False)}")
 
 

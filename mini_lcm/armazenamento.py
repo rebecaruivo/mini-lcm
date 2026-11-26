@@ -46,6 +46,9 @@ class Armazenamento(Protocol):
     def remover_itens(self, ids: list[str]) -> None:
         """Tira produtos do catálogo, junto com os vetores e as avaliações deles."""
         ...
+    def remover_avaliacoes_dos_itens(self, ids: list[str]) -> int:
+        """Apaga as avaliações destes produtos (os produtos e os vetores ficam). Devolve quantas saíram."""
+        ...
     def matriz(self, modelo: str, canal: Canal, categoria: str | None = None) -> tuple[list[str], np.ndarray]:
         """Todos os vetores de um (modelo, canal), opcionalmente de uma categoria: (ids, matriz n x d)."""
         ...
@@ -185,6 +188,13 @@ class ArmazenamentoLocal:
                 vetores.pop(i, None)
         self.avaliacoes = {k: a for k, a in self.avaliacoes.items() if a.item_id not in fora}
         self._salvar(avaliacoes=True)
+
+    def remover_avaliacoes_dos_itens(self, ids: list[str]) -> int:
+        alvo = set(ids)
+        antes = len(self.avaliacoes)
+        self.avaliacoes = {k: a for k, a in self.avaliacoes.items() if a.item_id not in alvo}
+        self._salvar(avaliacoes=True)
+        return antes - len(self.avaliacoes)
 
     def matriz(self, modelo: str, canal: Canal, categoria: str | None = None) -> tuple[list[str], np.ndarray]:
         vetores = self.vetores_.get((modelo, canal), {})
@@ -398,6 +408,11 @@ class ArmazenamentoPostgres:
     def remover_itens(self, ids: list[str]) -> None:
         if ids:  # embeddings_itens e avaliacoes têm "on delete cascade": somem junto
             self.conn.execute("delete from itens where id = any(%s)", (list(ids),))
+
+    def remover_avaliacoes_dos_itens(self, ids: list[str]) -> int:
+        if not ids:
+            return 0
+        return self.conn.execute("delete from avaliacoes where item_id = any(%s)", (list(ids),)).rowcount
 
     def matriz(self, modelo: str, canal: Canal, categoria: str | None = None) -> tuple[list[str], np.ndarray]:
         linhas = self.conn.execute(

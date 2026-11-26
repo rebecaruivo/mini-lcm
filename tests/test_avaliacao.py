@@ -137,9 +137,9 @@ def test_cli_importar_e_status(tmp_path, monkeypatch, capsys):
                  categorias=[categoria(selecao="produtos")])
     monkeypatch.setattr(cli, "carregar_config", lambda: cfg)
     cli.main(["importar"])
-    assert "1 avaliações (1 novas)" in capsys.readouterr().out
-    cli.main(["importar"])  # rodar de novo não duplica
-    assert "1 avaliações (0 novas)" in capsys.readouterr().out
+    assert "1 avaliações" in capsys.readouterr().out
+    cli.main(["importar"])  # rodar de novo substitui, sem duplicar
+    capsys.readouterr()
     cli.main(["status"])
     saida = capsys.readouterr().out
     assert '"avaliacoes": 1' in saida and '"usuarios": 1' in saida

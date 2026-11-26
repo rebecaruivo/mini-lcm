@@ -241,3 +241,30 @@ def test_cli_importar_substitui_o_catalogo_da_categoria(tmp_path, monkeypatch, c
     depois = cli.abrir_armazenamento(cfg)
     assert depois.ids_categoria("bonecas") == {"A1"}
     assert depois.ids_categoria("placas") == {"P1"}  # outra categoria não é tocada
+
+
+
+def test_cli_importar_substitui_tambem_as_avaliacoes(tmp_path, monkeypatch, capsys):
+    """Produto que continua no catálogo não pode guardar avaliações de uma importação anterior."""
+    from mini_lcm import cli
+    from mini_lcm.config import Config
+
+    from .test_amazon import categoria, escrever, meta
+
+    brutos = tmp_path / "brutos"
+    brutos.mkdir()
+    escrever(brutos / "meta_Toys_and_Games.jsonl.gz", [meta("A1", "Monster High Doll", ["Dolls"])])
+    escrever(brutos / "Toys_and_Games.jsonl.gz",
+             [{"user_id": "NOVO", "parent_asin": "A1", "rating": 5, "timestamp": 1600000000000}])
+    cfg = Config(database_url=None, embedder="fake", pasta_dados=tmp_path / "dados", pasta_brutos=brutos,
+                 categorias=[categoria(selecao="produtos")])
+    monkeypatch.setattr(cli, "carregar_config", lambda: cfg)
+    arm = cli.abrir_armazenamento(cfg)
+    arm.salvar_itens([item("A1", "boneca", categoria="bonecas"), item("P1", "placa", categoria="placas")])
+    arm.salvar_avaliacoes([av("ANTIGO", "A1"), av("OUTRA_CATEGORIA", "P1")])
+    cli.main(["importar"])
+    depois = cli.abrir_armazenamento(cfg)
+    assert {a.usuario for a in depois.avaliacoes_de(categoria="bonecas")} == {"NOVO"}
+    assert {a.usuario for a in depois.avaliacoes_de(categoria="placas")} == {"OUTRA_CATEGORIA"}  # intocada
+    cli.main(["importar"])  # rodar de novo dá o mesmo resultado
+    assert len(cli.abrir_armazenamento(cfg).avaliacoes_de(categoria="bonecas")) == 1
