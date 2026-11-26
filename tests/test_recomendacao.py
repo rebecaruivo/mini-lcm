@@ -403,3 +403,52 @@ def test_corte_por_usuario_omite_metodos_que_dependem_da_data(mundo):
     rel = avaliar_recomendacao(Catalogo.carregar(arm, emb, "bonecas"), arm.avaliacoes_de(categoria="bonecas"), k=3)
     assert rel["metodos_omitidos"] == ["em_alta", "hibrido_alta"]
     assert "em_alta" not in rel["resultados"]["todas"]
+
+
+
+# ───── catálogo do período e vagas para produtos novos ─────
+
+def _com_lancamento(arm, datas):
+    itens = arm.obter_itens(list(datas))
+    for item_id, data in datas.items():
+        itens[item_id].lancamento = data
+    arm.salvar_itens(list(itens.values()))
+
+
+def test_lancamento_sobrevive_ao_salvar_e_carregar(mundo, tmp_path):
+    arm, emb = mundo
+    _com_lancamento(arm, {"G6": "2019-08-01"})
+    assert ArmazenamentoLocal(arm.pasta).obter_itens(["G6"])["G6"].lancamento == "2019-08-01"
+    assert Catalogo.carregar(arm, emb, "bonecas").lancamentos[Catalogo.carregar(arm, emb, "bonecas").indice["G6"]] == "2019-08-01"
+
+
+def test_catalogo_do_periodo_nao_usa_avaliacoes_futuras(mundo):
+    """Produto novo sem data de lançamento não concorre, mesmo que alguém o avalie na janela."""
+    from mini_lcm.avaliacao_recomendacao import _conjuntos_por_data
+
+    arm, emb = mundo
+    _com_lancamento(arm, {"G5": "2019-08-01"})  # lançado durante a janela: concorre
+    avs = [avd(f"u{n}", g, f"2019-0{1 + n}-10") for n in range(3) for g in ("G1", "G2", "G3")]
+    avs += [avd("u0", "G4", "2019-09-01")]  # G4: primeira avaliação só na janela, sem data de lançamento
+    cat = Catalogo.carregar(arm, emb, "bonecas")
+    conjuntos, _ = _conjuntos_por_data(cat, avs, 3, validacao=True)  # um corte só (jul/2019): cai na validação
+    rec, casos, disponiveis = conjuntos[-1]
+    assert [c.teste.item_id for c in casos] == ["G4"]
+    i = cat.indice
+    assert disponiveis[i["G1"]] and disponiveis[i["G5"]]
+    assert not disponiveis[i["G4"]] and not disponiveis[i["B1"]]
+
+
+def test_vagas_para_novos_trazem_produtos_sem_interacao(mundo):
+    arm, emb = mundo
+    cat = Catalogo.carregar(arm, emb, "bonecas")
+    avs = [avd(f"x{n}", "B1", "2019-06-20") for n in range(5)] + [avd("x9", "G1", "2019-06-01")]
+    historico = [avd("eu", "G1", "2019-06-02")]
+    i = cat.indice
+    for vagas in (0, 2):
+        rec = Recomendador(cat, janela_dias=30, vagas_novos=vagas).ajustar(avs + historico, agora="2019-07-01T00:00:00+00:00")
+        top = [x for x, _ in rec.recomendar("hibrido_alta", historico, k=10)]
+        novos_no_topo = [x for x in top if rec.popularidade[i[x]] == 0]
+        if vagas:
+            assert top[-2:] == novos_no_topo[-2:] and set(top[-2:]) <= set(GOTICAS)  # góticas novas, pelo gosto
+        assert len(top) == 10

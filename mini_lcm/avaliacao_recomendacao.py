@@ -213,9 +213,12 @@ def _conjuntos_por_data(catalogo: Catalogo, avaliacoes: list[Avaliacao], min_his
     """Um recomendador por corte, ajustado só com o passado daquele corte.
 
     Catálogo do período: num corte de 2015, boa parte dos produtos importados ainda nem
-    tinha sido lançada. Concorrem só os produtos cuja primeira avaliação no dataset é
-    anterior ao fim da janela do corte (os que existiam naquele semestre). A data da
-    primeira avaliação é uma aproximação da data de lançamento.
+    tinha sido lançada. Concorre um produto que (a) já tinha alguma avaliação antes do
+    corte ou (b) tem data de lançamento (dos metadados) anterior ao fim da janela. A regra
+    não usa nenhuma avaliação posterior ao corte: usar "primeira avaliação antes do fim da
+    janela" faria os produtos novos candidatos serem exatamente os que alguém vai avaliar
+    na janela, e os alvos estariam entre eles. Produto novo sem data de lançamento não
+    concorre (é um erro para todos os métodos se for o alvo).
 
     Os cortes são divididos no tempo pela quantidade de casos: os primeiros, até somar
     metade dos casos, formam a VALIDAÇÃO (onde os parâmetros são escolhidos); os demais,
@@ -240,11 +243,14 @@ def _conjuntos_por_data(catalogo: Catalogo, avaliacoes: list[Avaliacao], min_his
             meio = i + 1
             break
     escolhidos = por_corte[:meio] if validacao else por_corte[meio:]
+    lancamentos = catalogo.lancamentos or [None] * len(catalogo.ids)
     conjuntos = []
     for corte, casos, treino in escolhidos:
         fim = _proximo_semestre(corte)
-        disponiveis = np.array([primeira.get(i, "9999") < fim for i in catalogo.ids])
-        conjuntos.append((Recomendador(catalogo, **parametros).ajustar(treino, agora=corte), casos, disponiveis))
+        disponiveis = np.array([primeira.get(i, "9999") < corte or (lanc is not None and lanc < fim[:10])
+                                for i, lanc in zip(catalogo.ids, lancamentos)])
+        recomendador = Recomendador(catalogo, **parametros).ajustar(treino, agora=corte, disponiveis=disponiveis)
+        conjuntos.append((recomendador, casos, disponiveis))
     info = {"cortes": len(escolhidos),
             "periodo": f"{escolhidos[0][0][:7]} a {_proximo_semestre(escolhidos[-1][0])[:7]}" if escolhidos else "",
             "interacoes_treino": len(escolhidos[-1][2]) if escolhidos else 0}
@@ -263,12 +269,14 @@ def avaliar_recomendacao(
     corte: str = "usuario",
     janela_dias: int = 365,
     peso_em_alta: float = 1.0,
+    vagas_novos: int = 0,
 ) -> dict:
     """historicos: quantas avaliações de treino usar por pessoa (None = todas).
     meia_vida, janela_dias, peso_em_alta: parâmetros do Recomendador.
     validacao: avalia no conjunto de validação, sem tocar no teste.
     corte: "usuario" (deixa a última de cada pessoa de fora) ou "data" (cortes semestrais globais)."""
-    parametros = {"meia_vida": meia_vida, "janela_dias": janela_dias, "peso_em_alta": peso_em_alta}
+    parametros = {"meia_vida": meia_vida, "janela_dias": janela_dias, "peso_em_alta": peso_em_alta,
+                  "vagas_novos": vagas_novos}
     omitidos: list[str] = []
     if corte == "usuario":
         omitidos = [m for m in metodos if m in METODOS_NO_TEMPO]
@@ -294,7 +302,7 @@ def avaliar_recomendacao(
                        "interacoes_treino": info["interacoes_treino"],
                        "historico_medio": round(sum(len(c.treino) for c in todos) / len(todos), 1),
                        "meia_vida": meia_vida, "janela_dias": janela_dias, "peso_em_alta": peso_em_alta,
-                       "conjunto": "validacao" if validacao else "teste", "corte": corte,
+                       "vagas_novos": vagas_novos, "conjunto": "validacao" if validacao else "teste", "corte": corte,
                        "cortes": info["cortes"], "periodo": info["periodo"], "metodos_omitidos": omitidos,
                        "fracao_alvos_novos": round(float(novo.mean()), 4),
                        "resultados": {}}
@@ -357,7 +365,7 @@ def relatorio_recomendacao_markdown(rel: dict, categoria: str, modelo: str) -> s
               "Parâmetros: recência "
               + (f"com meia-vida de {rel['meia_vida']:g} avaliação(ões)" if rel.get("meia_vida") else "desligada")
               + f" · janela do em_alta: {rel.get('janela_dias', 365)} dias · peso do em_alta no híbrido: "
-              + f"{rel.get('peso_em_alta', 1.0):g}", ""]
+              + f"{rel.get('peso_em_alta', 1.0):g} · vagas para produtos novos: {rel.get('vagas_novos', 0)}", ""]
     if rel.get("metodos_omitidos"):
         linhas[-1:] = [f"Omitidos (dependem da data, use --corte data): {', '.join(rel['metodos_omitidos'])}", ""]
     if "todas" in rel["resultados"]:

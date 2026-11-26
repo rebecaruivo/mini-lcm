@@ -89,6 +89,27 @@ def _foto(imagens: list[dict] | None) -> str | None:
     return principal.get("large") or principal.get("hi_res") or principal.get("thumb")
 
 
+CAMPOS_DATA = ("Date First Available", "Release date")
+
+
+def lancamento_de_meta(meta: dict) -> str | None:
+    """A data mais antiga entre "Date First Available" e "Release date", em AAAA-MM-DD.
+
+    Os dois campos ficam em `details`, escritos como "March 5, 2019". Nem todo produto tem:
+    nos metadados de Electronics, quase todos; nos de Toys_and_Games, cerca de um terço.
+    """
+    datas = []
+    for campo in CAMPOS_DATA:
+        texto = str((meta.get("details") or {}).get(campo) or "").strip()
+        for formato in ("%B %d, %Y", "%b %d, %Y", "%d %B %Y"):
+            try:
+                datas.append(datetime.strptime(texto, formato).date().isoformat())
+                break
+            except ValueError:
+                continue
+    return min(datas) if datas else None
+
+
 def item_de_meta(meta: dict, categoria: str) -> Item | None:
     item_id, titulo = meta.get("parent_asin"), (meta.get("title") or "").strip()
     if not item_id or not titulo:
@@ -113,6 +134,7 @@ def item_de_meta(meta: dict, categoria: str) -> Item | None:
         foto_url=_foto(meta.get("images")),
         atributos=atributos,
         fonte="amazon",
+        lancamento=lancamento_de_meta(meta),
     )
 
 
@@ -237,6 +259,13 @@ def importar_por_usuarios(categoria: Categoria, pasta: Path, semente: int = 42) 
     6. Avaliações importadas: as de TODOS os elegíveis sobre produtos do catálogo. Os que não
        foram "selecionados" ainda contribuem com sinal (popularidade, coocorrência).
 
+    Com `catalogo_completo: true`, os passos 1 a 4 e 6 são os mesmos, mas o catálogo passa a
+    ser TODOS os candidatos, e não só os avaliados pelos usuários escolhidos. Motivo: um
+    catálogo montado com o que a amostra avaliou contém, em cada data de corte, só os
+    produtos novos que alguém da amostra VAI avaliar, e isso vaza a resposta quando se mede
+    o acerto em produtos novos. Com todos os candidatos, os produtos novos concorrem com os
+    lançamentos que ninguém da amostra comprou, como num catálogo de verdade.
+
     São duas passadas pelo arquivo de avaliações (o de Electronics tem dezenas de milhões de
     linhas): leva vários minutos por categoria.
     """
@@ -276,18 +305,23 @@ def importar_por_usuarios(categoria: Categoria, pasta: Path, semente: int = 42) 
             if a:
                 historico[usuario].append(a)
 
-    # Os garantidos ocupam no máximo um terço do catálogo, para sobrar espaço para os usuários
-    rng.shuffle(garantidos)
-    catalogo = set(garantidos[: categoria.max_itens // 3])
-    contagem["garantidos_pelo_titulo"] = len(catalogo)
-    selecionados = 0
-    for usuario in elegiveis:
-        itens_usuario = {a.item_id for a in historico[usuario]}
-        if len(catalogo | itens_usuario) > categoria.max_itens:
-            continue
-        catalogo |= itens_usuario
-        selecionados += 1
-    contagem["usuarios_selecionados"] = selecionados
+    if categoria.catalogo_completo:
+        catalogo = set(candidatos)
+        contagem["garantidos_pelo_titulo"] = len(garantidos)
+        contagem["usuarios_selecionados"] = len(elegiveis)
+    else:
+        # Os garantidos ocupam no máximo um terço do catálogo, para sobrar espaço para os usuários
+        rng.shuffle(garantidos)
+        catalogo = set(garantidos[: categoria.max_itens // 3])
+        contagem["garantidos_pelo_titulo"] = len(catalogo)
+        selecionados = 0
+        for usuario in elegiveis:
+            itens_usuario = {a.item_id for a in historico[usuario]}
+            if len(catalogo | itens_usuario) > categoria.max_itens:
+                continue
+            catalogo |= itens_usuario
+            selecionados += 1
+        contagem["usuarios_selecionados"] = selecionados
 
     avaliacoes = [a for u in elegiveis for a in historico[u] if a.item_id in catalogo]
     itens = [candidatos[i] for i in sorted(catalogo)]
@@ -297,6 +331,7 @@ def importar_por_usuarios(categoria: Categoria, pasta: Path, semente: int = 42) 
     contagem["usuarios_importados"] = len(usuarios_finais)
     contagem["usuarios_com_5_ou_mais"] = sum(1 for n in usuarios_finais.values() if n >= 5)
     contagem["sem_foto"] = sum(1 for i in itens if not i.foto_url)
+    contagem["com_data_de_lancamento"] = sum(1 for i in itens if i.lancamento)
     return itens, avaliacoes, dict(contagem)
 
 

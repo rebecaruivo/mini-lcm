@@ -49,7 +49,9 @@ hit@10 no teste, com os parâmetros escolhidos na validação:
    placas, o em alta sozinho é o melhor.
 4. **Produtos novos:** 37% dos alvos das bonecas e 65% dos das placas são produtos sem
    nenhuma interação antes do corte. Só os métodos de conteúdo acertam algum deles, e o
-   híbrido com em alta não acerta nenhum.
+   híbrido com em alta não acerta nenhum. *Ressalva:* o acerto do conteúdo em produtos
+   novos foi medido com um catálogo que favorecia esses produtos (ver a decisão de
+   26/11 sobre o catálogo completo em `decisoes.md`) e está sendo medido de novo.
 
 ## Protocolo principal: cortes semestrais por data
 

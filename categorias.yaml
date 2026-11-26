@@ -19,11 +19,15 @@
 # min_avaliacoes_usuario: histórico mínimo, na categoria, para um usuário entrar.
 #                     Os produtos que casam com titulo_contem entram de qualquer jeito
 #                     (até um terço do catálogo), para a busca continuar tendo Monster High.
+# catalogo_completo:  true = o catálogo são TODOS os produtos que passam no filtro (max_itens
+#                     deixa de valer). Necessário para medir o acerto em produtos novos sem
+#                     vazamento: ver amazon.importar_por_usuarios.
 # recomendacao:       parâmetros escolhidos na VALIDAÇÃO de cada categoria (cortes por data
 #                     mais antigos; o teste não foi usado). Ver docs/resultados-recomendacao.md.
 #   meia_vida:          decaimento pela recência no perfil e na coocorrência, em avaliações
 #   janela_dias:        janela do método em_alta ("o que está em alta")
 #   peso_em_alta:       peso da lista em_alta no hibrido_alta (conteúdo e coocorrência pesam 1)
+#   vagas_novos:        posições do top 10 do hibrido_alta reservadas para produtos novos
 
 categorias:
   - slug: bonecas
@@ -36,10 +40,12 @@ categorias:
     min_avaliacoes: 5
     selecao: usuarios
     min_avaliacoes_usuario: 5
+    catalogo_completo: true
     recomendacao:
       meia_vida: 1
       janela_dias: 30
       peso_em_alta: 1
+      vagas_novos: 0
 
   - slug: placas-de-video
     nome: Placas de vídeo
@@ -51,7 +57,9 @@ categorias:
     min_avaliacoes: 3
     selecao: usuarios
     min_avaliacoes_usuario: 5
+    catalogo_completo: true
     recomendacao:
       meia_vida: 1
       janela_dias: 90
       peso_em_alta: 2
+      vagas_novos: 0

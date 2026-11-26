@@ -36,6 +36,9 @@ class Item:
     foto_url: str | None
     atributos: dict[str, str] = field(default_factory=dict)
     fonte: str = "amazon"
+    # Data em que o produto passou a ser vendido (AAAA-MM-DD), quando a fonte informa.
+    # Na avaliação por data, diz se o produto já existia num corte sem olhar o comportamento.
+    lancamento: str | None = None
     coletado_em: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     @property

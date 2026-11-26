@@ -36,11 +36,14 @@ class ParametrosRecomendacao:
     meia_vida: decaimento pela recência no perfil e na coocorrência, em avaliações (None = desligado).
     janela_dias: tamanho da janela do método em_alta.
     peso_em_alta: peso da lista em_alta dentro do hibrido_alta (conteúdo e coocorrência pesam 1).
+    vagas_novos: posições do top 10 do hibrido_alta reservadas para produtos novos (sem
+        nenhuma interação), escolhidos pelo conteúdo. 0 = sem reserva.
     """
 
     meia_vida: float | None = 1.0
     janela_dias: int = 365
     peso_em_alta: float = 1.0
+    vagas_novos: int = 0
 
 
 @dataclass
@@ -55,6 +58,9 @@ class Categoria:
     # "produtos": sorteia produtos (fase 1; quase todo usuário fica com 1 avaliação só)
     selecao: str = "usuarios"
     min_avaliacoes_usuario: int = 5
+    # true: o catálogo são todos os produtos que passam no filtro, e não só os avaliados pelos
+    # usuários escolhidos (ver amazon.importar_por_usuarios). max_itens deixa de valer.
+    catalogo_completo: bool = False
     recomendacao: ParametrosRecomendacao = field(default_factory=ParametrosRecomendacao)
 
 

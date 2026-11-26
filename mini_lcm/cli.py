@@ -298,7 +298,7 @@ def cmd_perfil(cfg: Config, arm: Armazenamento, args) -> None:
         print(f"  {a.momento[:10]}  nota {a.nota:.0f}  {_titulo(arm, a.item_id)}")
     catalogo = Catalogo.carregar(arm, embedder, args.categoria)
     par = _parametros(cfg, args.categoria)
-    rec = Recomendador(catalogo, par.meia_vida, par.janela_dias, par.peso_em_alta).ajustar(
+    rec = Recomendador(catalogo, par.meia_vida, par.janela_dias, par.peso_em_alta, par.vagas_novos).ajustar(
         arm.avaliacoes_de(categoria=args.categoria))
     print(f"\nRecomendados ({args.metodo}):\n")
     for n, (item_id, _) in enumerate(rec.recomendar(args.metodo, historico, k=args.k), start=1):
@@ -329,7 +329,8 @@ def cmd_avaliar_recomendacao(cfg: Config, arm: Armazenamento, args) -> None:
                                min_historico=args.min_historico, historicos=historicos,
                                meia_vida=meia_vida, validacao=args.validacao, corte=args.corte,
                                janela_dias=args.janela_dias or par.janela_dias,
-                               peso_em_alta=args.peso_em_alta if args.peso_em_alta is not None else par.peso_em_alta)
+                               peso_em_alta=args.peso_em_alta if args.peso_em_alta is not None else par.peso_em_alta,
+                               vagas_novos=args.vagas_novos if args.vagas_novos is not None else par.vagas_novos)
     texto = relatorio_recomendacao_markdown(rel, args.categoria, embedder.nome)
     print(texto)
     if args.salvar:
@@ -457,6 +458,8 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--meia-vida", type=float, help="decaimento pela recência, em avaliações (padrão: categorias.yaml)")
     s.add_argument("--janela-dias", type=int, help="janela do método em_alta (padrão: categorias.yaml)")
     s.add_argument("--peso-em-alta", type=float, help="peso da lista em_alta no hibrido_alta (padrão: categorias.yaml)")
+    s.add_argument("--vagas-novos", type=int,
+                   help="posições do top 10 do hibrido_alta reservadas para produtos novos (padrão: categorias.yaml)")
     s.add_argument("--sem-recencia", action="store_true", help="média simples, sem decaimento (linha de base)")
     s.add_argument("--validacao", action="store_true",
                    help="avalia na penúltima avaliação de cada pessoa, para escolher parâmetros sem tocar no teste")

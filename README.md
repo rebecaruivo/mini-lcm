@@ -141,7 +141,7 @@ mini-lcm status
 ```
 
 **Com Postgres (Supabase):** preencha `DATABASE_URL` no `.env`, rode
-`psql "$DATABASE_URL" -f sql/001_schema.sql` uma vez (ou cole o arquivo no SQL
+`psql "$DATABASE_URL" -f sql/001_schema.sql -f sql/002_lancamento.sql` uma vez (ou cole os arquivos no SQL
 Editor do Supabase) e use os mesmos comandos.
 
 **Testes:** `pytest`. Eles rodam sem rede e sem modelos (com um embedder falso

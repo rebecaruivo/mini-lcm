@@ -411,6 +411,35 @@ rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
 
 ---
 
+## 2026-11-26 · Catálogo completo e data de lançamento, para medir produtos novos sem vazamento
+
+**Problema encontrado:** ao testar vagas do top 10 reservadas para produtos novos, o acerto
+das placas subiu de 0,13 para 0,33 na validação, bom demais. A causa estava no catálogo.
+Ele era montado com os produtos que os usuários da amostra avaliaram, e a disponibilidade
+de cada produto num corte vinha da primeira avaliação antes do fim da janela. Com isso, os
+produtos novos candidatos de cada semestre (cerca de 74 nas bonecas e 41 nas placas) eram
+justamente os que alguém da amostra ia avaliar naquele semestre, muitas vezes a própria
+pessoa testada. Sortear 5 entre 41 já acertaria cerca de 12%.
+
+**Decisão:**
+- `catalogo_completo: true` em `categorias.yaml`: o catálogo passa a ser todos os produtos
+  que passam no filtro (cerca de 8.400 bonecas e 5.600 placas), avaliados ou não pela amostra.
+- Data de lançamento lida dos metadados da Amazon ("Date First Available" ou "Release
+  date", a mais antiga), guardada em `Item.lancamento` (`sql/002_lancamento.sql` no Postgres).
+- Num corte, um produto concorre se já tinha alguma avaliação antes da data de corte ou se
+  a data de lançamento é anterior ao fim da janela. Nenhuma avaliação posterior ao corte
+  entra na regra. Produto novo sem data de lançamento não concorre.
+
+**Efeito nos resultados já publicados:** com a regra estrita, os métodos baseados em
+interações (popularidade, em alta, coocorrência, híbridos) não mudam, porque nunca
+acertavam produtos novos. O acerto do conteúdo em produtos novos (cerca de 5%) vinha em
+parte do grupo de candidatos viciado e será medido de novo com o catálogo completo.
+
+**Limitação que fica:** o filtro `min_avaliacoes` usa o total de avaliações do produto na
+Amazon até 2023, que também é informação do futuro, embora não ligada à amostra.
+
+---
+
 ## 2026-11-26 · Avaliação por cortes semestrais de data; método "em alta"
 
 **Decisão:** a avaliação principal da recomendação passa a usar datas de corte

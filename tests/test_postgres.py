@@ -18,7 +18,7 @@ URL = os.getenv("DATABASE_URL_TESTE")
 psycopg = pytest.importorskip("psycopg") if URL else None
 pytestmark = pytest.mark.skipif(not URL, reason="defina DATABASE_URL_TESTE para testar com Postgres")
 
-SCHEMA = (Path(__file__).parent.parent / "sql" / "001_schema.sql").read_text()
+SCHEMA = "\n".join(p.read_text() for p in sorted((Path(__file__).parent.parent / "sql").glob("*.sql")))
 
 
 @pytest.fixture

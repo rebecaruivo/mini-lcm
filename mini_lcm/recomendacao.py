@@ -19,7 +19,11 @@ um método só vale a pena se ganhar deles.
   ideia do LCM (aprender com comportamento) na sua forma mais simples.
 - hibrido: conteúdo + coocorrência fundidos por RRF, como na busca.
 - hibrido_alta: conteúdo + coocorrência + em_alta, por RRF, com peso próprio para a
-  lista em alta. Junta o gosto da pessoa com o momento do mercado.
+  lista em alta. Junta o gosto da pessoa com o momento do mercado. Opcionalmente,
+  reserva as últimas `vagas_novos` posições do top 10 para produtos NOVOS (sem nenhuma
+  interação ainda), escolhidos pelo perfil de conteúdo. Sem a reserva, produtos novos
+  quase nunca chegam ao top 10: a lista em alta e a coocorrência só conhecem produtos
+  com interações, e a fusão empurra as sugestões de conteúdo para baixo.
 
 Detalhes que valem para todos:
 - Produtos que a pessoa já avaliou nunca são recomendados de novo.
@@ -74,6 +78,7 @@ class Catalogo:
     indice: dict[str, int]
     matrizes: dict[Canal, np.ndarray]  # linhas zeradas onde o produto não tem vetor naquele canal
     tem_vetor: dict[Canal, np.ndarray]  # máscara booleana
+    lancamentos: list[str | None] | None = None  # data de lançamento de cada produto (AAAA-MM-DD), se houver
 
     @classmethod
     def carregar(cls, armazenamento: Armazenamento, embedder: Embedder, categoria: str) -> "Catalogo":
@@ -93,7 +98,9 @@ class Catalogo:
             matrizes[canal], mascaras[canal] = completa, mascara
         if not matrizes:
             raise ValueError(f"Nenhum vetor para a categoria '{categoria}'. Rode `mini-lcm indexar`.")
-        return cls(ids, indice, matrizes, mascaras)
+        itens = armazenamento.obter_itens(ids)
+        lancamentos = [itens[i].lancamento if i in itens else None for i in ids]
+        return cls(ids, indice, matrizes, mascaras, lancamentos)
 
     def vetores_de(self, ids: list[str]) -> dict[Canal, dict[str, np.ndarray]]:
         return {canal: {i: m[self.indice[i]] for i in ids if i in self.indice and self.tem_vetor[canal][self.indice[i]]}
@@ -106,26 +113,33 @@ MEIA_VIDA_PADRAO = ParametrosRecomendacao().meia_vida
 
 class Recomendador:
     def __init__(self, catalogo: Catalogo, meia_vida: float | None = None,
-                 janela_dias: int = 365, peso_em_alta: float = 1.0):
+                 janela_dias: int = 365, peso_em_alta: float = 1.0, vagas_novos: int = 0):
         """meia_vida: decaimento pela recência no perfil e na coocorrência (None = desligado)."""
         self.catalogo = catalogo
         self.meia_vida = meia_vida
         self.janela_dias = janela_dias
         self.peso_em_alta = peso_em_alta
+        self.vagas_novos = vagas_novos
         n = len(catalogo.ids)
+        self.disponiveis = np.ones(n, dtype=bool)
         self.popularidade = np.zeros(n)
         self.em_alta = np.zeros(n)
         self.desempate = np.zeros(n)
         self.similaridade: sparse.csr_matrix = sparse.csr_matrix((n, n))
 
-    def ajustar(self, interacoes: list[Avaliacao], agora: str | None = None) -> "Recomendador":
+    def ajustar(self, interacoes: list[Avaliacao], agora: str | None = None,
+                disponiveis: np.ndarray | None = None) -> "Recomendador":
         """Aprende popularidade, em alta e coocorrência a partir de interações (na avaliação: só as de treino).
 
         agora: o instante da recomendação (ISO 8601). A janela do em_alta termina nele. Na
         avaliação por data, é a data de corte; sem valor, vale a interação mais recente.
         Interações a partir de `agora` são ignoradas: o futuro não entra em nada.
         Sem `agora`, todas as interações valem e a janela termina na mais recente.
+        disponiveis: máscara dos produtos que existem agora (None = todos). As vagas de
+        produtos novos só são preenchidas com produtos disponíveis.
         """
+        if disponiveis is not None:
+            self.disponiveis = np.asarray(disponiveis, dtype=bool)
         idx = self.catalogo.indice
         n = len(self.catalogo.ids)
         validas = [a for a in interacoes if a.item_id in idx]
@@ -202,11 +216,43 @@ class Recomendador:
         elif metodo == "em_alta":
             base = self.em_alta.astype(float)
         elif metodo == "hibrido_alta":
-            base = rrf_completo([(self._conteudo(historico), 1.0), (self._coocorrencia(historico), 1.0),
-                                 (self.em_alta + self.desempate, self.peso_em_alta)])
+            conteudo = self._conteudo(historico)
+            base = rrf_completo([(conteudo, 1.0), (self._coocorrencia(historico), 1.0),
+                                 (self.em_alta + self.desempate, self.peso_em_alta)]) + self.desempate
+            if self.vagas_novos > 0:
+                return self._reservar_novos(base, conteudo, {a.item_id for a in historico})
+            return base
         else:
             raise ValueError(f"Método desconhecido: {metodo}. Use um de {METODOS}")
         return base + self.desempate
+
+    def _reservar_novos(self, base: np.ndarray, conteudo: np.ndarray, ja_tem: set[str], k: int = 10) -> np.ndarray:
+        """Reordena para que as últimas `vagas_novos` posições do top k sejam produtos novos.
+
+        Novo = disponível e sem nenhuma interação até agora (popularidade zero). As k - vagas
+        primeiras posições seguem a ordem do híbrido; as vagas recebem os novos de maior
+        pontuação de conteúdo que ainda não estão no topo; o resto do catálogo vem depois,
+        na ordem do híbrido. Devolve pontuações que produzem exatamente essa ordem.
+        """
+        idx = self.catalogo.indice
+        candidatos = self.disponiveis.copy()
+        for item_id in ja_tem:
+            if item_id in idx:
+                candidatos[idx[item_id]] = False
+        ordem = [i for i in np.argsort(-base, kind="stable") if candidatos[i]]
+        vagas = min(self.vagas_novos, k)
+        topo = ordem[: k - vagas]
+        no_topo = set(topo)
+        novos = np.flatnonzero(candidatos & (self.popularidade == 0))
+        novos = [i for i in novos[np.argsort(-conteudo[novos], kind="stable")] if i not in no_topo][:vagas]
+        escolhidos = topo + novos
+        if len(escolhidos) < k:  # faltaram novos: completa com o híbrido
+            usados = set(escolhidos)
+            escolhidos += [i for i in ordem if i not in usados][: k - len(escolhidos)]
+        pontos = base - base.max() - 1.0  # todos abaixo de zero, na ordem do híbrido
+        for posicao, i in enumerate(escolhidos):
+            pontos[i] = float(k - posicao)  # o topo escolhido, acima de tudo e na ordem certa
+        return pontos
 
     def recomendar(self, metodo: str, historico: list[Avaliacao], k: int = 10, semente: str = "") -> list[tuple[str, float]]:
         pontos = self.pontuar(metodo, historico, semente).astype(float)

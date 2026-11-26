@@ -3,7 +3,8 @@ import json
 
 import pytest
 
-from mini_lcm.amazon import importar_avaliacoes, importar_itens, importar_por_usuarios, inspecionar, item_de_meta
+from mini_lcm.amazon import (importar_avaliacoes, importar_itens, importar_por_usuarios, inspecionar, item_de_meta,
+                             lancamento_de_meta)
 from mini_lcm.config import Categoria, FiltroCategoria
 
 
@@ -161,3 +162,23 @@ def test_garantidos_ocupam_no_maximo_um_terco(pasta_usuarios):
                     filtro=FiltroCategoria(categorias_contem=["Dolls"], titulo_contem=["doll"]))
     itens, _, c = importar_por_usuarios(cat, pasta_usuarios)
     assert c["garantidos_pelo_titulo"] == 1  # 3 // 3
+
+
+def test_catalogo_completo_inclui_todos_os_candidatos(pasta_usuarios):
+    cat = categoria(max_itens=10, min_avaliacoes_usuario=5, catalogo_completo=True)
+    itens, avaliacoes, c = importar_por_usuarios(cat, pasta_usuarios)
+    ids = {i.id for i in itens}
+    assert ids == {f"D{i}" for i in range(1, 15)} | {"MH1"}  # todos os que passam no filtro, acima de max_itens
+    assert {a.usuario for a in avaliacoes} == {"U1", "U2", "U4"}  # os elegíveis, com o histórico inteiro
+    assert c["itens"] == 15
+
+
+def test_data_de_lancamento():
+    assert lancamento_de_meta({"details": {"Date First Available": "March 5, 2019"}}) == "2019-03-05"
+    # a mais antiga das duas
+    assert lancamento_de_meta({"details": {"Date First Available": "January 1, 2012",
+                                           "Release date": "May 5, 2009"}}) == "2009-05-05"
+    assert lancamento_de_meta({"details": {"Date First Available": "em breve"}}) is None
+    assert lancamento_de_meta({}) is None
+    m = meta("A9", "Doll", ["Dolls"]) | {"details": {"Date First Available": "Aug 2, 2014"}}
+    assert item_de_meta(m, "bonecas").lancamento == "2014-08-02"

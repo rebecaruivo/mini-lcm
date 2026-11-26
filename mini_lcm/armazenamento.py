@@ -255,7 +255,7 @@ class ArmazenamentoPostgres:
     def _pgvector_versao(self) -> tuple[int, ...]:
         linha = self.conn.execute("select extversion from pg_extension where extname = 'vector'").fetchone()
         if not linha:
-            raise RuntimeError("A extensão pgvector não está instalada. Rode sql/001_schema.sql primeiro.")
+            raise RuntimeError("A extensão pgvector não está instalada. Rode os arquivos de sql/ primeiro (001_schema.sql, 002_lancamento.sql).")
         return tuple(int(p) for p in linha[0].split(".")[:3])
 
     def _garantir_categorias(self, categorias: list[tuple[str, str]]) -> None:
@@ -284,13 +284,14 @@ class ArmazenamentoPostgres:
     def salvar_itens(self, itens: list[Item]) -> int:
         sql = """
             insert into itens (id, fonte, categoria, titulo, preco, moeda, condicao, vendedor_id, link,
-                               foto_url, atributos, chave_duplicata, coletado_em)
-            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s)
+                               foto_url, atributos, chave_duplicata, coletado_em, lancamento)
+            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s)
             on conflict (id) do update set
               categoria = excluded.categoria, titulo = excluded.titulo, preco = excluded.preco,
               moeda = excluded.moeda, condicao = excluded.condicao, vendedor_id = excluded.vendedor_id,
               link = excluded.link, foto_url = excluded.foto_url, atributos = excluded.atributos,
-              chave_duplicata = excluded.chave_duplicata, atualizado_em = now()
+              chave_duplicata = excluded.chave_duplicata, lancamento = excluded.lancamento,
+              atualizado_em = now()
             returning (xmax = 0) as novo
         """
         # (xmax = 0) é um truque do Postgres: vale true quando a linha acabou de ser inserida
@@ -307,18 +308,21 @@ class ArmazenamentoPostgres:
                 atributos = json.dumps(i.atributos, ensure_ascii=False)
                 cur.execute(apagar_vetores_se_mudou, (i.id, i.titulo, atributos, i.foto_url))
                 cur.execute(sql, (i.id, i.fonte, i.categoria, i.titulo, i.preco, i.moeda, i.condicao, i.vendedor_id,
-                                  i.link, i.foto_url, atributos, i.chave_duplicata, i.coletado_em))
+                                  i.link, i.foto_url, atributos, i.chave_duplicata, i.coletado_em, i.lancamento))
                 novos += 1 if cur.fetchone()[0] else 0
         return novos
 
-    _COLUNAS = "id, categoria, titulo, preco, moeda, condicao, vendedor_id, link, foto_url, atributos, fonte, coletado_em"
+    _COLUNAS = ("id, categoria, titulo, preco, moeda, condicao, vendedor_id, link, foto_url, atributos, fonte, "
+                "coletado_em, lancamento")
 
     @staticmethod
     def _item(linha) -> Item:
-        (id_, categoria, titulo, preco, moeda, condicao, vendedor, link, foto, atributos, fonte, coletado) = linha
+        (id_, categoria, titulo, preco, moeda, condicao, vendedor, link, foto, atributos, fonte, coletado,
+         lancamento) = linha
         return Item(id=id_, categoria=categoria, titulo=titulo, preco=float(preco) if preco is not None else None,
                     moeda=moeda, condicao=condicao, vendedor_id=vendedor, link=link, foto_url=foto,
-                    atributos=atributos or {}, fonte=fonte, coletado_em=coletado.isoformat())
+                    atributos=atributos or {}, fonte=fonte, coletado_em=coletado.isoformat(),
+                    lancamento=lancamento.isoformat() if lancamento else None)
 
     def obter_itens(self, ids: list[str]) -> dict[str, Item]:
         if not ids:
