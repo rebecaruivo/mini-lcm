@@ -165,22 +165,26 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 | Calibração | | | |
 | Auditoria às cegas | | | |
 
-**Recomendação** (avaliação temporal, k = 10; bonecas: 3.504 usuários testados.
-Detalhes, intervalos e curva de histórico em
+**Recomendação** (avaliação temporal, k = 10, com recência; bonecas: 3.504 usuários
+testados, placas: 316. Detalhes, intervalos e curva de histórico em
 [docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
 
-| Método | hit@10 bonecas, média simples | hit@10 bonecas, com recência (IC 95%) | hit@10 placas | cobertura bonecas |
-|---|---|---|---|---|
-| aleatório | 0,003 | 0,003 (0,001–0,004) | | 100,0% |
-| popularidade | 0,051 | 0,051 (0,044–0,059) | | 0,7% |
-| último produto | 0,169 | 0,169 (0,156–0,181) | | 78,8% |
-| conteúdo (perfil) | 0,113 | 0,160 (0,147–0,172) | | 66,9% |
-| coocorrência | 0,233 | 0,260 (0,246–0,275) | | 86,6% |
-| híbrido | 0,216 | **0,267** (0,253–0,282) | | 73,3% |
+| Método | hit@10 bonecas (IC 95%) | hit@10 placas (IC 95%) | cobertura bonecas |
+|---|---|---|---|
+| aleatório | 0,003 (0,001–0,004) | 0,013 (0,003–0,025) | 100,0% |
+| popularidade | 0,051 (0,044–0,059) | **0,146** (0,108–0,183) | 0,7% |
+| último produto | 0,169 (0,156–0,181) | 0,085 (0,057–0,117) | 78,8% |
+| conteúdo (perfil) | 0,160 (0,147–0,172) | 0,070 (0,044–0,098) | 66,9% |
+| coocorrência | 0,260 (0,246–0,275) | 0,041 (0,022–0,063) | 86,6% |
+| híbrido | **0,267** (0,253–0,282) | 0,060 (0,035–0,089) | 73,3% |
 
-A média simples do histórico piorava quanto mais avaliações antigas entravam. Com um
-decaimento pela recência (meia-vida de 1 avaliação, escolhida num conjunto de validação
-separado do teste), o híbrido sobe 0,051 e passa a ser o melhor método.
+- **Bonecas:** a personalização ganha 5 vezes da popularidade. O decaimento pela recência
+  (meia-vida de 1 avaliação, escolhida num conjunto de validação) somou 0,051 ao híbrido.
+- **Placas de vídeo:** nenhum método personalizado supera a popularidade. Compra rara
+  (1,8 avaliação por produto) e guiada pela geração do momento: a popularidade dos
+  últimos dois anos, contada só com o passado, chega a 0,127.
+- Um terço da popularidade nas placas vem de um vazamento temporal medido na própria
+  avaliação (o corte é por usuário). Próximo passo: corte por data global.
 
 **Custo**
 
@@ -204,7 +208,8 @@ separado do teste), o híbrido sobe 0,051 e passa a ser o melhor método.
 - Preços em dólar, no momento da coleta do dataset (até 2023).
 - Avaliação escrita não é clique nem compra: o sinal de comportamento é mais esparso
   e enviesado que o de um marketplace real. A avaliação temporal corta por usuário,
-  não por data única, e a coocorrência aproveita um pouco do futuro de outras pessoas.
+  não por data única, e popularidade e coocorrência aproveitam parte do futuro de outras
+  pessoas (medido: +0,009 de hit@10 na popularidade das bonecas, +0,054 nas placas).
 
 ## Próximas fases
 

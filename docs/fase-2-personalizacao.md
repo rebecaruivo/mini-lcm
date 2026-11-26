@@ -324,8 +324,9 @@ junto com a causa encontrada, em vez de omitidos.
 ## 7. Limitações
 
 - **Corte por usuário, não por data global:** as interações de treino de OUTRAS
-  pessoas podem ser posteriores ao teste de alguém, e a coocorrência aproveita um
-  pouco desse futuro. Um corte por data única elimina isso, mas deixa muitos usuários sem
+  pessoas podem ser posteriores ao teste de alguém, e popularidade e coocorrência
+  aproveitam parte desse futuro. Medido na popularidade: +0,009 de hit@10 nas bonecas e
+  +0,054 nas placas (seção 10). Um corte por data única elimina isso, mas deixa muitos usuários sem
   caso de teste. É a próxima melhoria da avaliação.
 - **Avaliação (review) não é compra nem clique:** só uma fração de quem compra
   escreve avaliação. O sinal é mais esparso e mais enviesado (para experiências muito
@@ -435,6 +436,33 @@ recência, com a meia-vida escolhida na validação. Resultado no teste:
 - o conteúdo sozinho ainda não supera o último produto, o que aponta de novo para o
   canal de texto fraco da fase 1.
 
-### Placas de vídeo
+### Placas de vídeo (316 usuários testados, 1.118 produtos)
 
-*A preencher depois da importação centrada em usuários desta categoria.*
+| Método | média simples | com recência (meia-vida 1) |
+|---|---|---|
+| aleatório | 0,013 | 0,013 |
+| popularidade | **0,146** | **0,146** |
+| último produto | 0,085 | 0,085 |
+| conteúdo (perfil) | 0,038 | 0,070 |
+| coocorrência | 0,029 | 0,041 |
+| híbrido | 0,060 | 0,060 |
+
+(hit@10, histórico completo.)
+
+Nas placas, nenhum método personalizado supera a popularidade. Os dados explicam:
+
+- **Compra rara:** só 345 pessoas avaliaram 5 ou mais placas, e cada produto tem 1,8
+  avaliação em média. A coocorrência quase não tem pares para aprender.
+- **Ciclo de produto:** o que prevê a próxima placa é a geração do momento. A popularidade
+  dos últimos 730 dias, contada só com o passado, chega a 0,127; nas bonecas, a janela
+  boa é de 90 dias (0,131).
+- **Vazamento medido:** como o corte é por usuário (seção 7), a popularidade conta
+  avaliações posteriores ao teste. Contando só o passado, ela cai de 0,146 para 0,092
+  nas placas e de 0,051 para 0,042 nas bonecas.
+
+O contraste entre as duas categorias é o principal resultado da fase: o mesmo sistema,
+com os mesmos parâmetros, ganha 5 vezes da popularidade em colecionismo e perde em
+compra rara guiada por ciclo de produto. Decidir quando personalizar faz parte do
+problema. Os próximos passos (popularidade recente como método, corte por data global e
+híbrido com o que está em alta) estão em
+[resultados-recomendacao.md](resultados-recomendacao.md#próximos-experimentos).

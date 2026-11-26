@@ -16,13 +16,20 @@ mini-lcm avaliar-recomendacao --categoria bonecas --validacao --meia-vida 2
 mini-lcm avaliar-recomendacao --categoria bonecas --curva
 ```
 
-Resumo (hit@10 nas bonecas, 3.504 usuários testados):
+Resumo (hit@10, histórico completo):
 
-| Método | média simples | com recência (meia-vida 1) |
-|---|---|---|
-| conteúdo (perfil) | 0,113 | 0,160 |
-| coocorrência | 0,233 | 0,260 |
-| híbrido | 0,216 | **0,267** |
+| Método | bonecas, média simples | bonecas, com recência | placas, média simples | placas, com recência |
+|---|---|---|---|---|
+| popularidade | 0,051 | 0,051 | **0,146** | **0,146** |
+| último produto | 0,169 | 0,169 | 0,085 | 0,085 |
+| conteúdo (perfil) | 0,113 | 0,160 | 0,038 | 0,070 |
+| coocorrência | 0,233 | 0,260 | 0,029 | 0,041 |
+| híbrido | 0,216 | **0,267** | 0,060 | 0,060 |
+
+Nas bonecas (3.504 usuários testados), a personalização vence com folga. Nas placas
+(316 usuários testados), nenhum método personalizado supera a popularidade; a seção das
+placas mostra por quê, e que parte da vantagem da popularidade vem de um vazamento
+temporal da própria avaliação.
 
 ## Bonecas
 
@@ -218,11 +225,129 @@ Comparações pareadas no teste (bootstrap pareado, IC 95%):
    recomendações seguem o interesse recente de cada pessoa e ficam mais variadas
    entre pessoas.
 
-### Próximos experimentos
+## Placas de vídeo
 
-- Repetir linha de base, validação e teste nas placas de vídeo, que têm outro padrão
-  de compra (poucas compras por pessoa, mais acessórios ao redor). A meia-vida escolhida
-  nas bonecas é testada lá sem reajuste, para ver se generaliza.
+### Dados
+
+| | Bonecas | Placas de vídeo |
+|---|---|---|
+| Produtos no catálogo | 3.000 | 1.118 |
+| Usuários elegíveis (5+ avaliações na categoria) | 3.722 | 345 |
+| Avaliações (após remover repetições) | 28.843 | 2.023 |
+| Avaliações por produto (média) | 9,6 | 1,8 |
+| Usuários testados | 3.504 | 316 |
+| Histórico médio de treino | 7,1 | 5,2 |
+
+Num universo de 1,6 milhão de produtos de Electronics, só 345 pessoas avaliaram 5 ou
+mais placas de vídeo. Placa de vídeo é compra rara e cara: a maioria das pessoas compra
+uma a cada poucos anos. A importação leu 2.220 avaliações; 197 eram repetições.
+
+### Resultado no teste
+
+| Método | hit@10 média simples | hit@10 com recência (IC 95%) | cobertura (com recência) |
+|---|---|---|---|
+| aleatório | 0,013 | 0,013 (0,003–0,025) | 94,6% |
+| popularidade | **0,146** | **0,146** (0,108–0,183) | 1,2% |
+| último produto | 0,085 | 0,085 (0,057–0,117) | 70,4% |
+| conteúdo (perfil) | 0,038 | 0,070 (0,044–0,098) | 65,1% |
+| coocorrência | 0,029 | 0,041 (0,022–0,063) | 70,0% |
+| híbrido | 0,060 | 0,060 (0,035–0,089) | 57,9% |
+
+Curva de histórico, com recência (hit@10):
+
+| N | conteúdo | coocorrência | híbrido |
+|---|---|---|---|
+| 1 | 0,085 | 0,092 | 0,070 |
+| 2 | 0,076 | 0,057 | 0,082 |
+| 3 | 0,070 | 0,048 | 0,060 |
+| todas | 0,070 | 0,041 | 0,060 |
+
+A meia-vida não foi reajustada para as placas: o valor das bonecas foi aplicado como
+está, para testar se generaliza. Na validação das placas (304 usuários), as meias-vidas
+de 0,5 a 8 ficam todas entre 0,049 e 0,059 no híbrido, diferenças muito menores que a
+incerteza da medida.
+
+Comparações pareadas (bootstrap pareado, IC 95%):
+
+| A | B | A − B | IC 95% |
+|---|---|---|---|
+| híbrido com recência | popularidade | −0,085 | −0,127 a −0,044 |
+| coocorrência com recência | popularidade | −0,104 | −0,146 a −0,070 |
+| híbrido com recência | último produto | −0,025 | −0,054 a +0,003 |
+| conteúdo com recência | conteúdo sem recência | +0,032 | +0,006 a +0,060 |
+| híbrido com recência | híbrido sem recência | +0,000 | −0,025 a +0,029 |
+
+### Diagnóstico: a popularidade se aproveita do futuro
+
+A avaliação corta o tempo por usuário (limitação já registrada): a popularidade é
+contada com o treino de todas as pessoas, incluindo avaliações feitas depois do
+produto escondido de alguém. Em média, 30% das interações de treino das placas são
+posteriores ao teste de cada pessoa. Numa categoria movida por gerações de produto, isso
+pesa: a popularidade "sabe" quais placas vão fazer sucesso.
+
+Teste: recalcular a popularidade de cada pessoa só com as interações anteriores ao
+momento do teste dela.
+
+| Popularidade | Bonecas | Placas |
+|---|---|---|
+| contada com todo o treino (como no relatório) | 0,051 | 0,146 |
+| contada só com o passado | 0,042 | 0,092 |
+| diferença (IC 95% pareado) | +0,009 (+0,002 a +0,017) | +0,054 (+0,025 a +0,085) |
+
+Um terço do hit@10 da popularidade nas placas vem desse vazamento. A coocorrência tem o
+mesmo vazamento e mesmo assim fica abaixo, então a conclusão principal se mantém.
+
+### Popularidade recente
+
+Se o futuro ajuda tanto, o passado recente deve ajudar também. Variante testada:
+contar só as interações de uma janela antes do momento do teste ("o que está em alta").
+
+| Janela | Bonecas | Placas |
+|---|---|---|
+| 90 dias | **0,131** | 0,085 |
+| 180 dias | 0,122 | 0,108 |
+| 365 dias | 0,097 | 0,117 |
+| 730 dias | 0,077 | **0,127** |
+| todo o passado | 0,042 | 0,092 |
+
+(hit@10; só interações anteriores ao teste, então sem vazamento.)
+
+A popularidade recente é uma linha de base bem mais forte que a popularidade global, sem
+nenhum vazamento: nas bonecas, sobe de 0,042 para 0,131 (ainda metade do híbrido, 0,267);
+nas placas, chega a 0,127 e supera todos os métodos personalizados. A janela boa depende
+da categoria: bonecas seguem lançamentos e modas de meses; placas, ciclos de geração de
+um a dois anos.
+
+As duas tabelas desta seção e da anterior são reproduzidas por
+`python scripts/analise_popularidade_temporal.py --categoria <categoria>`. A análise olha o
+teste diretamente; para virar método do sistema, a janela precisa ser escolhida na
+validação (próximo passo).
+
+### Leitura
+
+1. **Nas placas, a personalização não vence com estes dados.** Com 1,8 avaliação por
+   produto, a coocorrência quase não tem pares para aprender (pior que o último produto),
+   e o histórico de cada pessoa é curto e espalhado no tempo: placas compradas com anos de
+   intervalo dizem pouco sobre a próxima.
+2. **O que prevê a próxima placa é o momento, não a pessoa.** A popularidade recente
+   (0,127) supera tudo: quem compra placa compra o modelo da geração atual.
+3. **A recência ajuda o conteúdo também aqui** (+0,032, IC sem zero), mas não o híbrido.
+4. **A comparação entre as categorias é o resultado.** O mesmo sistema, com os mesmos
+   parâmetros, ganha 5 vezes da popularidade nas bonecas (colecionismo, compras
+   frequentes, gosto estável) e perde nas placas (compra rara, guiada por ciclo de
+   produto). Saber quando personalizar faz parte do problema.
+5. **A avaliação precisa de corte por data global.** O vazamento medido acima é pequeno
+   nas bonecas e grande nas placas. Antes de comparar novos métodos, a avaliação passa a
+   ter um modo com uma única data de corte para todos.
+
+## Próximos experimentos
+
+- **Popularidade recente como método**, com a janela escolhida na validação de cada
+  categoria, sem olhar o teste.
+- **Corte por data global** na avaliação, eliminando o vazamento de popularidade e
+  coocorrência.
+- **Híbrido com popularidade recente:** fundir a lista personalizada com a lista do que
+  está em alta, com o peso escolhido na validação. Deve ajudar nas placas e com usuários
+  de histórico curto.
 - Variantes de texto (passo 6b): se o canal de texto melhorar, o conteúdo deve passar
   a contribuir além do último produto.
-- Pesos da fusão no híbrido, escolhidos na mesma validação.
