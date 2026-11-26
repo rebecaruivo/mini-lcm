@@ -34,6 +34,14 @@ Métricas (k = 10), com um único produto certo por usuário:
 Curva de histórico (cold start): o mesmo teste usando só as últimas N avaliações de
 treino de cada pessoa (N = 1, 2, 3, 5, todas). Mostra quanto histórico cada método
 precisa para valer a pena, que é o problema do "usuário novo".
+
+Incerteza: cada hit@k vem com um intervalo de confiança de 95% por bootstrap (os
+usuários testados são reamostrados com reposição, 2.000 vezes). Para comparar dois
+métodos, o bootstrap é PAREADO: reamostra os mesmos usuários para os dois e mede a
+diferença dentro de cada reamostra. Isso desconta a variação entre pessoas (umas são
+fáceis de prever para qualquer método) e dá intervalos bem mais estreitos do que
+comparar os dois intervalos separados. Se o intervalo da diferença não contém zero, a
+diferença não é explicada só pela amostra de usuários.
 """
 
 from __future__ import annotations
@@ -90,6 +98,20 @@ def _posicao(recomendador: Recomendador, metodo: str, caso: Caso, historico: lis
     return posicao, top.tolist()
 
 
+def intervalo_bootstrap(valores: np.ndarray, reamostras: int = 2000, semente: int = 0) -> tuple[float, float]:
+    """IC 95% da média por bootstrap percentil. Para diferença pareada, passe a - b."""
+    valores = np.asarray(valores, dtype=float)
+    rng = np.random.default_rng(semente)
+    medias = np.empty(reamostras)
+    for r in range(reamostras):  # em laço para não montar uma matriz reamostras x usuários
+        medias[r] = valores[rng.integers(0, len(valores), len(valores))].mean()
+    return float(np.percentile(medias, 2.5)), float(np.percentile(medias, 97.5))
+
+
+def _rotulo(chave: str, metodo: str) -> str:
+    return f"{metodo} ({'todas' if chave == 'todas' else 'N=' + chave})"
+
+
 def avaliar_recomendacao(
     catalogo: Catalogo,
     avaliacoes: list[Avaliacao],
@@ -108,6 +130,7 @@ def avaliar_recomendacao(
                        "interacoes_treino": len(treino_global),
                        "historico_medio": round(sum(len(c.treino) for c in casos) / len(casos), 1),
                        "resultados": {}}
+    acertos: dict[tuple[str, str], np.ndarray] = {}
     for n in historicos:
         chave = "todas" if n is None else str(n)
         relatorio["resultados"][chave] = {}
@@ -120,13 +143,32 @@ def avaliar_recomendacao(
                 ndcgs.append(1 / math.log2(posicao + 1) if posicao <= k else 0.0)
                 rrs.append(1 / posicao)
                 vistos.update(top[:k])
+            acertos[(chave, metodo)] = np.array(hits, dtype=float)
+            ic = intervalo_bootstrap(acertos[(chave, metodo)])
             relatorio["resultados"][chave][metodo] = {
                 f"hit@{k}": round(float(np.mean(hits)), 4),
+                f"hit@{k}_ic95": [round(ic[0], 4), round(ic[1], 4)],
                 f"ndcg@{k}": round(float(np.mean(ndcgs)), 4),
                 "mrr": round(float(np.mean(rrs)), 4),
                 "cobertura": round(len(vistos) / len(catalogo.ids), 4),
             }
+    relatorio["comparacoes"] = _comparacoes(acertos)
     return relatorio
+
+
+def _comparacoes(acertos: dict[tuple[str, str], np.ndarray]) -> list[dict]:
+    """A melhor configuração (método + histórico) contra o melhor histórico de cada outro método."""
+    melhor = max(acertos, key=lambda c: acertos[c].mean())
+    saida = []
+    for metodo in dict.fromkeys(m for _, m in acertos):
+        if metodo == melhor[1]:
+            continue
+        rival = max((c for c in acertos if c[1] == metodo), key=lambda c: acertos[c].mean())
+        dif = acertos[melhor] - acertos[rival]
+        lo, hi = intervalo_bootstrap(dif)
+        saida.append({"a": _rotulo(*melhor), "b": _rotulo(*rival), "diferenca": round(float(dif.mean()), 4),
+                      "ic95": [round(lo, 4), round(hi, 4)]})
+    return saida
 
 
 def relatorio_recomendacao_markdown(rel: dict, categoria: str, modelo: str) -> str:
@@ -135,9 +177,11 @@ def relatorio_recomendacao_markdown(rel: dict, categoria: str, modelo: str) -> s
               f"Usuários testados: {rel['usuarios_testados']} · produtos: {rel['itens']} · "
               f"interações de treino: {rel['interacoes_treino']} · histórico médio de treino: {rel['historico_medio']}", ""]
     if "todas" in rel["resultados"]:
-        linhas += [f"| Método | hit@{k} | NDCG@{k} | MRR | cobertura |", "|---|---|---|---|---|"]
+        linhas += [f"| Método | hit@{k} | IC 95% | NDCG@{k} | MRR | cobertura |", "|---|---|---|---|---|---|"]
         for metodo, r in rel["resultados"]["todas"].items():
-            linhas.append(f"| {metodo} | {r[f'hit@{k}']:.3f} | {r[f'ndcg@{k}']:.3f} | {r['mrr']:.3f} | {r['cobertura']:.1%} |")
+            lo, hi = r.get(f"hit@{k}_ic95", (float("nan"), float("nan")))
+            linhas.append(f"| {metodo} | {r[f'hit@{k}']:.3f} | {lo:.3f}–{hi:.3f} | {r[f'ndcg@{k}']:.3f} | "
+                          f"{r['mrr']:.3f} | {r['cobertura']:.1%} |")
     curva = [c for c in rel["resultados"] if c != "todas"]
     if curva:
         metodos = list(next(iter(rel["resultados"].values())))
@@ -145,4 +189,9 @@ def relatorio_recomendacao_markdown(rel: dict, categoria: str, modelo: str) -> s
                    "| N | " + " | ".join(metodos) + " |", "|---|" + "---|" * len(metodos)]
         for c in curva + (["todas"] if "todas" in rel["resultados"] else []):
             linhas.append(f"| {c} | " + " | ".join(f"{rel['resultados'][c][m][f'hit@{k}']:.3f}" for m in metodos) + " |")
+    if rel.get("comparacoes"):
+        linhas += ["", f"Comparações pareadas (diferença de hit@{k}, bootstrap pareado, IC 95%):", "",
+                   "| Melhor configuração | Comparada com | Diferença | IC 95% |", "|---|---|---|---|"]
+        for c in rel["comparacoes"]:
+            linhas.append(f"| {c['a']} | {c['b']} | {c['diferenca']:+.3f} | {c['ic95'][0]:+.3f} a {c['ic95'][1]:+.3f} |")
     return "\n".join(linhas)

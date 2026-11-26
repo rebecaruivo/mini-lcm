@@ -147,7 +147,7 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 
 ## Resultados
 
-*A preencher depois da primeira execução com os dados reais.*
+*Preenchido à medida que cada etapa roda com os dados reais.*
 
 **Busca** (notas combinadas: minhas onde existem, do juiz no resto)
 
@@ -164,16 +164,23 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 | Calibração | | | |
 | Auditoria às cegas | | | |
 
-**Recomendação** (avaliação temporal, k = 10)
+**Recomendação** (avaliação temporal, k = 10; bonecas: 3.504 usuários testados.
+Detalhes, intervalos e curva de histórico em
+[docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
 
-| Método | hit@10 bonecas | hit@10 placas | cobertura bonecas |
+| Método | hit@10 bonecas (IC 95%) | hit@10 placas | cobertura bonecas |
 |---|---|---|---|
-| aleatório | | | |
-| popularidade | | | |
-| último produto | | | |
-| conteúdo (perfil) | | | |
-| coocorrência | | | |
-| híbrido | | | |
+| aleatório | 0,003 (0,001–0,004) | | 100,0% |
+| popularidade | 0,051 (0,044–0,059) | | 0,7% |
+| último produto | 0,169 (0,156–0,181) | | 78,8% |
+| conteúdo (perfil) | 0,113 (0,102–0,124) | | 57,0% |
+| coocorrência | **0,233** (0,219–0,247) | | 82,9% |
+| híbrido | 0,216 (0,203–0,230) | | 67,7% |
+| híbrido, só as 2 últimas avaliações | **0,261** (0,246–0,275) | | |
+
+Com o histórico completo, a coocorrência é o melhor método. Usando só as avaliações
+mais recentes, o híbrido passa à frente: o perfil-média perde qualidade quando junta
+compras antigas, e a recência é um sinal forte nesta categoria.
 
 **Custo**
 

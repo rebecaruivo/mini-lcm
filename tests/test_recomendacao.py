@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 from mini_lcm.armazenamento import ArmazenamentoLocal
-from mini_lcm.avaliacao_recomendacao import avaliar_recomendacao, dividir, relatorio_recomendacao_markdown
+from mini_lcm.avaliacao_recomendacao import avaliar_recomendacao, dividir, intervalo_bootstrap, relatorio_recomendacao_markdown
 from mini_lcm.busca import buscar
 from mini_lcm.embeddings import EmbedderFalso
 from mini_lcm.indexacao import gerar_embeddings
@@ -142,6 +142,16 @@ def test_avaliacao_temporal_personalizacao_ganha_do_acaso(mundo):
     assert set(rel["resultados"]) == {"1", "todas"}
     md = relatorio_recomendacao_markdown(rel, "bonecas", emb.nome)
     assert "| hibrido |" in md and "Curva de histórico" in md
+    lo, hi = r["aleatorio"]["hit@3_ic95"]
+    assert lo <= r["aleatorio"]["hit@3"] <= hi
+    assert len(rel["comparacoes"]) == 5  # a melhor configuração contra cada um dos outros 5 métodos
+    assert "Comparações pareadas" in md
+
+
+def test_intervalo_bootstrap():
+    lo, hi = intervalo_bootstrap(np.array([0.0, 1.0] * 500))
+    assert lo < 0.5 < hi and hi - lo < 0.1  # média 0,5; com 1.000 valores o intervalo fica estreito
+    assert intervalo_bootstrap(np.zeros(50)) == (0.0, 0.0)  # sem variação, sem incerteza
 
 
 def test_avaliacao_sem_historico_suficiente_explica(mundo):

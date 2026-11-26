@@ -258,6 +258,20 @@ todas). A pergunta é: quanto histórico cada método precisa para valer a pena?
 prática: a partir de quantas interações vale trocar a lista de populares por
 recomendações personalizadas para um usuário novo?
 
+### Incerteza: intervalos de confiança por bootstrap
+
+Um hit@10 de 0,233 em 3.500 pessoas não é um número exato: com outra amostra de
+pessoas, sairia um pouco diferente. Cada hit@10 vem com um intervalo de 95% por
+bootstrap: os usuários testados são sorteados com reposição 2.000 vezes, o hit@10 é
+recalculado em cada sorteio e o intervalo vai do percentil 2,5 ao 97,5.
+
+Para comparar dois métodos, o bootstrap é **pareado**: cada sorteio usa as mesmas
+pessoas para os dois, e o que se mede é a diferença. Algumas pessoas são fáceis de
+prever para qualquer método e outras são difíceis; parear desconta essa variação e
+produz um intervalo bem mais estreito do que comparar os dois intervalos separados.
+Se o intervalo da diferença não contém zero, a vantagem não é explicada só pela
+amostra de usuários.
+
 ---
 
 ## 6. Como ler os resultados
@@ -356,5 +370,34 @@ interações em escala muito maior.
 
 ## 10. Resultados
 
-*A preencher depois de rodar `mini-lcm avaliar-recomendacao --curva` com os dados
-reimportados. As tabelas completas ficam em `docs/resultados-recomendacao.md`.*
+Tabelas completas, comparações pareadas e discussão em
+[resultados-recomendacao.md](resultados-recomendacao.md).
+
+### Bonecas (3.504 usuários testados, 3.000 produtos)
+
+| Método | hit@10 (histórico completo) | melhor N na curva |
+|---|---|---|
+| aleatório | 0,003 | — |
+| popularidade | 0,051 | — |
+| último produto | 0,169 | — |
+| conteúdo (perfil) | 0,113 | 0,169 (N=1) |
+| coocorrência | 0,233 | 0,254 (N=2 e 3) |
+| híbrido | 0,216 | 0,261 (N=2) |
+
+Confronto com as expectativas da seção 6:
+
+- **Aleatório no piso esperado** (0,3%). Confirmado.
+- **Popularidade forte:** não se confirmou (0,051). A seleção centrada em usuários
+  traz colecionadores de nicho, para quem os mais avaliados raramente são o próximo.
+- **Coocorrência como melhor método individual:** confirmado com histórico completo.
+- **Conteúdo perde:** confirmado, e piora quanto mais histórico entra no perfil-média
+  (seção 7, "o perfil é uma média").
+- **Híbrido ≥ melhor componente:** falhou com histórico completo (coocorrência +0,017,
+  IC 95% de +0,005 a +0,028) e vale com histórico curto. A fusão com pesos iguais deixa
+  a lista de conteúdo degradada puxar a de coocorrência para baixo.
+
+Próximo experimento: perfil com peso pela recência, medido pela mesma avaliação.
+
+### Placas de vídeo
+
+*A preencher depois da importação centrada em usuários desta categoria.*
