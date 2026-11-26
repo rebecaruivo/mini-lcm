@@ -134,7 +134,7 @@ def test_cli_importar_e_status(tmp_path, monkeypatch, capsys):
     escrever(brutos / "meta_Toys_and_Games.jsonl.gz", [meta("A1", "Monster High Doll", ["Dolls"])])
     escrever(brutos / "Toys_and_Games.jsonl.gz", [{"user_id": "U1", "parent_asin": "A1", "rating": 5, "timestamp": 1}])
     cfg = Config(database_url=None, embedder="fake", pasta_dados=tmp_path / "dados", pasta_brutos=brutos,
-                 categorias=[categoria()])
+                 categorias=[categoria(selecao="produtos")])
     monkeypatch.setattr(cli, "carregar_config", lambda: cfg)
     cli.main(["importar"])
     assert "1 avaliações (1 novas)" in capsys.readouterr().out

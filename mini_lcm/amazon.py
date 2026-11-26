@@ -22,7 +22,8 @@ import gzip
 import json
 import logging
 import random
-from collections import Counter
+import re
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
@@ -164,22 +165,139 @@ def _momento(timestamp) -> str:
     return datetime.fromtimestamp(t, tz=timezone.utc).isoformat()
 
 
+def _avaliacao(r: dict) -> Avaliacao | None:
+    item_id = r.get("parent_asin") or r.get("asin")
+    momento = r.get("timestamp") or r.get("sort_timestamp")
+    if not item_id or not r.get("user_id") or r.get("rating") is None or momento is None:
+        return None
+    return Avaliacao(usuario=r["user_id"], item_id=item_id, nota=float(r["rating"]), momento=_momento(momento),
+                     compra_verificada=bool(r.get("verified_purchase")))
+
+
 def importar_avaliacoes(categoria: Categoria, pasta: Path, ids_itens: set[str]) -> Iterator[Avaliacao]:
     """Avaliações dos produtos importados. As avaliações apontam para `parent_asin`, o mesmo id dos itens."""
     for r in ler_jsonl(caminho_avaliacoes(pasta, categoria.fonte_amazon)):
-        item_id = r.get("parent_asin") or r.get("asin")
-        if item_id not in ids_itens or not r.get("user_id") or r.get("rating") is None:
+        if (r.get("parent_asin") or r.get("asin")) in ids_itens:
+            a = _avaliacao(r)
+            if a:
+                yield a
+
+
+# ─────────────────────────── Seleção centrada em usuários ───────────────────────────
+
+_RE_ITEM = re.compile(r'"parent_asin":\s*"([^"]+)"')
+_RE_USUARIO = re.compile(r'"user_id":\s*"([^"]+)"')
+
+
+def _varrer(caminho: Path, ids: set[str], ler_json: bool) -> Iterator[tuple[str, str, dict | None]]:
+    """Percorre o arquivo de avaliações devolvendo só as linhas de produtos em `ids`.
+
+    Otimização: o arquivo tem dezenas de milhões de linhas, e interpretar JSON é a parte
+    cara. Uma expressão regular extrai o produto direto do texto da linha; o JSON só é
+    interpretado quando o produto interessa (e só se `ler_json`, na segunda passada).
+    """
+    if not caminho.exists():
+        raise FileNotFoundError(f"{caminho} não existe. Baixe com: bash scripts/baixar_amazon.sh")
+    abrir = gzip.open if caminho.suffix == ".gz" else open
+    with abrir(caminho, "rt", encoding="utf-8") as f:
+        for n, linha in enumerate(f, start=1):
+            if n % 5_000_000 == 0:
+                log.info("%s: %d milhões de linhas lidas", caminho.name, n // 1_000_000)
+            m = _RE_ITEM.search(linha)
+            if not m or m.group(1) not in ids:
+                continue
+            if ler_json:
+                try:
+                    r = json.loads(linha)
+                except json.JSONDecodeError:
+                    continue
+                yield r.get("user_id") or "", m.group(1), r
+            else:
+                u = _RE_USUARIO.search(linha)
+                if u:
+                    yield u.group(1), m.group(1), None
+
+
+def importar_por_usuarios(categoria: Categoria, pasta: Path, semente: int = 42) -> tuple[list[Item], list[Avaliacao], dict]:
+    """Monta o catálogo a partir de USUÁRIOS com histórico, e não de produtos sorteados.
+
+    Por quê: sorteando produtos, quase todo usuário aparece com uma avaliação só (medimos:
+    110 mil de 120 mil), e com uma interação não dá para aprender o gosto de ninguém.
+
+    Passos:
+    1. Metadados: todos os produtos que passam no filtro da categoria são candidatos.
+       Os que casam com `titulo_contem` (ex.: "monster high") são garantidos no catálogo,
+       para a busca da fase 1 continuar tendo esses produtos.
+    2. Avaliações, 1ª passada: conta quantas avaliações cada usuário fez em candidatos.
+    3. Elegíveis: usuários com pelo menos `min_avaliacoes_usuario` avaliações na categoria.
+    4. Avaliações, 2ª passada: guarda o histórico completo (na categoria) dos elegíveis.
+    5. Seleção gulosa: em ordem aleatória (semente fixa), cada elegível entra com todos os
+       produtos que avaliou, enquanto o catálogo couber em `max_itens`. Usuário que estouraria
+       o limite é pulado, e não cortado: o histórico de quem entra fica completo.
+    6. Avaliações importadas: as de TODOS os elegíveis sobre produtos do catálogo. Os que não
+       foram "selecionados" ainda contribuem com sinal (popularidade, coocorrência).
+
+    São duas passadas pelo arquivo de avaliações (o de Electronics tem dezenas de milhões de
+    linhas): leva vários minutos por categoria.
+    """
+    rng = random.Random(semente)
+    contagem: Counter = Counter()
+    candidatos: dict[str, Item] = {}
+    garantidos: list[str] = []
+    for meta in ler_jsonl(caminho_meta(pasta, categoria.fonte_amazon)):
+        contagem["produtos_lidos"] += 1
+        if not categoria.filtro.aceita(meta.get("title") or "", meta.get("categories") or []):
             continue
-        momento = r.get("timestamp") or r.get("sort_timestamp")
-        if momento is None:
+        if (meta.get("rating_number") or 0) < categoria.min_avaliacoes:
             continue
-        yield Avaliacao(
-            usuario=r["user_id"],
-            item_id=item_id,
-            nota=float(r["rating"]),
-            momento=_momento(momento),
-            compra_verificada=bool(r.get("verified_purchase")),
-        )
+        item = item_de_meta(meta, categoria.slug)
+        if item is None:
+            continue
+        candidatos[item.id] = item
+        if categoria.filtro.casa_titulo(item.titulo):
+            garantidos.append(item.id)
+    contagem["candidatos"] = len(candidatos)
+
+    caminho = caminho_avaliacoes(pasta, categoria.fonte_amazon)
+    por_usuario: Counter = Counter()
+    for usuario, _, _ in _varrer(caminho, set(candidatos), ler_json=False):
+        por_usuario[usuario] += 1
+    contagem["usuarios_com_avaliacao"] = len(por_usuario)
+    elegiveis = sorted(u for u, n in por_usuario.items() if n >= categoria.min_avaliacoes_usuario)
+    del por_usuario
+    rng.shuffle(elegiveis)
+    contagem["usuarios_elegiveis"] = len(elegiveis)
+
+    conjunto_elegiveis = set(elegiveis)
+    historico: dict[str, list[Avaliacao]] = defaultdict(list)
+    for usuario, _, r in _varrer(caminho, set(candidatos), ler_json=True):
+        if usuario in conjunto_elegiveis:
+            a = _avaliacao(r)
+            if a:
+                historico[usuario].append(a)
+
+    # Os garantidos ocupam no máximo um terço do catálogo, para sobrar espaço para os usuários
+    rng.shuffle(garantidos)
+    catalogo = set(garantidos[: categoria.max_itens // 3])
+    contagem["garantidos_pelo_titulo"] = len(catalogo)
+    selecionados = 0
+    for usuario in elegiveis:
+        itens_usuario = {a.item_id for a in historico[usuario]}
+        if len(catalogo | itens_usuario) > categoria.max_itens:
+            continue
+        catalogo |= itens_usuario
+        selecionados += 1
+    contagem["usuarios_selecionados"] = selecionados
+
+    avaliacoes = [a for u in elegiveis for a in historico[u] if a.item_id in catalogo]
+    itens = [candidatos[i] for i in sorted(catalogo)]
+    contagem["itens"] = len(itens)
+    contagem["avaliacoes"] = len(avaliacoes)
+    usuarios_finais = Counter(a.usuario for a in avaliacoes)
+    contagem["usuarios_importados"] = len(usuarios_finais)
+    contagem["usuarios_com_5_ou_mais"] = sum(1 for n in usuarios_finais.values() if n >= 5)
+    contagem["sem_foto"] = sum(1 for i in itens if not i.foto_url)
+    return itens, avaliacoes, dict(contagem)
 
 
 # ─────────────────────────── Inspeção ───────────────────────────

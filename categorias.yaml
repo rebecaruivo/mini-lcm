@@ -13,6 +13,12 @@
 # max_itens:          limite de itens importados (os arquivos têm centenas de milhares)
 # min_avaliacoes:     ignora produtos com menos avaliações que isso. Para personalização,
 #                     um produto sem ninguém interagindo com ele ensina pouco.
+# selecao:            "usuarios" (padrão, fase 2): escolhe usuários com histórico e monta o
+#                     catálogo com o que eles avaliaram. "produtos" (fase 1): sorteia produtos,
+#                     e quase todo usuário fica com uma avaliação só.
+# min_avaliacoes_usuario: histórico mínimo, na categoria, para um usuário entrar.
+#                     Os produtos que casam com titulo_contem entram de qualquer jeito
+#                     (até um terço do catálogo), para a busca continuar tendo Monster High.
 
 categorias:
   - slug: bonecas
@@ -23,6 +29,8 @@ categorias:
       titulo_contem: [monster high]
     max_itens: 3000
     min_avaliacoes: 5
+    selecao: usuarios
+    min_avaliacoes_usuario: 5
 
   - slug: placas-de-video
     nome: Placas de vídeo
@@ -32,3 +40,5 @@ categorias:
       titulo_contem: []
     max_itens: 3000
     min_avaliacoes: 3
+    selecao: usuarios
+    min_avaliacoes_usuario: 5

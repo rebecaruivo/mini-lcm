@@ -22,6 +22,9 @@ class FiltroCategoria:
         nomes = {c.strip().lower() for c in categorias}
         if any(c.lower() in nomes for c in self.categorias_contem):
             return True
+        return self.casa_titulo(titulo)
+
+    def casa_titulo(self, titulo: str) -> bool:
         titulo = titulo.lower()
         return any(t.lower() in titulo for t in self.titulo_contem)
 
@@ -34,6 +37,10 @@ class Categoria:
     filtro: FiltroCategoria = field(default_factory=FiltroCategoria)
     max_itens: int = 3000
     min_avaliacoes: int = 5
+    # "usuarios": escolhe usuários com histórico e monta o catálogo com o que eles avaliaram (fase 2)
+    # "produtos": sorteia produtos (fase 1; quase todo usuário fica com 1 avaliação só)
+    selecao: str = "usuarios"
+    min_avaliacoes_usuario: int = 5
 
 
 @dataclass
@@ -78,6 +85,8 @@ def carregar_categorias(caminho: Path) -> list[Categoria]:
         bruto = dict(bruto)
         filtro = FiltroCategoria(**(bruto.pop("filtro", None) or {}))
         cat = Categoria(filtro=filtro, **bruto)
+        if cat.selecao not in ("usuarios", "produtos"):
+            raise ValueError(f"Categoria '{cat.slug}': selecao deve ser 'usuarios' ou 'produtos'")
         if not (filtro.categorias_contem or filtro.titulo_contem):
             raise ValueError(f"Categoria '{cat.slug}' sem filtro em {caminho}: importaria o domínio inteiro")
         categorias.append(cat)

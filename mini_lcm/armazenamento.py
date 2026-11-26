@@ -39,6 +39,19 @@ class Armazenamento(Protocol):
     def salvar_avaliacoes(self, avaliacoes: list[Avaliacao]) -> int:
         """Guarda avaliações sem repetir (mesmo usuário, item e momento). Devolve quantas eram novas."""
         ...
+    def avaliacoes_de(self, categoria: str | None = None, usuario: str | None = None) -> list[Avaliacao]:
+        """Avaliações (de uma categoria e/ou de um usuário), em ordem cronológica."""
+        ...
+    def ids_categoria(self, categoria: str) -> set[str]: ...
+    def remover_itens(self, ids: list[str]) -> None:
+        """Tira produtos do catálogo, junto com os vetores e as avaliações deles."""
+        ...
+    def matriz(self, modelo: str, canal: Canal, categoria: str | None = None) -> tuple[list[str], np.ndarray]:
+        """Todos os vetores de um (modelo, canal), opcionalmente de uma categoria: (ids, matriz n x d)."""
+        ...
+    def vetores(self, modelo: str, canal: Canal, ids: list[str]) -> dict[str, np.ndarray]:
+        """Os vetores de alguns produtos (os que existirem)."""
+        ...
     def registrar_custo(self, registro: RegistroCusto) -> None: ...
     def custos(self) -> list[RegistroCusto]: ...
     def estatisticas(self) -> dict: ...
@@ -56,7 +69,7 @@ class ArmazenamentoLocal:
         self.pasta = pasta
         self.itens: dict[str, Item] = {}
         # (modelo, canal) -> {item_id: vetor}
-        self.vetores: dict[tuple[str, str], dict[str, np.ndarray]] = {}
+        self.vetores_: dict[tuple[str, str], dict[str, np.ndarray]] = {}
         self._custos: list[RegistroCusto] = []
         self.avaliacoes: dict[tuple[str, str, str], Avaliacao] = {}
         if pasta and pasta.exists():
@@ -73,7 +86,7 @@ class ArmazenamentoLocal:
         for npz in (self.pasta / "embeddings").glob("*.npz") if (self.pasta / "embeddings").exists() else []:
             modelo, canal = npz.stem.split("__")
             dados = np.load(npz, allow_pickle=False)
-            self.vetores[(modelo, canal)] = dict(zip(dados["ids"].tolist(), dados["vetores"]))
+            self.vetores_[(modelo, canal)] = dict(zip(dados["ids"].tolist(), dados["vetores"]))
         arq = self.pasta / "avaliacoes.jsonl"
         if arq.exists():
             for linha in arq.read_text(encoding="utf-8").splitlines():
@@ -95,7 +108,7 @@ class ArmazenamentoLocal:
         (self.pasta / "itens.jsonl").write_text(
             "\n".join(json.dumps(asdict(i), ensure_ascii=False) for i in self.itens.values()), encoding="utf-8"
         )
-        for (modelo, canal), vetores in self.vetores.items():
+        for (modelo, canal), vetores in self.vetores_.items():
             ids = list(vetores)
             np.savez(self.pasta / "embeddings" / f"{modelo}__{canal}.npz",
                      ids=np.array(ids, dtype=str), vetores=np.array([vetores[i] for i in ids], dtype=np.float32))
@@ -110,7 +123,7 @@ class ArmazenamentoLocal:
                 novos += 1
             elif self._mudou_conteudo(antigo, item):
                 # título, atributos ou foto mudaram: os vetores antigos não representam mais o anúncio
-                for vetores in self.vetores.values():
+                for vetores in self.vetores_.values():
                     vetores.pop(item.id, None)
             self.itens[item.id] = item
         self._salvar()
@@ -124,19 +137,19 @@ class ArmazenamentoLocal:
         return {i: self.itens[i] for i in ids if i in self.itens}
 
     def itens_sem_embedding(self, modelo: str, canal: Canal, categoria: str | None = None) -> list[Item]:
-        feitos = self.vetores.get((modelo, canal), {})
+        feitos = self.vetores_.get((modelo, canal), {})
         return [i for i in self.itens.values()
                 if i.id not in feitos and (categoria is None or i.categoria == categoria)
                 and (canal == "texto" or i.foto_url)]
 
     def salvar_embeddings(self, modelo: str, canal: Canal, vetores: list[tuple[str, np.ndarray]]) -> None:
-        destino = self.vetores.setdefault((modelo, canal), {})
+        destino = self.vetores_.setdefault((modelo, canal), {})
         for item_id, v in vetores:
             destino[item_id] = np.asarray(v, dtype=np.float32)
         self._salvar()
 
     def vizinhos(self, modelo: str, canal: Canal, vetor: np.ndarray, filtros: Filtros, n: int) -> list[tuple[str, float]]:
-        vetores = self.vetores.get((modelo, canal), {})
+        vetores = self.vetores_.get((modelo, canal), {})
         ids = [i for i in vetores if i in self.itens and filtros.aceita(self.itens[i])]
         if not ids:
             return []
@@ -152,6 +165,41 @@ class ArmazenamentoLocal:
         self._salvar(avaliacoes=True)
         return len(self.avaliacoes) - antes
 
+    def avaliacoes_de(self, categoria: str | None = None, usuario: str | None = None) -> list[Avaliacao]:
+        saida = [a for a in self.avaliacoes.values()
+                 if (usuario is None or a.usuario == usuario)
+                 and (categoria is None or (a.item_id in self.itens and self.itens[a.item_id].categoria == categoria))]
+        return sorted(saida, key=lambda a: (a.momento, a.usuario, a.item_id))
+
+    def ids_categoria(self, categoria: str) -> set[str]:
+        return {i for i, item in self.itens.items() if item.categoria == categoria}
+
+    def remover_itens(self, ids: list[str]) -> None:
+        fora = set(ids)
+        if not fora:
+            return
+        for i in fora:
+            self.itens.pop(i, None)
+        for vetores in self.vetores_.values():
+            for i in fora:
+                vetores.pop(i, None)
+        self.avaliacoes = {k: a for k, a in self.avaliacoes.items() if a.item_id not in fora}
+        self._salvar(avaliacoes=True)
+
+    def matriz(self, modelo: str, canal: Canal, categoria: str | None = None) -> tuple[list[str], np.ndarray]:
+        vetores = self.vetores_.get((modelo, canal), {})
+        ids = sorted(i for i in vetores if i in self.itens and (categoria is None or self.itens[i].categoria == categoria))
+        if not ids:
+            return [], np.zeros((0, 0), dtype=np.float32)
+        return ids, np.stack([vetores[i] for i in ids])
+
+    def vetores(self, modelo: str, canal: Canal, ids: list[str]) -> dict[str, np.ndarray]:
+        todos = self.vetores_de(modelo, canal)
+        return {i: todos[i] for i in ids if i in todos}
+
+    def vetores_de(self, modelo: str, canal: Canal) -> dict[str, np.ndarray]:
+        return self.vetores_.get((modelo, canal), {})
+
     def registrar_custo(self, registro: RegistroCusto) -> None:
         self._custos.append(registro)
         self._salvar()
@@ -166,7 +214,7 @@ class ArmazenamentoLocal:
         return {
             "itens": len(self.itens),
             "por_categoria": por_categoria,
-            "vetores": {f"{m}/{c}": len(v) for (m, c), v in self.vetores.items()},
+            "vetores": {f"{m}/{c}": len(v) for (m, c), v in self.vetores_.items()},
             "avaliacoes": len(self.avaliacoes),
             "usuarios": len({a.usuario for a in self.avaliacoes.values()}),
         }
@@ -332,6 +380,43 @@ class ArmazenamentoPostgres:
                 )
                 novas += cur.rowcount
         return novas
+
+    def avaliacoes_de(self, categoria: str | None = None, usuario: str | None = None) -> list[Avaliacao]:
+        linhas = self.conn.execute(
+            """select a.fonte, a.usuario_externo, a.item_id, a.nota, a.momento, a.compra_verificada
+               from avaliacoes a join itens i on i.id = a.item_id
+               where (%(c)s::text is null or i.categoria = %(c)s) and (%(u)s::text is null or a.usuario_externo = %(u)s)
+               order by a.momento, a.usuario_externo, a.item_id""",
+            {"c": categoria, "u": usuario},
+        ).fetchall()
+        return [Avaliacao(usuario=l[1], item_id=l[2], nota=float(l[3]), momento=l[4].isoformat(),
+                          compra_verificada=l[5], fonte=l[0]) for l in linhas]
+
+    def ids_categoria(self, categoria: str) -> set[str]:
+        return {l[0] for l in self.conn.execute("select id from itens where categoria = %s", (categoria,)).fetchall()}
+
+    def remover_itens(self, ids: list[str]) -> None:
+        if ids:  # embeddings_itens e avaliacoes têm "on delete cascade": somem junto
+            self.conn.execute("delete from itens where id = any(%s)", (list(ids),))
+
+    def matriz(self, modelo: str, canal: Canal, categoria: str | None = None) -> tuple[list[str], np.ndarray]:
+        linhas = self.conn.execute(
+            """select e.item_id, e.vetor::text from embeddings_itens e join itens i on i.id = e.item_id
+               where e.modelo = %s and e.canal = %s and (%s::text is null or i.categoria = %s) order by e.item_id""",
+            (modelo, canal, categoria, categoria),
+        ).fetchall()
+        if not linhas:
+            return [], np.zeros((0, 0), dtype=np.float32)
+        return [l[0] for l in linhas], np.array([json.loads(l[1]) for l in linhas], dtype=np.float32)
+
+    def vetores(self, modelo: str, canal: Canal, ids: list[str]) -> dict[str, np.ndarray]:
+        if not ids:
+            return {}
+        linhas = self.conn.execute(
+            "select item_id, vetor::text from embeddings_itens where modelo = %s and canal = %s and item_id = any(%s)",
+            (modelo, canal, list(ids)),
+        ).fetchall()
+        return {l[0]: np.array(json.loads(l[1]), dtype=np.float32) for l in linhas}
 
     def registrar_custo(self, registro: RegistroCusto) -> None:
         r = registro

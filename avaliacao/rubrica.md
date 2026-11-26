@@ -1,7 +1,7 @@
 # Rubrica de relevância (0 a 3)
 
-Usada por você (`mini-lcm rotular`) e pela IA (`mini-lcm julgar`). Os dois
-precisam seguir a MESMA rubrica: só assim a concordância entre vocês mede
+Usada pelo avaliador humano (`mini-lcm rotular`) e pela IA (`mini-lcm julgar`).
+Os dois seguem a MESMA rubrica: só assim a concordância entre eles mede
 alguma coisa. Se mudar este arquivo, os julgamentos da IA feitos com a versão
 antiga são refeitos automaticamente na próxima execução de `julgar`.
 

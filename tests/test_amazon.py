@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from mini_lcm.amazon import importar_avaliacoes, importar_itens, inspecionar, item_de_meta
+from mini_lcm.amazon import importar_avaliacoes, importar_itens, importar_por_usuarios, inspecionar, item_de_meta
 from mini_lcm.config import Categoria, FiltroCategoria
 
 
@@ -98,3 +98,66 @@ def test_inspecionar_conta_categorias(pasta):
 
 def test_item_sem_id_e_descartado():
     assert item_de_meta({"title": "x"}, "c") is None
+
+
+
+@pytest.fixture
+def pasta_usuarios(tmp_path):
+    """Catálogo de bonecas com usuários de históricos diferentes.
+
+    U1: 5 avaliações (elegível) · U2: 5 (elegível, 2 produtos em comum com U1)
+    U3: 2 (não elegível) · U4: 6 produtos só dele (elegível, mas estoura o limite de itens)
+    """
+    bonecas = ["Toys & Games", "Dolls"]
+    metas = [meta(f"D{i}", f"Fashion doll {i}", bonecas) for i in range(1, 15)]
+    metas.append(meta("MH1", "Monster High Frankie Stein", ["Toys & Games", "Dolls"]))
+    metas.append(meta("L1", "Lego set", ["Toys & Games", "Building Toys"]))  # fora do filtro
+    escrever(tmp_path / "meta_Toys_and_Games.jsonl.gz", metas)
+    t = 1600000000000
+    revs = []
+    for n, d in enumerate(["D1", "D2", "D3", "D4", "D5"]):
+        revs.append({"user_id": "U1", "parent_asin": d, "rating": 5, "timestamp": t + n})
+    for n, d in enumerate(["D2", "D3", "D6", "D7", "D8"]):
+        revs.append({"user_id": "U2", "parent_asin": d, "rating": 4, "timestamp": t + 10 + n})
+    revs += [{"user_id": "U3", "parent_asin": "D1", "rating": 3, "timestamp": t},
+             {"user_id": "U3", "parent_asin": "D9", "rating": 3, "timestamp": t}]
+    for n, d in enumerate(["D9", "D10", "D11", "D12", "D13", "D14"]):
+        revs.append({"user_id": "U4", "parent_asin": d, "rating": 2, "timestamp": t + 20 + n})
+    revs.append({"user_id": "U1", "parent_asin": "L1", "rating": 5, "timestamp": t})  # produto fora da categoria
+    escrever(tmp_path / "Toys_and_Games.jsonl.gz", revs)
+    return tmp_path
+
+
+def test_selecao_por_usuarios_monta_catalogo_com_historicos_completos(pasta_usuarios):
+    cat = categoria(max_itens=10, min_avaliacoes_usuario=5)
+    itens, avaliacoes, c = importar_por_usuarios(cat, pasta_usuarios, semente=3)
+    ids = {i.id for i in itens}
+    assert "MH1" in ids  # garantido pelo título
+    assert "L1" not in ids
+    assert c["usuarios_elegiveis"] == 3  # U1, U2, U4 (U3 tem só 2)
+    assert len(ids) <= 10
+    por_usuario = {}
+    for a in avaliacoes:
+        por_usuario.setdefault(a.usuario, set()).add(a.item_id)
+    assert "U3" not in por_usuario
+    # quem entrou entra com o histórico inteiro na categoria
+    for u, historico in {"U1": {"D1", "D2", "D3", "D4", "D5"}, "U2": {"D2", "D3", "D6", "D7", "D8"}}.items():
+        if historico <= ids:
+            assert por_usuario[u] == historico
+    # U1 e U2 juntos cabem (8 produtos + MH1 = 9); U4 junto estouraria (15): não pode estar inteiro
+    assert not {"D9", "D10", "D11", "D12", "D13", "D14"} <= ids or not {"D1", "D6"} <= ids
+    assert all(a.item_id in ids for a in avaliacoes)
+
+
+def test_selecao_por_usuarios_e_reprodutivel(pasta_usuarios):
+    cat = categoria(max_itens=10, min_avaliacoes_usuario=5)
+    a = importar_por_usuarios(cat, pasta_usuarios, semente=7)
+    b = importar_por_usuarios(cat, pasta_usuarios, semente=7)
+    assert [i.id for i in a[0]] == [i.id for i in b[0]] and len(a[1]) == len(b[1])
+
+
+def test_garantidos_ocupam_no_maximo_um_terco(pasta_usuarios):
+    cat = categoria(max_itens=3, min_avaliacoes_usuario=5,
+                    filtro=FiltroCategoria(categorias_contem=["Dolls"], titulo_contem=["doll"]))
+    itens, _, c = importar_por_usuarios(cat, pasta_usuarios)
+    assert c["garantidos_pelo_titulo"] == 1  # 3 // 3

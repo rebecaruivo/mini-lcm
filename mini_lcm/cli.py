@@ -16,6 +16,12 @@
     mini-lcm avaliar --fonte combinado    # recall@10, MRR e NDCG@10 de cada modo
 
     mini-lcm sondar "monster high" barbie --categoria bonecas   # teste rápido sem rótulos
+
+    Fase 2 (personalização):
+    mini-lcm usuarios --categoria bonecas               # quem tem mais histórico
+    mini-lcm perfil USUARIO --categoria bonecas         # histórico + recomendações com o motivo
+    mini-lcm buscar "boneca" --categoria bonecas --usuario USUARIO   # busca reordenada pelo gosto
+    mini-lcm avaliar-recomendacao --categoria bonecas --curva        # avaliação temporal
     mini-lcm custos
     mini-lcm status
 
@@ -38,7 +44,7 @@ from .avaliacao import (avaliar, carregar_gabarito, obter_ou_criar, pool_para_ro
 from .calibracao import (amostra_auditoria, auditar, concordancia, julgar_pendentes, relatorio_concordancia_texto,
                          revisar)
 from .busca import MODOS, ConfigBusca, buscar
-from .amazon import importar_avaliacoes, importar_itens, inspecionar
+from .amazon import importar_avaliacoes, importar_itens, importar_por_usuarios, inspecionar
 from .config import Config, carregar_config
 from .custo import RegistroCusto, cronometro, resumir
 from .embeddings import criar_embedder
@@ -46,6 +52,10 @@ from .indexacao import gerar_embeddings
 from .juiz import JuizGemini, carregar_rubrica, hash_rubrica
 from .modelos import Filtros
 from .sondagem import sondagem_markdown, sondar
+from .avaliacao_recomendacao import avaliar_recomendacao, relatorio_recomendacao_markdown
+from .perfil import perfis_do_usuario
+from .recomendacao import METODOS as METODOS_REC
+from .recomendacao import Catalogo, Recomendador, explicar
 
 
 
@@ -78,27 +88,35 @@ def cmd_inspecionar(cfg: Config, arm: Armazenamento, args) -> None:
 
 
 def cmd_importar(cfg: Config, arm: Armazenamento, args) -> None:
+    """Importa uma categoria e SUBSTITUI o catálogo dela pelo resultado.
+
+    Produtos que saem levam junto vetores e avaliações; os que continuam mantêm os vetores
+    (o `indexar` seguinte só processa os novos).
+    """
     categorias = [cfg.categoria(args.categoria)] if args.categoria else cfg.categorias
     for cat in categorias:
         reg = RegistroCusto(etapa="importacao", modelo=f"amazon:{cat.fonte_amazon}")
         with cronometro(reg):
-            itens, contagem = importar_itens(cat, cfg.pasta_brutos)
+            if cat.selecao == "usuarios":
+                print(f"{cat.slug}: selecionando usuários com >= {cat.min_avaliacoes_usuario} avaliações "
+                      "(duas passadas pelo arquivo de avaliações; pode levar vários minutos)...")
+                itens, avaliacoes, contagem = importar_por_usuarios(cat, cfg.pasta_brutos)
+            else:
+                itens, contagem = importar_itens(cat, cfg.pasta_brutos)
+                avaliacoes = [] if args.sem_avaliacoes else list(
+                    importar_avaliacoes(cat, cfg.pasta_brutos, {i.id for i in itens}))
+            novos_ids = {i.id for i in itens}
+            saem = sorted(arm.ids_categoria(cat.slug) - novos_ids)
+            arm.remover_itens(saem)
             novos = arm.salvar_itens(itens)
+            novas = 0
+            for inicio in range(0, len(avaliacoes), 50_000):
+                novas += arm.salvar_avaliacoes(avaliacoes[inicio : inicio + 50_000])
             reg.itens = len(itens)
-            print(f"{cat.slug}: {len(itens)} produtos ({novos} novos). Contagem: {contagem}")
-            if not args.sem_avaliacoes:
-                ids = {i.id for i in itens}
-                lote, total, novas = [], 0, 0
-                for a in importar_avaliacoes(cat, cfg.pasta_brutos, ids):
-                    lote.append(a)
-                    if len(lote) == 50_000:
-                        novas += arm.salvar_avaliacoes(lote)
-                        total += len(lote)
-                        lote = []
-                novas += arm.salvar_avaliacoes(lote)
-                total += len(lote)
-                print(f"{cat.slug}: {total} avaliações ({novas} novas)")
         arm.registrar_custo(reg)
+        print(f"{cat.slug}: {len(itens)} produtos ({novos} novos, {len(saem)} removidos), "
+              f"{len(avaliacoes)} avaliações ({novas} novas)")
+        print(f"  detalhes: {json.dumps(contagem, ensure_ascii=False)}")
 
 
 def cmd_indexar(cfg: Config, arm: Armazenamento, args) -> None:
@@ -112,7 +130,15 @@ def cmd_buscar(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     reg = RegistroCusto(etapa="busca", modelo=embedder.nome)
     config = ConfigBusca(modo=args.modo, peso_imagem=args.peso_imagem)
-    resultados = buscar(arm, embedder, args.consulta, _filtros(args), k=args.k, config=config, registro=reg)
+    perfis = None
+    if args.usuario:
+        perfis = perfis_do_usuario(arm, embedder, args.usuario)
+        if not perfis:
+            sys.exit(f"Usuário {args.usuario} sem histórico. Veja usuários com `mini-lcm usuarios --categoria ...`.")
+        print(f"Personalizado para {args.usuario} (categorias com perfil: {', '.join(sorted(perfis))}; "
+              f"peso do perfil: {args.peso_perfil})\n")
+    resultados = buscar(arm, embedder, args.consulta, _filtros(args), k=args.k, config=config, registro=reg,
+                        perfis=perfis, peso_perfil=args.peso_perfil)
     arm.registrar_custo(reg)
     if not resultados:
         print("Nenhum resultado. Rodou `mini-lcm indexar`? Os filtros estão muito restritos?")
@@ -239,6 +265,57 @@ def cmd_sondar(cfg: Config, arm: Armazenamento, args) -> None:
         print(f"\nAcrescentado a {args.salvar}")
 
 
+def _titulo(arm: Armazenamento, item_id: str) -> str:
+    item = arm.obter_itens([item_id]).get(item_id)
+    return item.titulo[:90] if item else item_id
+
+
+def cmd_usuarios(cfg: Config, arm: Armazenamento, args) -> None:
+    avaliacoes = arm.avaliacoes_de(categoria=args.categoria)
+    por_usuario: dict[str, list] = {}
+    for a in avaliacoes:
+        por_usuario.setdefault(a.usuario, []).append(a)
+    ordenados = sorted(por_usuario.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+    com_5 = sum(1 for _, avs in ordenados if len(avs) >= 5)
+    print(f"{len(ordenados)} usuários, {com_5} com 5 ou mais avaliações em '{args.categoria}'. Os {args.n} com mais:\n")
+    for usuario, avs in ordenados[: args.n]:
+        media = sum(a.nota for a in avs) / len(avs)
+        print(f"  {usuario}  {len(avs):3} avaliações · nota média {media:.1f} · {avs[0].momento[:10]} a {avs[-1].momento[:10]}")
+
+
+def cmd_perfil(cfg: Config, arm: Armazenamento, args) -> None:
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
+    historico = arm.avaliacoes_de(categoria=args.categoria, usuario=args.usuario)
+    if not historico:
+        sys.exit(f"Usuário {args.usuario} sem avaliações em '{args.categoria}'.")
+    print(f"Histórico de {args.usuario} em '{args.categoria}' ({len(historico)} avaliações):\n")
+    for a in historico:
+        print(f"  {a.momento[:10]}  nota {a.nota:.0f}  {_titulo(arm, a.item_id)}")
+    catalogo = Catalogo.carregar(arm, embedder, args.categoria)
+    rec = Recomendador(catalogo).ajustar(arm.avaliacoes_de(categoria=args.categoria))
+    print(f"\nRecomendados ({args.metodo}):\n")
+    for n, (item_id, _) in enumerate(rec.recomendar(args.metodo, historico, k=args.k), start=1):
+        motivo = explicar(catalogo, item_id, historico)
+        porque = f"\n      parecido com: {_titulo(arm, motivo)}" if motivo else ""
+        print(f"  {n:2}. {_titulo(arm, item_id)}{porque}")
+
+
+def cmd_avaliar_recomendacao(cfg: Config, arm: Armazenamento, args) -> None:
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
+    catalogo = Catalogo.carregar(arm, embedder, args.categoria)
+    metodos = tuple(m.strip() for m in args.metodos.split(","))
+    historicos = (1, 2, 3, 5, None) if args.curva else (None,)
+    rel = avaliar_recomendacao(catalogo, arm.avaliacoes_de(categoria=args.categoria), metodos, k=args.k,
+                               min_historico=args.min_historico, historicos=historicos)
+    texto = relatorio_recomendacao_markdown(rel, args.categoria, embedder.nome)
+    print(texto)
+    if args.salvar:
+        Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.salvar, "a", encoding="utf-8") as f:
+            f.write(f"## Recomendação · {args.categoria}\n\n{texto}\n\n")
+        print(f"\nAcrescentado a {args.salvar}")
+
+
 def cmd_custos(cfg: Config, arm: Armazenamento, args) -> None:
     linhas = resumir(arm.custos())
     if not linhas:
@@ -259,7 +336,7 @@ def cmd_status(cfg: Config, arm: Armazenamento, args) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
-    p = argparse.ArgumentParser(prog="mini-lcm", description="Motor de personalização em miniatura (fase 1: busca)")
+    p = argparse.ArgumentParser(prog="mini-lcm", description="Motor de personalização em miniatura")
     p.add_argument("-v", "--verboso", action="store_true")
     sub = p.add_subparsers(dest="comando", required=True)
 
@@ -270,7 +347,7 @@ def main(argv: list[str] | None = None) -> None:
 
     s = sub.add_parser("importar", help="importa produtos e avaliações dos arquivos da Amazon")
     s.add_argument("--categoria")
-    s.add_argument("--sem-avaliacoes", action="store_true", help="só produtos (mais rápido)")
+    s.add_argument("--sem-avaliacoes", action="store_true", help="só produtos (só na seleção por produtos)")
     s.set_defaults(func=cmd_importar)
 
     s = sub.add_parser("indexar", help="gera os embeddings que faltam")
@@ -283,6 +360,8 @@ def main(argv: list[str] | None = None) -> None:
     _args_filtros(s)
     s.add_argument("--modo", choices=MODOS, default="fusao")
     s.add_argument("--peso-imagem", type=float, default=0.5)
+    s.add_argument("--usuario", help="personaliza a ordem pelo histórico deste usuário")
+    s.add_argument("--peso-perfil", type=float, default=0.5, help="quanto o gosto pesa contra a consulta (0 = sem)")
     s.add_argument("-k", type=int, default=10)
     s.set_defaults(func=cmd_buscar)
 
@@ -330,6 +409,27 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("-k", type=int, default=10)
     s.add_argument("--salvar", help="acrescenta a tabela a um .md (para comparar variantes)")
     s.set_defaults(func=cmd_sondar)
+
+    s = sub.add_parser("usuarios", help="fase 2: usuários com mais avaliações numa categoria")
+    s.add_argument("--categoria", required=True)
+    s.add_argument("-n", type=int, default=15)
+    s.set_defaults(func=cmd_usuarios)
+
+    s = sub.add_parser("perfil", help="fase 2: histórico de um usuário e o que o sistema recomenda, com o motivo")
+    s.add_argument("usuario")
+    s.add_argument("--categoria", required=True)
+    s.add_argument("--metodo", choices=METODOS_REC, default="hibrido")
+    s.add_argument("-k", type=int, default=10)
+    s.set_defaults(func=cmd_perfil)
+
+    s = sub.add_parser("avaliar-recomendacao", help="fase 2: adivinha a última avaliação de cada pessoa (sem rótulos)")
+    s.add_argument("--categoria", required=True)
+    s.add_argument("--metodos", default=",".join(METODOS_REC))
+    s.add_argument("-k", type=int, default=10)
+    s.add_argument("--min-historico", type=int, default=3)
+    s.add_argument("--curva", action="store_true", help="também mede com só 1, 2, 3 e 5 avaliações de histórico")
+    s.add_argument("--salvar", help="acrescenta o relatório a um .md")
+    s.set_defaults(func=cmd_avaliar_recomendacao)
 
     sub.add_parser("custos", help="tempo e custo por etapa").set_defaults(func=cmd_custos)
     sub.add_parser("status", help="quantos itens e vetores existem").set_defaults(func=cmd_status)

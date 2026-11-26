@@ -85,11 +85,11 @@ def test_indexacao_e_incremental_e_ignora_foto_quebrada(catalogo, tmp_path):
 
 def test_titulo_alterado_gera_vetor_novo(indexado):
     arm, emb = indexado
-    antigo = arm.vetores[(emb.nome, "texto")]["B4"].copy()
+    antigo = arm.vetores_[(emb.nome, "texto")]["B4"].copy()
     arm.salvar_itens([item("B4", "Boneca Barbie Malibu 1990", preco=80, vendedor="v3")])
     assert arm.itens_sem_embedding(emb.nome, "texto") == [arm.itens["B4"]]
     gerar_embeddings(arm, emb)
-    assert not np.allclose(antigo, arm.vetores[(emb.nome, "texto")]["B4"])
+    assert not np.allclose(antigo, arm.vetores_[(emb.nome, "texto")]["B4"])
 
 
 def test_dados_locais_sobrevivem_a_reabertura(indexado, tmp_path):

@@ -131,7 +131,7 @@ class ClipLocal:
         self.timeout_foto_s = timeout_foto_s
         self.downloads_paralelos = downloads_paralelos
         self._http = requests.Session()
-        self._http.headers["User-Agent"] = "mini-lcm/0.1 (projeto de estudo)"
+        self._http.headers["User-Agent"] = "mini-lcm/0.1"
 
     def chave(self, canal: Canal) -> str:
         # As fotos não dependem do modo de texto: a chave da imagem é sempre a mesma,

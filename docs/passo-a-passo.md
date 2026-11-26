@@ -43,8 +43,13 @@ for diferente (ex.: "Fashion Dolls" ou "Graphics Cards" escritos de outro
 jeito), corrija o YAML.
 
 ## 5. Importar e indexar
+A importação escolhe usuários com histórico (`selecao: usuarios` no `categorias.yaml`)
+e passa duas vezes pelo arquivo de avaliações: espere de 10 a 40 minutos por categoria
+(Electronics é a mais demorada). Se você já tinha importado com a versão antiga, rode
+de novo: o catálogo de cada categoria é substituído, e os vetores de quem continua são
+mantidos.
 ```bash
-mini-lcm importar        # lê os arquivos inteiros: alguns minutos
+mini-lcm -v importar     # o -v mostra o progresso (milhões de linhas lidas)
 mini-lcm status          # quantos produtos, avaliações e usuários entraram
 mini-lcm indexar         # na 1ª vez baixa ~1 GB de modelos; as fotos levam mais tempo
 ```
@@ -57,7 +62,7 @@ mini-lcm buscar "boneca gótica de cabelo rosa" --categoria bonecas --modo texto
 mini-lcm buscar "boneca gótica de cabelo rosa" --categoria bonecas --modo imagem
 mini-lcm buscar "placa boa para jogar em 1080p" --categoria placas-de-video --preco-max 300
 ```
-Anote buscas em que os modos dão resultados bem diferentes: são bons exemplos para a entrevista.
+Anote as buscas em que os modos divergem: são casos úteis para analisar o comportamento de cada canal.
 
 ## 6b. Escolher a variante de embedding do texto (antes de rotular)
 O primeiro teste mostrou o canal de texto fraco (ver `docs/decisoes.md`).
@@ -81,6 +86,28 @@ EMBEDDER=clip+e5 TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "
 Faça o mesmo para placas de vídeo, com termos como `"rtx 4060" "rx 7600" "gtx 1650" asus msi`.
 Escolha a variante com melhor acerto e faixa de similaridade mais larga,
 grave a escolha no `.env` (`EMBEDDER=` e `TEXTO_ITEM=`) e teste as buscas descritivas do passo 6 de novo.
+
+## 6c. Fase 2: personalização
+Guia completo, com os conceitos: [fase-2-personalizacao.md](fase-2-personalizacao.md).
+```bash
+# quem tem mais histórico (escolha 2 ou 3 usuários bem diferentes para os exemplos)
+mini-lcm usuarios --categoria bonecas
+
+# o histórico de um usuário e o que o sistema recomenda, com o motivo
+mini-lcm perfil USUARIO --categoria bonecas
+mini-lcm perfil USUARIO --categoria bonecas --metodo coocorrencia
+
+# a mesma busca para duas pessoas diferentes
+mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO_1
+mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO_2
+
+# avaliação temporal (2 a 5 minutos por categoria)
+mini-lcm avaliar-recomendacao --categoria bonecas --curva --salvar docs/resultados-recomendacao.md
+mini-lcm avaliar-recomendacao --categoria placas-de-video --curva --salvar docs/resultados-recomendacao.md
+```
+Copie para o README e para a seção 10 do guia da fase 2: a tabela de métodos, a
+curva e 1 ou 2 exemplos de `perfil` que mostrem a personalização funcionando (ou falhando).
+Commit: `git add -A && git commit -m "Resultados da fase 2: avaliação temporal da recomendação" && git push`
 
 ## 7. Montar o gabarito humano (passo 1 da calibração)
 Escolha umas **10 consultas variadas** (5 de cada categoria): algumas fáceis

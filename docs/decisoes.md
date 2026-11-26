@@ -33,14 +33,15 @@ Diego): 33 domínios, produtos com título, preço, loja, árvore de categorias 
 fotos, e **avaliações de usuários reais** (571 milhões no total).
 
 **Alternativas consideradas:**
-- *API do Mercado Livre:* descartada. É concorrente direto da OLX; não faz
-  sentido apresentar à OLX um projeto construído sobre ela.
+- *API do Mercado Livre:* descartada. É uma plataforma concorrente do ecossistema
+  que inspira o projeto (o LCM da Prosus, treinado com dados da OLX), e a coleta
+  dependeria de credenciais e limites de uso de terceiros.
 - *Raspar a própria OLX:* descartada. Não há API pública de busca, e raspar o
   site viola os termos de uso.
 - *OLX Jobs Interactions (Kaggle):* dados da própria OLX, 65 milhões de eventos
   reais, ótimo para personalização. Mas só tem IDs (sem texto nem foto) e uma
   única categoria (empregos). Fica como ideia de extensão.
-- *Mercari (Kaggle):* marketplace de usados, mais parecido com a OLX, mas sem
+- *Mercari (Kaggle):* marketplace de usados, mais próximo de classificados, mas sem
   fotos e sem usuários.
 
 **Motivo:** é o único dataset avaliado que tem ao mesmo tempo conteúdo (texto
@@ -49,7 +50,7 @@ usuários em muitas categorias (necessário para a personalização da fase 2).
 
 **Limitações assumidas:**
 - Os produtos são novos, de loja. Anúncios de usados (com título ruim, o caso
-  típico da OLX) aparecem menos. O campo `condicao` existe para quando
+  típico de classificados) aparecem menos. O campo `condicao` existe para quando
   houver uma fonte de usados.
 - Dados em inglês e preços em dólar. A busca aceita consultas em português
   (ver o modelo de embedding abaixo).
@@ -280,7 +281,7 @@ relacionado, relevante, exato), definida em `avaliacao/rubrica.md`.
   por log2(posição + 1), e o total é dividido pelo da lista ideal. Vai de 0 a 1.
 
 **Pooling:** as notas são dadas sobre os primeiros resultados dos três modos
-(texto, imagem, fusão) juntos e embaralhados. Quem rotula (você ou a IA) não
+(texto, imagem, fusão) juntos e embaralhados. Quem rotula (o avaliador humano ou a IA) não
 sabe de qual modo veio cada item, e nenhum modo ganha por construção.
 
 **Limitação:** um produto relevante que nenhum modo encontrou nunca recebe
@@ -296,14 +297,14 @@ pool; dezenas de consultas são milhares de notas.
 
 **Decisão:** um LLM multimodal (Gemini, via API REST `generateContent`) dá as
 notas seguindo a mesma rubrica, vendo o texto E a foto do produto e o perfil
-de quem busca. Mas a IA só substitui você depois de provar que concorda com você:
+de quem busca. Mas a IA só substitui o avaliador humano depois de provar que concorda com ele:
 
-1. **Você rotula um conjunto pequeno** (`rotular`): o padrão-ouro.
+1. **O avaliador humano rotula um conjunto pequeno** (`rotular`): o padrão-ouro.
 2. **A IA julga os mesmos pares** (`julgar --apenas-rotulados`).
 3. **Mede-se a concordância** (`concordancia`): kappa de Cohen ponderado, com
    intervalo de confiança por bootstrap. Critério: limite inferior do
    intervalo >= 0,6 e pelo menos 50 pares.
-4. **Você arbitra as discordâncias** (`revisar`), vendo a justificativa da IA,
+4. **O avaliador humano arbitra as discordâncias** (`revisar`), vendo a justificativa da IA,
    e **audita às cegas** uma amostra do que só a IA julgou (`auditar`), para
    saber se a concordância se mantém fora do conjunto inicial.
 
@@ -342,6 +343,48 @@ da auditoria é reportada separada da calibração (`--origem auditoria`).
 **Na avaliação:** `avaliar --fonte humano|ia|combinado`. No modo combinado,
 a nota humana vale quando existe; senão, a da IA. Se o juiz ainda não passou
 na calibração, o relatório avisa que os números são provisórios.
+
+---
+
+## 2026-11-25 · Fase 2: personalização (resumo; detalhes em fase-2-personalizacao.md)
+
+**Importação centrada em usuários.** Sorteando produtos, 110 mil de 120 mil
+usuários ficaram com uma avaliação só (660 tinham 5 ou mais). A importação passa
+a escolher usuários com pelo menos 5 avaliações na categoria e monta o catálogo
+com os produtos deles, sempre com o histórico inteiro de quem entra. Os produtos
+de `titulo_contem` continuam garantidos (até um terço do catálogo). A seleção por
+produtos continua disponível (`selecao: produtos`).
+*Alternativa:* usar o subconjunto "5-core" que os autores do dataset publicam. Foi
+descartada porque ele não segue os nossos recortes de categoria (bonecas, placas).
+
+**Reimportar substitui o catálogo da categoria**, mantendo os vetores de quem
+continua. Assim, reimportar não obriga a reindexar tudo.
+
+**Perfil = média ponderada dos vetores do que a pessoa avaliou**, com
+peso = 0,5 + (nota - 3) / 2: avaliar já é interesse, e a nota 1 empurra para longe.
+Um perfil por categoria (gostos não se contaminam) e por canal (espaços diferentes
+não se somam).
+*Alternativa:* treinar um modelo com as interações (two-tower). Fica para a fase 5:
+a média é transparente, não precisa de treino e serve de régua para o modelo treinado.
+
+**Seis métodos de recomendação, com três linhas de base** (aleatório,
+popularidade, último produto), mais conteúdo, coocorrência (filtragem colaborativa
+item-item com cosseno) e híbrido (RRF de conteúdo e coocorrência). Um método só
+vale se ganhar das linhas de base.
+
+**Busca personalizada = afinidade com o perfil como listas extras no RRF.** Ela só
+reordena candidatos que a busca já trouxe, e `peso_perfil = 0` reproduz a fase 1.
+*Alternativa:* somar a afinidade à similaridade. Descartada pelo mesmo motivo da
+fase 1: escalas diferentes.
+
+**Avaliação temporal sem rótulos** ("deixa a última de fora"): a avaliação mais
+recente de cada pessoa é escondida e o sistema tenta adivinhá-la. Métricas: hit@10,
+NDCG@10, MRR e cobertura, além da curva por tamanho de histórico (cold start).
+Popularidade e coocorrência aprendem só com o treino, para não vazar a resposta.
+*Limitação declarada:* o corte é por usuário, e não por uma data única, então as
+interações de outras pessoas podem ser posteriores ao teste.
+
+**Explicabilidade:** cada recomendação mostra o produto do histórico mais parecido com ela.
 
 ---
 

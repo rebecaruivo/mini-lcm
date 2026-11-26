@@ -72,3 +72,20 @@ def test_postgres_eventos_sao_append_only(pg):
     with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
         arm.conn.execute("delete from eventos")
 
+
+
+def test_postgres_operacoes_da_fase_2(pg):
+    from mini_lcm.modelos import Avaliacao
+
+    arm, emb = pg
+    arm.salvar_avaliacoes([Avaliacao(usuario="U1", item_id="B1", nota=5, momento="2020-01-02T00:00:00+00:00"),
+                           Avaliacao(usuario="U1", item_id="B3", nota=4, momento="2020-01-01T00:00:00+00:00"),
+                           Avaliacao(usuario="U2", item_id="P1", nota=3, momento="2020-01-03T00:00:00+00:00")])
+    assert [a.item_id for a in arm.avaliacoes_de(usuario="U1")] == ["B3", "B1"]  # ordem cronológica
+    assert [a.usuario for a in arm.avaliacoes_de(categoria="placas")] == ["U2"]
+    ids, m = arm.matriz(emb.chave("texto"), "texto", "bonecas")
+    assert len(ids) == 5 and m.shape == (5, emb.dimensoes)
+    assert set(arm.vetores(emb.chave("imagem"), "imagem", ["B1", "P3"])) == {"B1"}  # P3 não tem foto
+    arm.remover_itens(["B1"])
+    assert "B1" not in arm.ids_categoria("bonecas")
+    assert [a.item_id for a in arm.avaliacoes_de(usuario="U1")] == ["B3"]  # a avaliação foi junto (cascade)

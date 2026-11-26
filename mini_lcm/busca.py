@@ -16,6 +16,13 @@ O RRF ignora o valor e usa só a POSIÇÃO em cada lista:
 pontuação = soma de peso / (K + posição). Ficar em 1º numa lista vale o mesmo,
 seja qual for a escala dela. K = 60 é o valor do artigo original (Cormack et
 al., 2009) e suaviza a diferença entre posições próximas.
+
+Busca personalizada (fase 2): quando há um usuário, a afinidade de cada candidato com o
+perfil dele (perfil.py) vira MAIS UMA lista na fusão, uma por canal ("perfil:texto",
+"perfil:imagem"). Duas propriedades importantes:
+- A personalização só REORDENA candidatos que a busca já trouxe. Ela nunca põe no topo um
+  produto que não tem nada a ver com a consulta só porque combina com o gosto da pessoa.
+- `peso_perfil` controla o quanto o gosto pesa contra a consulta. 0 = busca da fase 1.
 """
 
 from __future__ import annotations
@@ -26,7 +33,7 @@ from typing import Literal
 from .armazenamento import Armazenamento
 from .custo import RegistroCusto, cronometro
 from .embeddings import Embedder
-from .modelos import Canal, Filtros, Resultado
+from .modelos import CANAIS, Canal, Filtros, Resultado
 
 Modo = Literal["texto", "imagem", "fusao"]
 MODOS: tuple[Modo, ...] = ("texto", "imagem", "fusao")
@@ -65,6 +72,8 @@ def buscar(
     k: int = 10,
     config: ConfigBusca | None = None,
     registro: RegistroCusto | None = None,
+    perfis: dict | None = None,  # {categoria: {canal: vetor}} do usuário (perfil.perfis_do_usuario)
+    peso_perfil: float = 0.5,
 ) -> list[Resultado]:
     filtros = filtros or Filtros()
     config = config or ConfigBusca()
@@ -78,7 +87,14 @@ def buscar(
         }
     reg.itens += 1
 
-    pontos = fundir_rrf(listas, config.pesos())
+    pesos: dict[str, float] = dict(config.pesos())
+    if perfis and peso_perfil > 0:
+        listas_perfil = _listas_de_perfil(armazenamento, embedder, listas, perfis)
+        for nome, lista in listas_perfil.items():
+            listas[nome] = lista
+            pesos[nome] = peso_perfil / len(listas_perfil)
+
+    pontos = fundir_rrf(listas, pesos)
     sims = {canal: dict(lista) for canal, lista in listas.items()}
     posicoes = {canal: {item_id: p for p, (item_id, _) in enumerate(lista, start=1)} for canal, lista in listas.items()}
 
@@ -104,3 +120,29 @@ def buscar(
         if len(resultados) == k:
             break
     return resultados
+
+
+def _listas_de_perfil(armazenamento: Armazenamento, embedder: Embedder,
+                      listas: dict[str, list[tuple[str, float]]], perfis: dict) -> dict[str, list[tuple[str, float]]]:
+    """Candidatos já recuperados, ordenados pela afinidade com o perfil, em cada canal.
+
+    Cada candidato é comparado com o perfil DA CATEGORIA DELE: o gosto em bonecas julga
+    bonecas, o gosto em placas julga placas. Candidato de uma categoria em que a pessoa não
+    tem histórico simplesmente não entra nessas listas (fica com a posição da consulta).
+    """
+    candidatos = sorted({item_id for lista in listas.values() for item_id, _ in lista})
+    itens = armazenamento.obter_itens(candidatos)
+    saida: dict[str, list[tuple[str, float]]] = {}
+    for canal in CANAIS:
+        if not any(canal in p for p in perfis.values()):
+            continue
+        vetores = armazenamento.vetores(embedder.chave(canal), canal, candidatos)
+        afinidades = []
+        for item_id, v in vetores.items():
+            item = itens.get(item_id)
+            perfil = perfis.get(item.categoria, {}) if item else {}
+            if canal in perfil:
+                afinidades.append((item_id, float(v @ perfil[canal])))
+        if afinidades:
+            saida[f"perfil:{canal}"] = sorted(afinidades, key=lambda x: -x[1])
+    return saida
