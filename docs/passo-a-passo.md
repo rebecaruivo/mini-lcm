@@ -101,13 +101,20 @@ mini-lcm perfil USUARIO --categoria bonecas --metodo coocorrencia
 mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO_1
 mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO_2
 
-# avaliação temporal (2 a 5 minutos por categoria)
+# escolha de parâmetros na validação (cortes mais antigos; o teste não é usado)
+for j in 30 90 180 365 730; do mini-lcm avaliar-recomendacao --categoria bonecas --validacao --metodos em_alta --janela-dias $j; done
+for mv in 1 2 3; do for p in 0.25 0.5 1 2 4; do
+  mini-lcm avaliar-recomendacao --categoria bonecas --validacao --metodos hibrido_alta --meia-vida $mv --peso-em-alta $p
+done; done
+# os valores escolhidos vão para categorias.yaml (bloco recomendacao)
+
+# teste, uma vez, com os parâmetros de categorias.yaml (cortes semestrais por data)
 mini-lcm avaliar-recomendacao --categoria bonecas --curva --salvar docs/resultados-recomendacao.md
 mini-lcm avaliar-recomendacao --categoria placas-de-video --curva --salvar docs/resultados-recomendacao.md
 
-# linha de base sem recência e escolha da meia-vida (validação, sem tocar no teste)
+# protocolo anterior (última avaliação de cada pessoa) e linha de base sem recência
+mini-lcm avaliar-recomendacao --categoria bonecas --curva --corte usuario
 mini-lcm avaliar-recomendacao --categoria bonecas --curva --sem-recencia
-for mv in 0.5 1 2 3 5 8; do mini-lcm avaliar-recomendacao --categoria bonecas --validacao --meia-vida $mv; done
 ```
 Copie para o README e para a seção 10 do guia da fase 2: a tabela de métodos, a
 curva e 1 ou 2 exemplos de `perfil` que mostrem a personalização funcionando (ou falhando).

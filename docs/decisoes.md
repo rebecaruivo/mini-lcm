@@ -411,6 +411,38 @@ rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
 
 ---
 
+## 2026-11-26 · Avaliação por cortes semestrais de data; método "em alta"
+
+**Decisão:** a avaliação principal da recomendação passa a usar datas de corte
+semestrais iguais para todos ("rolling origin"): em cada data, o modelo aprende só com o
+passado, o alvo de cada pessoa é a primeira avaliação nos seis meses seguintes e só
+concorrem os produtos que já existiam no semestre. Os cortes mais antigos (metade dos
+casos) são a validação; os mais recentes, o teste. O intervalo de confiança sorteia
+pessoas, porque a mesma pessoa aparece em vários cortes. Dois métodos novos: `em_alta`
+(popularidade numa janela recente) e `hibrido_alta` (conteúdo + coocorrência + em alta).
+Os parâmetros de cada categoria ficam em `categorias.yaml`.
+
+**Motivo:** o corte por usuário se mostrou otimista nestes dados. (1) Metade dos alvos
+das bonecas foi avaliada no mesmo dia que o produto anterior, quase sempre o mesmo
+pedido, e esses casos são muito mais fáceis. (2) O treino incluía o futuro de outras
+pessoas: a popularidade das placas caía de 0,146 para 0,092 quando contada só com o
+passado. No protocolo novo, o híbrido das bonecas vai de 0,267 para 0,077.
+
+**Alternativas consideradas:**
+- *Uma única data de corte:* sem vazamento, mas deixa 460 casos nas bonecas e 66 nas
+  placas, pouco para comparar métodos.
+- *Manter o corte por usuário e só corrigir a popularidade:* não resolve as compras em
+  lote, que inflam também o conteúdo e a coocorrência.
+- *Catálogo inteiro em todos os cortes:* faria concorrer produtos que ainda não existiam
+  (cerca de 60% do catálogo, em média).
+
+**Consequência:** "o que está em alta" passou a ser a linha de base a bater, e ganha de
+todos os métodos personalizados isolados. O híbrido + em alta é o melhor nas bonecas
+(0,133), mas por pouco. Só os métodos de conteúdo acertam produtos novos (37% e 65% dos
+alvos). Detalhes em `resultados-recomendacao.md`.
+
+---
+
 ## 2026-11-25 · Custo medido, não estimado
 
 **Decisão:** cada etapa (importação, embeddings de texto, de imagem, busca)

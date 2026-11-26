@@ -30,6 +30,20 @@ class FiltroCategoria:
 
 
 @dataclass
+class ParametrosRecomendacao:
+    """Parâmetros escolhidos na validação de cada categoria (categorias.yaml).
+
+    meia_vida: decaimento pela recência no perfil e na coocorrência, em avaliações (None = desligado).
+    janela_dias: tamanho da janela do método em_alta.
+    peso_em_alta: peso da lista em_alta dentro do hibrido_alta (conteúdo e coocorrência pesam 1).
+    """
+
+    meia_vida: float | None = 1.0
+    janela_dias: int = 365
+    peso_em_alta: float = 1.0
+
+
+@dataclass
 class Categoria:
     slug: str
     nome: str
@@ -41,6 +55,7 @@ class Categoria:
     # "produtos": sorteia produtos (fase 1; quase todo usuário fica com 1 avaliação só)
     selecao: str = "usuarios"
     min_avaliacoes_usuario: int = 5
+    recomendacao: ParametrosRecomendacao = field(default_factory=ParametrosRecomendacao)
 
 
 @dataclass
@@ -84,7 +99,8 @@ def carregar_categorias(caminho: Path) -> list[Categoria]:
     for bruto in dados.get("categorias", []):
         bruto = dict(bruto)
         filtro = FiltroCategoria(**(bruto.pop("filtro", None) or {}))
-        cat = Categoria(filtro=filtro, **bruto)
+        recomendacao = ParametrosRecomendacao(**(bruto.pop("recomendacao", None) or {}))
+        cat = Categoria(filtro=filtro, recomendacao=recomendacao, **bruto)
         if cat.selecao not in ("usuarios", "produtos"):
             raise ValueError(f"Categoria '{cat.slug}': selecao deve ser 'usuarios' ou 'produtos'")
         if not (filtro.categorias_contem or filtro.titulo_contem):

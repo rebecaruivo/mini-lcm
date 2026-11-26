@@ -22,7 +22,7 @@
     mini-lcm perfil USUARIO --categoria bonecas         # histórico + recomendações com o motivo
     mini-lcm buscar "boneca" --categoria bonecas --usuario USUARIO   # busca reordenada pelo gosto
     mini-lcm avaliar-recomendacao --categoria bonecas --curva        # avaliação temporal
-    mini-lcm avaliar-recomendacao --categoria bonecas --validacao --meia-vida 2   # escolher parâmetro
+    mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90   # escolher parâmetro
     mini-lcm custos
     mini-lcm status
 
@@ -46,7 +46,7 @@ from .calibracao import (amostra_auditoria, auditar, concordancia, julgar_penden
                          revisar)
 from .busca import MODOS, ConfigBusca, buscar
 from .amazon import importar_avaliacoes, importar_itens, importar_por_usuarios, inspecionar
-from .config import Config, carregar_config
+from .config import Config, ParametrosRecomendacao, carregar_config
 from .custo import RegistroCusto, cronometro, resumir
 from .embeddings import criar_embedder
 from .indexacao import gerar_embeddings
@@ -56,7 +56,7 @@ from .sondagem import sondagem_markdown, sondar
 from .avaliacao_recomendacao import avaliar_recomendacao, relatorio_recomendacao_markdown
 from .perfil import perfis_do_usuario
 from .recomendacao import METODOS as METODOS_REC
-from .recomendacao import MEIA_VIDA_PADRAO, Catalogo, Recomendador, explicar
+from .recomendacao import Catalogo, Recomendador, explicar
 
 
 
@@ -137,7 +137,7 @@ def cmd_buscar(cfg: Config, arm: Armazenamento, args) -> None:
     config = ConfigBusca(modo=args.modo, peso_imagem=args.peso_imagem)
     perfis = None
     if args.usuario:
-        perfis = perfis_do_usuario(arm, embedder, args.usuario, meia_vida=MEIA_VIDA_PADRAO)
+        perfis = perfis_do_usuario(arm, embedder, args.usuario, meia_vida=_meia_vida_comum(cfg))
         if not perfis:
             sys.exit(f"Usuário {args.usuario} sem histórico. Veja usuários com `mini-lcm usuarios --categoria ...`.")
         print(f"Personalizado para {args.usuario} (categorias com perfil: {', '.join(sorted(perfis))}; "
@@ -297,7 +297,9 @@ def cmd_perfil(cfg: Config, arm: Armazenamento, args) -> None:
     for a in historico:
         print(f"  {a.momento[:10]}  nota {a.nota:.0f}  {_titulo(arm, a.item_id)}")
     catalogo = Catalogo.carregar(arm, embedder, args.categoria)
-    rec = Recomendador(catalogo, meia_vida=MEIA_VIDA_PADRAO).ajustar(arm.avaliacoes_de(categoria=args.categoria))
+    par = _parametros(cfg, args.categoria)
+    rec = Recomendador(catalogo, par.meia_vida, par.janela_dias, par.peso_em_alta).ajustar(
+        arm.avaliacoes_de(categoria=args.categoria))
     print(f"\nRecomendados ({args.metodo}):\n")
     for n, (item_id, _) in enumerate(rec.recomendar(args.metodo, historico, k=args.k), start=1):
         motivo = explicar(catalogo, item_id, historico)
@@ -305,21 +307,35 @@ def cmd_perfil(cfg: Config, arm: Armazenamento, args) -> None:
         print(f"  {n:2}. {_titulo(arm, item_id)}{porque}")
 
 
+def _parametros(cfg: Config, slug: str) -> ParametrosRecomendacao:
+    """Parâmetros de recomendação da categoria; os padrões, se ela não estiver em categorias.yaml."""
+    return next((c.recomendacao for c in cfg.categorias if c.slug == slug), ParametrosRecomendacao())
+
+
+def _meia_vida_comum(cfg: Config) -> float | None:
+    """A busca personalizada monta perfis de todas as categorias do usuário de uma vez;
+    usa a meia-vida da primeira categoria (hoje todas usam o mesmo valor)."""
+    return cfg.categorias[0].recomendacao.meia_vida if cfg.categorias else ParametrosRecomendacao().meia_vida
+
+
 def cmd_avaliar_recomendacao(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     catalogo = Catalogo.carregar(arm, embedder, args.categoria)
     metodos = tuple(m.strip() for m in args.metodos.split(","))
     historicos = (1, 2, 3, 5, None) if args.curva else (None,)
-    meia_vida = None if args.sem_recencia else args.meia_vida
+    par = _parametros(cfg, args.categoria)  # valores escolhidos na validação; as opções sobrepõem
+    meia_vida = None if args.sem_recencia else (args.meia_vida if args.meia_vida is not None else par.meia_vida)
     rel = avaliar_recomendacao(catalogo, arm.avaliacoes_de(categoria=args.categoria), metodos, k=args.k,
                                min_historico=args.min_historico, historicos=historicos,
-                               meia_vida=meia_vida, validacao=args.validacao)
+                               meia_vida=meia_vida, validacao=args.validacao, corte=args.corte,
+                               janela_dias=args.janela_dias or par.janela_dias,
+                               peso_em_alta=args.peso_em_alta if args.peso_em_alta is not None else par.peso_em_alta)
     texto = relatorio_recomendacao_markdown(rel, args.categoria, embedder.nome)
     print(texto)
     if args.salvar:
         Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
         with open(args.salvar, "a", encoding="utf-8") as f:
-            conjunto = " · validação" if args.validacao else ""
+            conjunto = f" · corte por {args.corte}" + (" · validação" if args.validacao else "")
             f.write(f"## Recomendação · {args.categoria}{conjunto}\n\n{texto}\n\n")
         print(f"\nAcrescentado a {args.salvar}")
 
@@ -436,8 +452,11 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("-k", type=int, default=10)
     s.add_argument("--min-historico", type=int, default=3)
     s.add_argument("--curva", action="store_true", help="também mede com só 1, 2, 3 e 5 avaliações de histórico")
-    s.add_argument("--meia-vida", type=float, default=MEIA_VIDA_PADRAO,
-                   help=f"decaimento pela recência, em avaliações (padrão {MEIA_VIDA_PADRAO:g})")
+    s.add_argument("--corte", choices=["data", "usuario"], default="data",
+                   help="data: cortes semestrais globais, sem vazamento (padrão); usuario: última avaliação de cada pessoa")
+    s.add_argument("--meia-vida", type=float, help="decaimento pela recência, em avaliações (padrão: categorias.yaml)")
+    s.add_argument("--janela-dias", type=int, help="janela do método em_alta (padrão: categorias.yaml)")
+    s.add_argument("--peso-em-alta", type=float, help="peso da lista em_alta no hibrido_alta (padrão: categorias.yaml)")
     s.add_argument("--sem-recencia", action="store_true", help="média simples, sem decaimento (linha de base)")
     s.add_argument("--validacao", action="store_true",
                    help="avalia na penúltima avaliação de cada pessoa, para escolher parâmetros sem tocar no teste")

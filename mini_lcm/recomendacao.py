@@ -1,11 +1,14 @@
 """Recomendação: dado o histórico de um usuário numa categoria, ordenar o catálogo.
 
-Seis métodos, do mais ingênuo ao mais completo. Os três primeiros são linhas de base:
+Oito métodos, do mais ingênuo ao mais completo. Os quatro primeiros são linhas de base:
 um método só vale a pena se ganhar deles.
 
 - aleatorio: ordem sorteada. O piso: qualquer coisa deveria ganhar disto.
 - popularidade: os mais avaliados primeiro, iguais para todos. Costuma ser difícil
   de bater, porque a demanda se concentra em poucos produtos.
+- em_alta: os mais avaliados numa janela recente (por exemplo, os últimos 90 dias antes
+  de "agora"), iguais para todos. Captura lançamentos e ciclos de produto que a
+  popularidade de todos os tempos não vê.
 - ultimo: os mais parecidos (em conteúdo) com o ÚLTIMO produto que a pessoa avaliou.
   Captura "interesse do momento" e é a recomendação mais comum em lojas ("parecidos com
   o que você viu").
@@ -15,6 +18,8 @@ um método só vale a pena se ganhar deles.
   também avaliou...". Não olha conteúdo nenhum, só interações entre pessoas: é a
   ideia do LCM (aprender com comportamento) na sua forma mais simples.
 - hibrido: conteúdo + coocorrência fundidos por RRF, como na busca.
+- hibrido_alta: conteúdo + coocorrência + em_alta, por RRF, com peso próprio para a
+  lista em alta. Junta o gosto da pessoa com o momento do mercado.
 
 Detalhes que valem para todos:
 - Produtos que a pessoa já avaliou nunca são recomendados de novo.
@@ -26,18 +31,26 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 from scipy import sparse
 
 from .armazenamento import Armazenamento
 from .busca import K_RRF
+from .config import ParametrosRecomendacao
 from .embeddings import Embedder
 from .modelos import CANAIS, Avaliacao, Canal
 from .perfil import construir_perfil, pesos_do_historico
 
-METODOS = ("aleatorio", "popularidade", "ultimo", "conteudo", "coocorrencia", "hibrido")
+METODOS = ("aleatorio", "popularidade", "em_alta", "ultimo", "conteudo", "coocorrencia", "hibrido", "hibrido_alta")
 DESEMPATE = 1e-6  # peso da popularidade no desempate: pequeno demais para mudar uma ordem que não seja empate
+
+
+def _instante(momento: str) -> datetime:
+    """ISO 8601 -> datetime com fuso (datas sem fuso são lidas como UTC)."""
+    d = datetime.fromisoformat(momento.replace("Z", "+00:00"))
+    return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
 
 
 def ranks(pontuacoes: np.ndarray) -> np.ndarray:
@@ -87,32 +100,52 @@ class Catalogo:
                 for canal, m in self.matrizes.items()}
 
 
-# Meia-vida da recência usada por padrão (em avaliações). Escolhida na validação das
-# bonecas, sem olhar o teste: ver docs/resultados-recomendacao.md.
-MEIA_VIDA_PADRAO = 1.0
+# Meia-vida padrão (em avaliações), escolhida na validação das bonecas: ver docs/resultados-recomendacao.md.
+MEIA_VIDA_PADRAO = ParametrosRecomendacao().meia_vida
 
 
 class Recomendador:
-    def __init__(self, catalogo: Catalogo, meia_vida: float | None = None):
+    def __init__(self, catalogo: Catalogo, meia_vida: float | None = None,
+                 janela_dias: int = 365, peso_em_alta: float = 1.0):
         """meia_vida: decaimento pela recência no perfil e na coocorrência (None = desligado)."""
         self.catalogo = catalogo
         self.meia_vida = meia_vida
+        self.janela_dias = janela_dias
+        self.peso_em_alta = peso_em_alta
         n = len(catalogo.ids)
         self.popularidade = np.zeros(n)
+        self.em_alta = np.zeros(n)
         self.desempate = np.zeros(n)
         self.similaridade: sparse.csr_matrix = sparse.csr_matrix((n, n))
 
-    def ajustar(self, interacoes: list[Avaliacao]) -> "Recomendador":
-        """Aprende popularidade e coocorrência a partir de interações (na avaliação: só as de treino)."""
+    def ajustar(self, interacoes: list[Avaliacao], agora: str | None = None) -> "Recomendador":
+        """Aprende popularidade, em alta e coocorrência a partir de interações (na avaliação: só as de treino).
+
+        agora: o instante da recomendação (ISO 8601). A janela do em_alta termina nele. Na
+        avaliação por data, é a data de corte; sem valor, vale a interação mais recente.
+        Interações a partir de `agora` são ignoradas: o futuro não entra em nada.
+        Sem `agora`, todas as interações valem e a janela termina na mais recente.
+        """
         idx = self.catalogo.indice
         n = len(self.catalogo.ids)
+        validas = [a for a in interacoes if a.item_id in idx]
+        if agora is not None:
+            validas = [a for a in validas if _instante(a.momento) < _instante(agora)]
+            fim = _instante(agora)
+        else:
+            fim = max((_instante(a.momento) for a in validas), default=datetime.now(timezone.utc))
+        inicio = fim - timedelta(days=self.janela_dias)
         usuarios: dict[str, int] = {}
         linhas, colunas = [], []
-        for a in interacoes:
-            if a.item_id not in idx:
-                continue
+        recentes: set[tuple[str, str]] = set()
+        for a in validas:
             linhas.append(usuarios.setdefault(a.usuario, len(usuarios)))
             colunas.append(idx[a.item_id])
+            if _instante(a.momento) >= inicio:
+                recentes.add((a.usuario, a.item_id))
+        self.em_alta = np.zeros(n)
+        for _, item_id in recentes:  # pessoas distintas por produto, dentro da janela
+            self.em_alta[idx[item_id]] += 1
         # Matriz usuário x produto com 1 onde houve interação (repetições contam uma vez)
         x = sparse.csr_matrix((np.ones(len(linhas)), (linhas, colunas)), shape=(len(usuarios), n))
         x.sum_duplicates()
@@ -166,6 +199,11 @@ class Recomendador:
             base = self._coocorrencia(historico)
         elif metodo == "hibrido":
             base = rrf_completo([(self._conteudo(historico), 1.0), (self._coocorrencia(historico), 1.0)])
+        elif metodo == "em_alta":
+            base = self.em_alta.astype(float)
+        elif metodo == "hibrido_alta":
+            base = rrf_completo([(self._conteudo(historico), 1.0), (self._coocorrencia(historico), 1.0),
+                                 (self.em_alta + self.desempate, self.peso_em_alta)])
         else:
             raise ValueError(f"Método desconhecido: {metodo}. Use um de {METODOS}")
         return base + self.desempate

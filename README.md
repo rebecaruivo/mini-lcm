@@ -58,21 +58,23 @@ consulta "boneca gótica até US$ 30"
 ```text
 avaliações reais de cada usuário (nota 1–5, data)
    │
-   ├─ perfil = média dos vetores do que avaliou, ponderada pela nota   (conteúdo)
-   └─ "quem avaliou o que você avaliou também avaliou..."             (colaborativa)
+   ├─ perfil = média dos vetores do que avaliou, ponderada pela nota e pela recência (conteúdo)
+   ├─ "quem avaliou o que você avaliou também avaliou..."                          (colaborativa)
+   └─ o que está em alta nas últimas semanas                                        (momento)
                      │
           recomendação (híbrido por RRF)  ·  busca reordenada pelo perfil
                      │
-   avaliação: esconde a avaliação mais recente de cada pessoa e mede se o sistema a adivinha
+   avaliação: cortes semestrais por data; o modelo vê só o passado e tenta prever a próxima compra
 ```
 
-- **Seis métodos, três deles linhas de base** (aleatório, popularidade, último produto):
-  um método só vale se ganhar das réguas simples.
+- **Oito métodos, quatro deles linhas de base** (aleatório, popularidade, em alta, último
+  produto): um método só vale se ganhar das réguas simples.
 - **A busca personalizada só reordena** o que a consulta trouxe; nunca empurra algo
   sem relação com a busca só porque combina com o gosto.
-- **Avaliação temporal sem rótulos:** o passado prevê o futuro, sem vazar a resposta
-  (popularidade e coocorrência aprendem só com o treino). Também mede a **cobertura**
-  (diversidade) e a **curva de histórico** (usuário novo).
+- **Avaliação temporal sem rótulos:** em cada data de corte, o modelo aprende só com o que
+  veio antes e tenta prever a próxima compra de cada pessoa. Parâmetros escolhidos num
+  período de validação, separado do teste. Também mede a **cobertura** (diversidade), a
+  **curva de histórico** (usuário novo) e o acerto em **produtos novos**.
 - **Cada recomendação diz por quê** ("parecido com: ...").
 
 Conceitos, escolhas e limitações: [docs/fase-2-personalizacao.md](docs/fase-2-personalizacao.md).
@@ -124,7 +126,7 @@ mini-lcm usuarios --categoria bonecas
 mini-lcm perfil USUARIO --categoria bonecas
 mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO
 mini-lcm avaliar-recomendacao --categoria bonecas --curva
-mini-lcm avaliar-recomendacao --categoria bonecas --validacao --meia-vida 2   # escolha de parâmetros
+mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90   # escolha de parâmetros
 
 # 7. Avaliar a busca (detalhes em docs/passo-a-passo.md)
 mini-lcm rotular "boneca gótica de cabelo rosa" --categoria bonecas --perfil "colecionadora adulta"
@@ -165,26 +167,28 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 | Calibração | | | |
 | Auditoria às cegas | | | |
 
-**Recomendação** (avaliação temporal, k = 10, com recência; bonecas: 3.504 usuários
-testados, placas: 316. Detalhes, intervalos e curva de histórico em
-[docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
+**Recomendação** (cortes semestrais por data, teste de jul/2018 em diante, k = 10;
+parâmetros escolhidos na validação. Bonecas: 1.655 casos de 996 pessoas; placas: 228
+casos de 144 pessoas. Detalhes em [docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
 
-| Método | hit@10 bonecas (IC 95%) | hit@10 placas (IC 95%) | cobertura bonecas |
+| Método | hit@10 bonecas (IC 95%) | hit@10 placas (IC 95%) | bonecas: alvos novos / já vistos |
 |---|---|---|---|
-| aleatório | 0,003 (0,001–0,004) | 0,013 (0,003–0,025) | 100,0% |
-| popularidade | 0,051 (0,044–0,059) | **0,146** (0,108–0,183) | 0,7% |
-| último produto | 0,169 (0,156–0,181) | 0,085 (0,057–0,117) | 78,8% |
-| conteúdo (perfil) | 0,160 (0,147–0,172) | 0,070 (0,044–0,098) | 66,9% |
-| coocorrência | 0,260 (0,246–0,275) | 0,041 (0,022–0,063) | 86,6% |
-| híbrido | **0,267** (0,253–0,282) | 0,060 (0,035–0,089) | 73,3% |
+| aleatório | 0,004 (0,002–0,007) | 0,013 (0,000–0,029) | 0,000 / 0,007 |
+| popularidade | 0,010 (0,005–0,015) | 0,035 (0,013–0,063) | 0,000 / 0,015 |
+| em alta | 0,117 (0,101–0,133) | **0,083** (0,049–0,122) | 0,000 / 0,185 |
+| último produto | 0,067 (0,055–0,080) | 0,061 (0,032–0,093) | **0,052** / 0,076 |
+| conteúdo (perfil) | 0,067 (0,054–0,079) | 0,053 (0,025–0,085) | 0,048 / 0,078 |
+| coocorrência | 0,061 (0,049–0,072) | 0,018 (0,004–0,036) | 0,000 / 0,097 |
+| híbrido | 0,077 (0,063–0,089) | 0,031 (0,009–0,054) | 0,003 / 0,120 |
+| híbrido + em alta | **0,133** (0,116–0,150) | 0,066 (0,036–0,100) | 0,000 / **0,211** |
 
-- **Bonecas:** a personalização ganha 5 vezes da popularidade. O decaimento pela recência
-  (meia-vida de 1 avaliação, escolhida num conjunto de validação) somou 0,051 ao híbrido.
-- **Placas de vídeo:** nenhum método personalizado supera a popularidade. Compra rara
-  (1,8 avaliação por produto) e guiada pela geração do momento: a popularidade dos
-  últimos dois anos, contada só com o passado, chega a 0,127.
-- Um terço da popularidade nas placas vem de um vazamento temporal medido na própria
-  avaliação (o corte é por usuário). Próximo passo: corte por data global.
+- **O momento prevê mais que a pessoa:** a popularidade das últimas semanas ganha de
+  qualquer método personalizado isolado. Somar o gosto da pessoa ao que está em alta
+  acrescenta pouco nas bonecas e nada nas placas.
+- **Produtos novos** (37% dos alvos nas bonecas, 65% nas placas) só são alcançados pelos
+  métodos de conteúdo. É o caso típico de classificados, em que quase todo anúncio é novo.
+- O primeiro protocolo (esconder a última avaliação de cada pessoa) dava 0,267 ao híbrido
+  das bonecas: compras feitas juntas e vazamento entre pessoas inflavam o resultado.
 
 **Custo**
 
@@ -207,16 +211,16 @@ testados, placas: 316. Detalhes, intervalos e curva de histórico em
   texto contra texto. A troca será medida, não suposta.
 - Preços em dólar, no momento da coleta do dataset (até 2023).
 - Avaliação escrita não é clique nem compra: o sinal de comportamento é mais esparso
-  e enviesado que o de um marketplace real. A avaliação temporal corta por usuário,
-  não por data única, e popularidade e coocorrência aproveitam parte do futuro de outras
-  pessoas (medido: +0,009 de hit@10 na popularidade das bonecas, +0,054 nas placas).
+  e enviesado que o de um marketplace real.
+- A data de lançamento de cada produto é aproximada pela primeira avaliação no dataset.
+- Nas placas, o teste tem só 228 casos: os intervalos de confiança são largos.
 
 ## Próximas fases
 
 3. **Personas sintéticas:** usuários simulados com preferências ocultas
    escritas como regras, que servem de gabarito para medir se o sistema aprende.
-4. **Avaliação ampliada:** corte temporal por data única (sem vazamento entre
-   usuários), efeito da personalização na busca e custo por recomendação.
+4. **Avaliação ampliada:** efeito da personalização na busca, espaço reservado para
+   produtos novos e custo por recomendação. (O corte por data já foi feito na fase 2.)
 5. **Opcional:** treinar um modelo pequeno com as interações (two-tower).
 
 ## Dados e créditos

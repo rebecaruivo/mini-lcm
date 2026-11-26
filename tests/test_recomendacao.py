@@ -11,7 +11,8 @@ import numpy as np
 import pytest
 
 from mini_lcm.armazenamento import ArmazenamentoLocal
-from mini_lcm.avaliacao_recomendacao import avaliar_recomendacao, dividir, intervalo_bootstrap, relatorio_recomendacao_markdown, sem_a_ultima
+from mini_lcm.avaliacao_recomendacao import (avaliar_recomendacao, cortes_semestrais, dividir, dividir_por_data,
+                                             intervalo_bootstrap, relatorio_recomendacao_markdown, sem_a_ultima)
 from mini_lcm.busca import buscar
 from mini_lcm.embeddings import EmbedderFalso
 from mini_lcm.indexacao import gerar_embeddings
@@ -226,7 +227,8 @@ def test_cli_fase_2(mundo, monkeypatch, capsys):
     assert "Histórico de fa_gotica0" in saida and "parecido com:" in saida
     cli.main(["buscar", "boneca", "--categoria", "bonecas", "--usuario", "fa_bebe0", "-k", "3"])
     assert "Personalizado para fa_bebe0" in capsys.readouterr().out
-    cli.main(["avaliar-recomendacao", "--categoria", "bonecas", "-k", "3", "--curva", "--salvar", str(arm.pasta / "r.md")])
+    cli.main(["avaliar-recomendacao", "--categoria", "bonecas", "-k", "3", "--curva", "--corte", "usuario",
+              "--salvar", str(arm.pasta / "r.md")])
     saida = capsys.readouterr().out
     assert "| conteudo |" in saida and (arm.pasta / "r.md").exists()
 
@@ -322,3 +324,82 @@ def test_avaliacao_de_validacao_nao_usa_o_teste(mundo):
     teste = {(c.usuario, c.teste.item_id) for c in dividir(avs, set(cat.ids))[0]}
     validacao = {(c.usuario, c.teste.item_id) for c in dividir(sem_a_ultima(avs, set(cat.ids)), set(cat.ids))[0]}
     assert not teste & validacao  # o alvo da validação nunca é o do teste
+
+
+# ───── corte por data, em alta ─────
+
+def avd(usuario, item_id, data, nota=5):
+    return Avaliacao(usuario=usuario, item_id=item_id, nota=nota, momento=f"{data}T12:00:00+00:00")
+
+
+def test_cortes_semestrais():
+    avs = [avd("u", "a", "2019-03-05"), avd("u", "b", "2020-11-01")]
+    assert cortes_semestrais(avs) == [f"{a}-{m}-01T00:00:00+00:00" for a in (2019, 2020) for m in ("01", "07")]
+
+
+def test_dividir_por_data_nao_ve_o_futuro():
+    avs = [avd("u", "a", "2019-01-10"), avd("u", "b", "2019-02-10"), avd("u", "c", "2019-03-10"),
+           avd("u", "d", "2019-08-01"), avd("u", "e", "2019-09-01"),  # depois do corte: d é o alvo
+           avd("v", "a", "2019-07-20"), avd("v", "d", "2020-02-01")]
+    casos, treino = dividir_por_data(avs, {"a", "b", "c", "d", "e"}, "2019-07-01T00:00:00+00:00",
+                                     "2020-01-01T00:00:00+00:00")
+    assert [(c.usuario, c.teste.item_id, [a.item_id for a in c.treino]) for c in casos] == [("u", "d", ["a", "b", "c"])]
+    assert all(a.momento < "2019-07-01" for a in treino)  # nada posterior ao corte
+    assert {a.item_id for a in treino} == {"a", "b", "c"}  # v só aparece depois do corte
+
+
+def test_em_alta_conta_so_a_janela_antes_de_agora(mundo):
+    arm, emb = mundo
+    cat = Catalogo.carregar(arm, emb, "bonecas")
+    avs = [avd("x", "G1", "2019-01-01"), avd("y", "G1", "2019-01-02"),  # G1: popular, mas antigo
+           avd("z", "B1", "2019-06-20"),                                 # B1: em alta
+           avd("w", "B2", "2019-07-05")]                                 # B2: depois de agora, não conta
+    rec = Recomendador(cat, janela_dias=30).ajustar(avs, agora="2019-07-01T00:00:00+00:00")
+    i = cat.indice
+    assert rec.em_alta[i["B1"]] == 1 and rec.em_alta[i["G1"]] == 0 and rec.em_alta[i["B2"]] == 0
+    assert rec.popularidade[i["G1"]] == 2 and rec.popularidade[i["B2"]] == 0
+    top = [x for x, _ in rec.recomendar("em_alta", [], k=1)]
+    assert top == ["B1"]
+
+
+def test_bootstrap_por_grupos_alarga_o_intervalo():
+    # 20 pessoas, cada uma repetida 10 vezes com o mesmo resultado: na prática, 20 observações, não 200
+    valores = np.repeat(np.array([0.0, 1.0] * 10), 10)
+    grupos = np.repeat(np.arange(20), 10).astype(str).tolist()
+    lo_s, hi_s = intervalo_bootstrap(valores)
+    lo_g, hi_g = intervalo_bootstrap(valores, grupos=grupos)
+    assert (hi_g - lo_g) > 2 * (hi_s - lo_s)
+
+
+@pytest.fixture
+def mundo_no_tempo(mundo):
+    """As mesmas fãs do `mundo`, agora comprando ao longo de 2018 a 2021."""
+    arm, emb = mundo
+    avs = []
+    for u in range(30):
+        grupo = GOTICAS if u % 2 == 0 else BEBES
+        for n, item_id in enumerate(grupo[:5]):
+            ano, mes = 2018 + (u % 4), 1 + n * 2
+            avs.append(avd(f"t{u}", item_id, f"{ano}-{mes:02d}-1{u % 9}"))
+    arm.salvar_avaliacoes(avs)
+    return arm, emb, avs
+
+
+def test_avaliacao_por_data(mundo_no_tempo):
+    arm, emb, avs = mundo_no_tempo
+    cat = Catalogo.carregar(arm, emb, "bonecas")
+    rel = avaliar_recomendacao(cat, avs, corte="data", k=3)
+    r = rel["resultados"]["todas"]
+    assert rel["corte"] == "data" and rel["casos"] > 0 and "hibrido_alta" in r and "em_alta" in r
+    assert r["conteudo"]["hit@3"] > r["aleatorio"]["hit@3"]
+    val = avaliar_recomendacao(cat, avs, corte="data", validacao=True, k=3)
+    assert val["periodo"] < rel["periodo"]  # a validação vem antes do teste no tempo
+    md = relatorio_recomendacao_markdown(rel, "bonecas", emb.nome)
+    assert "cortes semestrais" in md and "alvos novos" in md
+
+
+def test_corte_por_usuario_omite_metodos_que_dependem_da_data(mundo):
+    arm, emb = mundo
+    rel = avaliar_recomendacao(Catalogo.carregar(arm, emb, "bonecas"), arm.avaliacoes_de(categoria="bonecas"), k=3)
+    assert rel["metodos_omitidos"] == ["em_alta", "hibrido_alta"]
+    assert "em_alta" not in rel["resultados"]["todas"]

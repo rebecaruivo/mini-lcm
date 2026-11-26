@@ -14,7 +14,7 @@ com interações, não com documentos) em escala de projeto pessoal.
 
 1. [O problema dos dados e a importação centrada em usuários](#1-o-problema-dos-dados)
 2. [O perfil do usuário](#2-o-perfil-do-usuário)
-3. [Seis formas de recomendar](#3-seis-formas-de-recomendar)
+3. [Oito formas de recomendar](#3-oito-formas-de-recomendar)
 4. [Busca personalizada](#4-busca-personalizada)
 5. [Como medir sem rótulos: a avaliação temporal](#5-como-medir-sem-rótulos-a-avaliação-temporal)
 6. [Como ler os resultados](#6-como-ler-os-resultados)
@@ -138,19 +138,26 @@ gosto, e o canal fica sem perfil.
 
 ---
 
-## 3. Seis formas de recomendar
+## 3. Oito formas de recomendar
 
-`mini_lcm/recomendacao.py`. As três primeiras são **linhas de base** (*baselines*):
+`mini_lcm/recomendacao.py`. As quatro primeiras são **linhas de base** (*baselines*):
 um método só se justifica se ganhar delas.
 
 | Método | O que faz | Usa conteúdo? | Usa outras pessoas? |
 |---|---|---|---|
 | `aleatorio` | ordem sorteada | não | não |
-| `popularidade` | os mais avaliados primeiro, iguais para todos | não | sim |
+| `popularidade` | os mais avaliados de todos os tempos, iguais para todos | não | sim |
+| `em_alta` | os mais avaliados numa janela recente (ex.: 30 dias), iguais para todos | não | sim |
 | `ultimo` | parecidos com o último produto avaliado | sim | não |
-| `conteudo` | parecidos com o perfil (todo o histórico) | sim | não |
+| `conteudo` | parecidos com o perfil (todo o histórico, com recência) | sim | não |
 | `coocorrencia` | "quem avaliou o que você avaliou também avaliou..." | não | sim |
 | `hibrido` | conteúdo + coocorrência, fundidos por RRF | sim | sim |
+| `hibrido_alta` | conteúdo + coocorrência + em alta, por RRF, com peso próprio para o em alta | sim | sim |
+
+O `em_alta` entrou depois que a avaliação mostrou que, em categorias guiadas por
+lançamentos, o que vende agora prevê melhor a próxima compra do que o gosto acumulado
+de cada pessoa. A janela e o peso no `hibrido_alta` são parâmetros de cada categoria
+(`categorias.yaml`), escolhidos na validação.
 
 ### Por que linhas de base importam
 
@@ -230,7 +237,11 @@ julga bonecas, o gosto em placas julga placas.
 A pergunta: **olhando o passado de alguém, o sistema adivinha o que a pessoa fez
 depois?** A resposta está nos próprios dados, e não precisa de ninguém rotulando.
 
-### Divisão "deixa a última de fora" (*leave-last-out*)
+Dois protocolos foram implementados. O primeiro (corte por usuário) é o mais comum em
+artigos e o mais simples de explicar; o segundo (cortes por data) é o principal, porque
+o primeiro se mostrou otimista nestes dados.
+
+### Protocolo anterior: "deixa a última de fora" (*leave-last-out*)
 
 Para cada usuário com pelo menos 3 produtos distintos:
 
@@ -255,7 +266,45 @@ aprender, e a avaliação fica boa demais para ser verdade.
 - Se o D também aparece no treino (a pessoa avaliou o mesmo produto duas vezes), o
   usuário fica de fora: não há o que adivinhar.
 
-### Métricas (k = 10, um único produto certo por pessoa)
+### Protocolo principal: cortes semestrais por data
+
+O corte por usuário tem dois problemas, medidos nos dados (seção 10):
+
+- **Vazamento entre pessoas:** o treino de todos inclui avaliações posteriores ao teste
+  de cada um. Popularidade e coocorrência aprendem com esse futuro.
+- **Compras em lote:** metade dos produtos escondidos das bonecas foi avaliada no mesmo
+  dia que o anterior (comprados juntos). Prever o segundo item de um pedido é muito mais
+  fácil do que prever a próxima compra.
+
+No corte por data, há uma data única para todos:
+
+    linha do tempo:  ....... avaliações anteriores ....... | 1º/jul/2019 | ... seis meses ...
+                     tudo isto é treino, de todo mundo       data de corte   alvo: a 1ª avaliação
+                                                                             de cada pessoa aqui
+
+- O modelo (popularidade, em alta, coocorrência) aprende **só** com o que veio antes da
+  data. O perfil de cada pessoa usa o histórico dela até a data.
+- Concorrem só os produtos que já existiam naquele semestre (a data da primeira
+  avaliação no dataset aproxima a data de lançamento). Num corte de 2015, cerca de 60% do
+  catálogo importado ainda não existia.
+- Uma data só deixa poucos casos (460 nas bonecas, 66 nas placas). Por isso, há um corte
+  a cada seis meses, cada um com o seu modelo ("rolling origin"), e os casos de todos os
+  cortes são somados.
+- **Validação e teste no tempo:** os cortes mais antigos, até somar metade dos casos, são
+  a validação; os mais recentes, o teste. Os parâmetros são escolhidos olhando só a
+  validação.
+- A mesma pessoa aparece em vários cortes. O bootstrap sorteia **pessoas**, levando todos
+  os casos de cada uma, para o intervalo não ficar estreito demais.
+
+### Produtos novos (*cold start* do item)
+
+Em cada corte, o relatório separa os alvos **novos** (produtos sem nenhuma interação
+antes da data) dos **já vistos**. Popularidade, em alta e coocorrência não conseguem
+recomendar um produto novo, porque não há nada a contar; só os métodos de conteúdo
+conseguem. Nos dados, 37% dos alvos das bonecas e 65% dos das placas são novos. Em
+classificados, quase todo anúncio é novo.
+
+### Métricas (k = 10, um único produto certo por caso)
 
 | Métrica | Definição | Exemplo |
 |---|---|---|
@@ -295,10 +344,11 @@ Parâmetros como a meia-vida da recência precisam ser escolhidos por algum núm
 Escolher pelo resultado do teste é ajustar o modelo à prova: com vários valores
 experimentados, algum vai parecer bom por acaso, e o número reportado sai otimista.
 
-`--validacao` resolve isso sem precisar de mais dados: retira a última avaliação de
-cada pessoa (o teste) e repete a mesma divisão no que sobra, com a penúltima avaliação
-como alvo. Os parâmetros são escolhidos nessa validação, e o teste é rodado uma única
-vez no final, com o valor escolhido.
+`--validacao` resolve isso sem precisar de mais dados. Nos cortes por data, avalia nos
+cortes mais antigos (validação) em vez dos mais recentes (teste). No corte por usuário,
+retira a última avaliação de cada pessoa e repete a divisão no que sobra, com a
+penúltima como alvo. Os parâmetros são escolhidos na validação, e o teste é rodado uma
+única vez no final, com os valores escolhidos.
 
 ---
 
@@ -308,6 +358,8 @@ O que se espera, para verificar com os números reais:
 
 - **Aleatório** dá o piso: com 3.000 produtos, hit@10 ≈ 10 / 3.000 ≈ 0,3%.
 - **Popularidade** costuma ser forte na Amazon, com cobertura mínima.
+- **Em alta** deve ganhar da popularidade de todos os tempos em categorias guiadas por
+  lançamentos.
 - **Coocorrência** tende a ser o melhor método individual quando há interações
   suficientes, e piora com histórico curto.
 - **Conteúdo** depende da qualidade dos vetores. Com o canal de texto fraco da
@@ -323,11 +375,11 @@ junto com a causa encontrada, em vez de omitidos.
 
 ## 7. Limitações
 
-- **Corte por usuário, não por data global:** as interações de treino de OUTRAS
-  pessoas podem ser posteriores ao teste de alguém, e popularidade e coocorrência
-  aproveitam parte desse futuro. Medido na popularidade: +0,009 de hit@10 nas bonecas e
-  +0,054 nas placas (seção 10). Um corte por data única elimina isso, mas deixa muitos usuários sem
-  caso de teste. É a próxima melhoria da avaliação.
+- **Data de lançamento aproximada:** o catálogo de cada corte usa a primeira avaliação
+  do produto no dataset como data de lançamento. Um produto lançado meses antes da
+  primeira avaliação fica de fora dos candidatos nesse intervalo.
+- **Poucos casos nas placas:** 228 no teste, com intervalos de confiança largos
+  (cerca de ±0,035 no hit@10). Diferenças pequenas entre métodos não são conclusivas.
 - **Avaliação (review) não é compra nem clique:** só uma fração de quem compra
   escreve avaliação. O sinal é mais esparso e mais enviesado (para experiências muito
   boas ou muito ruins) que os cliques de um marketplace real.
@@ -391,6 +443,9 @@ interações em escala muito maior.
 - **Linha de base (baseline):** método simples que serve de régua.
 - **RRF (Reciprocal Rank Fusion):** combinar listas pela posição de cada item, não pelo valor.
 - **Leave-last-out:** esconder a interação mais recente de cada pessoa e tentar adivinhá-la.
+- **Rolling origin:** avaliar em várias datas de corte, cada uma com um modelo que só vê o passado.
+- **Em alta:** popularidade contada só numa janela recente antes do momento da recomendação.
+- **Validação:** dados separados do teste, usados para escolher parâmetros.
 - **Vazamento (data leakage):** a resposta escapando para os dados de aprendizado.
 - **Cold start:** recomendar sem histórico (usuário novo) ou sem interações (produto novo).
 - **Cobertura:** quanto do catálogo aparece nas recomendações.
@@ -399,70 +454,54 @@ interações em escala muito maior.
 
 ## 10. Resultados
 
-Tabelas completas, comparações pareadas e discussão em
+Tabelas completas, grades de validação e comparações pareadas em
 [resultados-recomendacao.md](resultados-recomendacao.md).
 
-### Bonecas (3.504 usuários testados, 3.000 produtos)
+### Protocolo principal (cortes por data, teste de jul/2018 em diante)
 
-| Método | média simples | com recência (meia-vida 1) |
+| Método | bonecas (1.655 casos) | placas (228 casos) |
 |---|---|---|
-| aleatório | 0,003 | 0,003 |
-| popularidade | 0,051 | 0,051 |
-| último produto | 0,169 | 0,169 |
-| conteúdo (perfil) | 0,113 | 0,160 |
-| coocorrência | 0,233 | 0,260 |
-| híbrido | 0,216 | **0,267** |
+| aleatório | 0,004 | 0,013 |
+| popularidade | 0,010 | 0,035 |
+| em alta | 0,117 | **0,083** |
+| último produto | 0,067 | 0,061 |
+| conteúdo (perfil) | 0,067 | 0,053 |
+| coocorrência | 0,061 | 0,018 |
+| híbrido | 0,077 | 0,031 |
+| híbrido + em alta | **0,133** | 0,066 |
 
-(hit@10, histórico completo.)
+(hit@10; parâmetros escolhidos na validação: meia-vida 1 nas duas categorias, janela de
+30 dias e peso 1 nas bonecas, 90 dias e peso 2 nas placas.)
 
-Confronto com as expectativas da seção 6, na linha de base (média simples):
+Confronto com as expectativas da seção 6:
 
-- **Aleatório no piso esperado** (0,3%). Confirmado.
-- **Popularidade forte:** não se confirmou (0,051). A seleção centrada em usuários
-  traz colecionadores de nicho, para quem os mais avaliados raramente são o próximo.
-- **Coocorrência como melhor método individual:** confirmado.
-- **Conteúdo perde:** confirmado, e piora quanto mais histórico entra no perfil-média.
-- **Híbrido ≥ melhor componente:** falhou (coocorrência +0,017, IC 95% de +0,005 a
-  +0,028). A fusão com pesos iguais deixava a lista de conteúdo, já degradada, puxar a
-  de coocorrência para baixo.
+- **Popularidade forte:** só a recente. A popularidade de todos os tempos é quase inútil
+  nas bonecas (0,010); a dos últimos 30 dias, a mais forte das linhas de base (0,117).
+- **Coocorrência como melhor método individual:** não se confirmou no protocolo honesto.
+  Nas bonecas, empata com o conteúdo; nas placas, fica perto do acaso.
+- **Conteúdo perde:** perde no total, mas é o **único** método que acerta produtos novos
+  (5% dos alvos novos nas duas categorias, contra 0% dos métodos de interações).
+- **Híbrido ≥ melhor componente:** confirmado nas bonecas. O híbrido + em alta é o melhor
+  método, mas sua vantagem sobre o em alta sozinho (+0,016) fica no limite da incerteza.
 
-A curva de histórico mostrou o motivo: todos os métodos rendiam mais com as 2 ou 3
-avaliações mais recentes do que com o histórico completo. Daí o experimento da
-recência, com a meia-vida escolhida na validação. Resultado no teste:
+A conclusão principal da fase: nestes dados, **o momento do mercado prevê a próxima
+compra melhor do que o gosto individual**, e o gosto individual acrescenta pouco a ele.
+A personalização faz diferença onde os métodos de popularidade não alcançam: os produtos
+novos. É exatamente o caso de classificados, e onde vale investir (melhores embeddings,
+espaço reservado para novidades).
 
-- o híbrido sobe 0,051 (IC 95% de +0,040 a +0,062) e passa a ser o melhor método;
-- a curva deixa de cair: com recência, histórico longo não atrapalha mais;
-- "híbrido ≥ melhor componente" volta a valer;
-- o conteúdo sozinho ainda não supera o último produto, o que aponta de novo para o
-  canal de texto fraco da fase 1.
+### Protocolo anterior (corte por usuário)
 
-### Placas de vídeo (316 usuários testados, 1.118 produtos)
+| Método | bonecas, média simples | bonecas, com recência | placas, com recência |
+|---|---|---|---|
+| popularidade | 0,051 | 0,051 | 0,146 |
+| último produto | 0,169 | 0,169 | 0,085 |
+| conteúdo (perfil) | 0,113 | 0,160 | 0,070 |
+| coocorrência | 0,233 | 0,260 | 0,041 |
+| híbrido | 0,216 | 0,267 | 0,060 |
 
-| Método | média simples | com recência (meia-vida 1) |
-|---|---|---|
-| aleatório | 0,013 | 0,013 |
-| popularidade | **0,146** | **0,146** |
-| último produto | 0,085 | 0,085 |
-| conteúdo (perfil) | 0,038 | 0,070 |
-| coocorrência | 0,029 | 0,041 |
-| híbrido | 0,060 | 0,060 |
-
-(hit@10, histórico completo.)
-
-Nas placas, nenhum método personalizado supera a popularidade. Os dados explicam:
-
-- **Compra rara:** só 345 pessoas avaliaram 5 ou mais placas, e cada produto tem 1,8
-  avaliação em média. A coocorrência quase não tem pares para aprender.
-- **Ciclo de produto:** o que prevê a próxima placa é a geração do momento. A popularidade
-  dos últimos 730 dias, contada só com o passado, chega a 0,127; nas bonecas, a janela
-  boa é de 90 dias (0,131).
-- **Vazamento medido:** como o corte é por usuário (seção 7), a popularidade conta
-  avaliações posteriores ao teste. Contando só o passado, ela cai de 0,146 para 0,092
-  nas placas e de 0,051 para 0,042 nas bonecas.
-
-O contraste entre as duas categorias é o principal resultado da fase: o mesmo sistema,
-com os mesmos parâmetros, ganha 5 vezes da popularidade em colecionismo e perde em
-compra rara guiada por ciclo de produto. Decidir quando personalizar faz parte do
-problema. Os próximos passos (popularidade recente como método, corte por data global e
-híbrido com o que está em alta) estão em
-[resultados-recomendacao.md](resultados-recomendacao.md#próximos-experimentos).
+Os números deste protocolo são otimistas. Nas bonecas, 52% dos alvos foram avaliados no
+mesmo dia que o produto anterior, e nesses casos o último produto acerta 0,244 contra
+0,088 nos demais. A popularidade das placas caía de 0,146 para 0,092 quando contada só
+com o passado. Foi este protocolo, porém, que revelou o efeito da recência (o perfil-média
+piorava com mais histórico), confirmado depois no protocolo principal.
