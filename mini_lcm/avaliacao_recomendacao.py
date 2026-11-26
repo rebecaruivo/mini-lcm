@@ -86,6 +86,24 @@ def dividir(avaliacoes: list[Avaliacao], ids_catalogo: set[str], min_historico: 
     return casos, treino_global
 
 
+def sem_a_ultima(avaliacoes: list[Avaliacao], ids_catalogo: set[str]) -> list[Avaliacao]:
+    """Tira a última avaliação de cada pessoa: o que sobra serve de base para a VALIDAÇÃO.
+
+    Escolher um parâmetro (como a meia-vida da recência) olhando o resultado no teste é
+    ajustar o modelo à prova: o número reportado sai otimista. O caminho correto é
+    esconder o teste, repetir a mesma divisão no que sobrou (a penúltima avaliação vira o
+    alvo) e escolher o parâmetro aí. O teste só é usado uma vez, com o valor escolhido.
+    """
+    por_usuario: dict[str, list[Avaliacao]] = defaultdict(list)
+    for a in avaliacoes:
+        if a.item_id in ids_catalogo:
+            por_usuario[a.usuario].append(a)
+    saida = []
+    for hist in por_usuario.values():
+        saida.extend(sorted(hist, key=lambda a: (a.momento, a.item_id))[:-1])
+    return saida
+
+
 def _posicao(recomendador: Recomendador, metodo: str, caso: Caso, historico: list[Avaliacao]) -> tuple[int, list[int]]:
     """Posição (1 = primeiro) do produto escondido e os índices do top 10."""
     pontos = recomendador.pontuar(metodo, historico, semente=caso.usuario).astype(float)
@@ -119,16 +137,23 @@ def avaliar_recomendacao(
     k: int = 10,
     min_historico: int = 3,
     historicos: tuple[int | None, ...] = (None,),
+    meia_vida: float | None = None,
+    validacao: bool = False,
 ) -> dict:
-    """historicos: quantas avaliações de treino usar por pessoa (None = todas)."""
+    """historicos: quantas avaliações de treino usar por pessoa (None = todas).
+    meia_vida: decaimento pela recência (None = desligado).
+    validacao: avalia na penúltima avaliação de cada pessoa, sem tocar no teste."""
+    if validacao:
+        avaliacoes = sem_a_ultima(avaliacoes, set(catalogo.ids))
     casos, treino_global = dividir(avaliacoes, set(catalogo.ids), min_historico)
     if not casos:
         raise ValueError(f"Nenhum usuário com pelo menos {min_historico} produtos distintos nesta categoria. "
                          "A importação foi feita com selecao: usuarios?")
-    recomendador = Recomendador(catalogo).ajustar(treino_global)
+    recomendador = Recomendador(catalogo, meia_vida=meia_vida).ajustar(treino_global)
     relatorio: dict = {"k": k, "usuarios_testados": len(casos), "itens": len(catalogo.ids),
                        "interacoes_treino": len(treino_global),
                        "historico_medio": round(sum(len(c.treino) for c in casos) / len(casos), 1),
+                       "meia_vida": meia_vida, "conjunto": "validacao" if validacao else "teste",
                        "resultados": {}}
     acertos: dict[tuple[str, str], np.ndarray] = {}
     for n in historicos:
@@ -175,7 +200,9 @@ def relatorio_recomendacao_markdown(rel: dict, categoria: str, modelo: str) -> s
     k = rel["k"]
     linhas = [f"Categoria: {categoria} · vetores: {modelo}",
               f"Usuários testados: {rel['usuarios_testados']} · produtos: {rel['itens']} · "
-              f"interações de treino: {rel['interacoes_treino']} · histórico médio de treino: {rel['historico_medio']}", ""]
+              f"interações de treino: {rel['interacoes_treino']} · histórico médio de treino: {rel['historico_medio']}",
+              f"Conjunto: {rel.get('conjunto', 'teste')} · recência: "
+              + (f"meia-vida de {rel['meia_vida']:g} avaliação(ões)" if rel.get("meia_vida") else "desligada"), ""]
     if "todas" in rel["resultados"]:
         linhas += [f"| Método | hit@{k} | IC 95% | NDCG@{k} | MRR | cobertura |", "|---|---|---|---|---|---|"]
         for metodo, r in rel["resultados"]["todas"].items():

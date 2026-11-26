@@ -34,7 +34,7 @@ from .armazenamento import Armazenamento
 from .busca import K_RRF
 from .embeddings import Embedder
 from .modelos import CANAIS, Avaliacao, Canal
-from .perfil import construir_perfil, peso_da_avaliacao
+from .perfil import construir_perfil, pesos_do_historico
 
 METODOS = ("aleatorio", "popularidade", "ultimo", "conteudo", "coocorrencia", "hibrido")
 DESEMPATE = 1e-6  # peso da popularidade no desempate: pequeno demais para mudar uma ordem que não seja empate
@@ -87,9 +87,16 @@ class Catalogo:
                 for canal, m in self.matrizes.items()}
 
 
+# Meia-vida da recência usada por padrão (em avaliações). Escolhida na validação das
+# bonecas, sem olhar o teste: ver docs/resultados-recomendacao.md.
+MEIA_VIDA_PADRAO = 1.0
+
+
 class Recomendador:
-    def __init__(self, catalogo: Catalogo):
+    def __init__(self, catalogo: Catalogo, meia_vida: float | None = None):
+        """meia_vida: decaimento pela recência no perfil e na coocorrência (None = desligado)."""
         self.catalogo = catalogo
+        self.meia_vida = meia_vida
         n = len(catalogo.ids)
         self.popularidade = np.zeros(n)
         self.desempate = np.zeros(n)
@@ -126,7 +133,7 @@ class Recomendador:
     # ───── pontuações (maior = melhor), uma por produto do catálogo ─────
 
     def _conteudo(self, historico: list[Avaliacao]) -> np.ndarray:
-        perfil = construir_perfil(historico, self.catalogo.vetores_de([a.item_id for a in historico]))
+        perfil = construir_perfil(historico, self.catalogo.vetores_de([a.item_id for a in historico]), self.meia_vida)
         listas = []
         for canal, vetor in perfil.items():
             sims = self.catalogo.matrizes[canal] @ vetor
@@ -138,9 +145,9 @@ class Recomendador:
 
     def _coocorrencia(self, historico: list[Avaliacao]) -> np.ndarray:
         pesos = np.zeros(len(self.catalogo.ids))
-        for a in historico:
-            if a.item_id in self.catalogo.indice:
-                pesos[self.catalogo.indice[a.item_id]] = peso_da_avaliacao(a.nota)
+        for item_id, peso in pesos_do_historico(historico, self.meia_vida).items():
+            if item_id in self.catalogo.indice:
+                pesos[self.catalogo.indice[item_id]] = peso
         # o desempate entra ANTES de qualquer fusão: na coocorrência, muitos produtos empatam em zero
         return self.similaridade @ pesos + self.desempate
 

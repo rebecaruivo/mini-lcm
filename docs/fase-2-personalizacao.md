@@ -115,6 +115,23 @@ alto com o perfil; um produto (0,1; 0,9), cosseno negativo.
   diferentes. Somar os dois seria somar coisas sem relação. Cada canal tem seu perfil,
   e as listas resultantes são fundidas por posição (RRF), como na busca.
 
+### Recência: o interesse atual pesa mais
+
+A média simples trata uma compra de três anos atrás igual à de ontem. Os resultados
+(seção 10) mostraram que isso dilui o perfil: quanto mais histórico, pior a
+recomendação. Por isso o peso da nota é multiplicado por um decaimento exponencial:
+
+    peso = peso_da_nota × 0,5 ^ (idade / meia_vida)
+
+A **idade** é quantas avaliações vieram depois desta (0 para a mais recente). A
+**meia-vida** é a idade em que o peso cai pela metade. Com meia-vida 1, as quatro
+avaliações mais recentes valem 1; 0,5; 0,25 e 0,125. A idade conta avaliações, e não
+dias, porque o ritmo de compra varia muito entre pessoas: "duas compras atrás" descreve
+melhor o interesse atual de quem compra pouco e de quem compra muito.
+
+O mesmo peso vale para a coocorrência. O valor padrão (meia-vida 1) foi escolhido num
+conjunto de validação, sem olhar o teste (seção 5).
+
 Casos especiais: se a pessoa avaliou o mesmo produto duas vezes, vale a mais
 recente. Se a soma dos pesos não é positiva (só notas 1 e 2), não há direção de
 gosto, e o canal fica sem perfil.
@@ -272,6 +289,17 @@ produz um intervalo bem mais estreito do que comparar os dois intervalos separad
 Se o intervalo da diferença não contém zero, a vantagem não é explicada só pela
 amostra de usuários.
 
+### Validação: escolher parâmetros sem olhar o teste
+
+Parâmetros como a meia-vida da recência precisam ser escolhidos por algum número.
+Escolher pelo resultado do teste é ajustar o modelo à prova: com vários valores
+experimentados, algum vai parecer bom por acaso, e o número reportado sai otimista.
+
+`--validacao` resolve isso sem precisar de mais dados: retira a última avaliação de
+cada pessoa (o teste) e repete a mesma divisão no que sobra, com a penúltima avaliação
+como alvo. Os parâmetros são escolhidos nessa validação, e o teste é rodado uma única
+vez no final, com o valor escolhido.
+
 ---
 
 ## 6. Como ler os resultados
@@ -375,28 +403,37 @@ Tabelas completas, comparações pareadas e discussão em
 
 ### Bonecas (3.504 usuários testados, 3.000 produtos)
 
-| Método | hit@10 (histórico completo) | melhor N na curva |
+| Método | média simples | com recência (meia-vida 1) |
 |---|---|---|
-| aleatório | 0,003 | — |
-| popularidade | 0,051 | — |
-| último produto | 0,169 | — |
-| conteúdo (perfil) | 0,113 | 0,169 (N=1) |
-| coocorrência | 0,233 | 0,254 (N=2 e 3) |
-| híbrido | 0,216 | 0,261 (N=2) |
+| aleatório | 0,003 | 0,003 |
+| popularidade | 0,051 | 0,051 |
+| último produto | 0,169 | 0,169 |
+| conteúdo (perfil) | 0,113 | 0,160 |
+| coocorrência | 0,233 | 0,260 |
+| híbrido | 0,216 | **0,267** |
 
-Confronto com as expectativas da seção 6:
+(hit@10, histórico completo.)
+
+Confronto com as expectativas da seção 6, na linha de base (média simples):
 
 - **Aleatório no piso esperado** (0,3%). Confirmado.
 - **Popularidade forte:** não se confirmou (0,051). A seleção centrada em usuários
   traz colecionadores de nicho, para quem os mais avaliados raramente são o próximo.
-- **Coocorrência como melhor método individual:** confirmado com histórico completo.
-- **Conteúdo perde:** confirmado, e piora quanto mais histórico entra no perfil-média
-  (seção 7, "o perfil é uma média").
-- **Híbrido ≥ melhor componente:** falhou com histórico completo (coocorrência +0,017,
-  IC 95% de +0,005 a +0,028) e vale com histórico curto. A fusão com pesos iguais deixa
-  a lista de conteúdo degradada puxar a de coocorrência para baixo.
+- **Coocorrência como melhor método individual:** confirmado.
+- **Conteúdo perde:** confirmado, e piora quanto mais histórico entra no perfil-média.
+- **Híbrido ≥ melhor componente:** falhou (coocorrência +0,017, IC 95% de +0,005 a
+  +0,028). A fusão com pesos iguais deixava a lista de conteúdo, já degradada, puxar a
+  de coocorrência para baixo.
 
-Próximo experimento: perfil com peso pela recência, medido pela mesma avaliação.
+A curva de histórico mostrou o motivo: todos os métodos rendiam mais com as 2 ou 3
+avaliações mais recentes do que com o histórico completo. Daí o experimento da
+recência, com a meia-vida escolhida na validação. Resultado no teste:
+
+- o híbrido sobe 0,051 (IC 95% de +0,040 a +0,062) e passa a ser o melhor método;
+- a curva deixa de cair: com recência, histórico longo não atrapalha mais;
+- "híbrido ≥ melhor componente" volta a valer;
+- o conteúdo sozinho ainda não supera o último produto, o que aponta de novo para o
+  canal de texto fraco da fase 1.
 
 ### Placas de vídeo
 

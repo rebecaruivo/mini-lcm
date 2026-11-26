@@ -104,6 +104,10 @@ mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO_2
 # avaliação temporal (2 a 5 minutos por categoria)
 mini-lcm avaliar-recomendacao --categoria bonecas --curva --salvar docs/resultados-recomendacao.md
 mini-lcm avaliar-recomendacao --categoria placas-de-video --curva --salvar docs/resultados-recomendacao.md
+
+# linha de base sem recência e escolha da meia-vida (validação, sem tocar no teste)
+mini-lcm avaliar-recomendacao --categoria bonecas --curva --sem-recencia
+for mv in 0.5 1 2 3 5 8; do mini-lcm avaliar-recomendacao --categoria bonecas --validacao --meia-vida $mv; done
 ```
 Copie para o README e para a seção 10 do guia da fase 2: a tabela de métodos, a
 curva e 1 ou 2 exemplos de `perfil` que mostrem a personalização funcionando (ou falhando).

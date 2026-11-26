@@ -22,6 +22,11 @@ considerou o produto. Sem a base, uma nota 3 valeria zero, e quem só dá notas 
 ficaria sem perfil. É uma escolha de projeto (está em docs/decisoes.md), e a avaliação
 temporal diz se ela ajuda.
 
+Recência (opcional): o peso da nota é multiplicado por 0,5 ^ (idade / meia_vida), em que
+a idade é quantas avaliações vieram depois desta. A avaliação temporal mostrou que a média
+simples piora quanto mais histórico entra (o gosto muda e as compras antigas diluem o
+perfil); com o decaimento, o perfil passa a representar o interesse atual.
+
 Um perfil POR CATEGORIA e POR CANAL:
 - por categoria: o gosto por bonecas não deve contaminar as recomendações de placas;
 - por canal: texto e foto vivem em espaços diferentes (CLIP vs e5) e não podem ser somados.
@@ -44,19 +49,40 @@ def peso_da_avaliacao(nota: float) -> float:
     return 0.5 + (float(nota) - 3.0) / 2.0
 
 
-def construir_perfil(historico: list[Avaliacao], vetores: dict[Canal, dict[str, np.ndarray]]) -> Perfil:
-    """Média ponderada (pela nota) dos vetores dos produtos avaliados, em cada canal.
+def fator_recencia(idade: int, meia_vida: float | None) -> float:
+    """Decaimento exponencial pela posição no histórico: idade 0 = avaliação mais recente.
+
+    Com meia_vida = 2, a mais recente vale 1, a anterior 0,71, a de idade 2 vale 0,5, a de
+    idade 4 vale 0,25. None desliga o decaimento (todas valem 1, a média simples).
+    A idade conta avaliações, não dias: o ritmo de compra varia muito entre pessoas, e
+    "duas compras atrás" descreve melhor o interesse atual do que "noventa dias atrás".
+    """
+    return 1.0 if meia_vida is None else 0.5 ** (idade / meia_vida)
+
+
+def pesos_do_historico(historico: list[Avaliacao], meia_vida: float | None = None) -> dict[str, float]:
+    """{produto: peso pela nota x fator de recência}. Repetido: vale a avaliação mais recente."""
+    ultima: dict[str, Avaliacao] = {}
+    for a in sorted(historico, key=lambda a: a.momento):
+        ultima.pop(a.item_id, None)  # reinsere no fim: a ordem do dicionário vira a da última avaliação
+        ultima[a.item_id] = a
+    n = len(ultima)
+    return {i: peso_da_avaliacao(a.nota) * fator_recencia(n - 1 - pos, meia_vida)
+            for pos, (i, a) in enumerate(ultima.items())}
+
+
+def construir_perfil(historico: list[Avaliacao], vetores: dict[Canal, dict[str, np.ndarray]],
+                     meia_vida: float | None = None) -> Perfil:
+    """Média ponderada (pela nota e, opcionalmente, pela recência) dos vetores dos produtos avaliados.
 
     Se a pessoa avaliou o mesmo produto mais de uma vez, vale a avaliação mais recente.
     Se a soma dos pesos não for positiva (ex.: só notas 1 e 2), não há direção de gosto
     para seguir e o canal fica sem perfil.
     """
-    ultima: dict[str, Avaliacao] = {}
-    for a in sorted(historico, key=lambda a: a.momento):
-        ultima[a.item_id] = a
+    pesos = pesos_do_historico(historico, meia_vida)
     perfil: Perfil = {}
     for canal, por_id in vetores.items():
-        pares = [(por_id[i], peso_da_avaliacao(a.nota)) for i, a in ultima.items() if i in por_id]
+        pares = [(por_id[i], p) for i, p in pesos.items() if i in por_id]
         if not pares or sum(p for _, p in pares) <= 0:
             continue
         v = np.sum([vetor * p for vetor, p in pares], axis=0)
@@ -66,7 +92,8 @@ def construir_perfil(historico: list[Avaliacao], vetores: dict[Canal, dict[str, 
     return perfil
 
 
-def perfis_do_usuario(armazenamento: Armazenamento, embedder: Embedder, usuario: str) -> dict[str, Perfil]:
+def perfis_do_usuario(armazenamento: Armazenamento, embedder: Embedder, usuario: str,
+                      meia_vida: float | None = None) -> dict[str, Perfil]:
     """{categoria: perfil} com todo o histórico do usuário (usado na busca personalizada)."""
     historico = armazenamento.avaliacoes_de(usuario=usuario)
     if not historico:
@@ -80,7 +107,7 @@ def perfis_do_usuario(armazenamento: Armazenamento, embedder: Embedder, usuario:
     for categoria, avs in por_categoria.items():
         ids = sorted({a.item_id for a in avs})
         vetores = {canal: armazenamento.vetores(embedder.chave(canal), canal, ids) for canal in CANAIS}
-        perfil = construir_perfil(avs, vetores)
+        perfil = construir_perfil(avs, vetores, meia_vida)
         if perfil:
             perfis[categoria] = perfil
     return perfis

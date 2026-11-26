@@ -388,6 +388,29 @@ interações de outras pessoas podem ser posteriores ao teste.
 
 ---
 
+## 2026-11-26 · Recência no perfil e na coocorrência, com a meia-vida escolhida na validação
+
+**Decisão:** o peso de cada avaliação passa a ser `peso_da_nota × 0,5 ^ (idade /
+meia_vida)`, com a idade contada em avaliações (0 = a mais recente) e meia-vida padrão
+de 1. Vale para o perfil e para a coocorrência; `--sem-recencia` mantém a linha de base.
+
+**Motivo:** na avaliação temporal das bonecas, todos os métodos rendiam mais com as 2 ou
+3 últimas avaliações do que com o histórico completo (o perfil-média caía de 0,169 para
+0,113). Com o decaimento, o híbrido foi de 0,216 para 0,267 no teste (+0,051, IC 95% de
++0,040 a +0,062).
+
+**Alternativas consideradas:**
+- *Cortar o histórico nas últimas N:* funciona, mas joga fora informação e exige escolher
+  N. O decaimento é contínuo e, com ele, a curva fica estável a partir de N = 3.
+- *Idade em dias:* depende do ritmo de compra de cada pessoa; quem compra pouco teria
+  quase todo o histórico descartado.
+
+**Como o valor foi escolhido:** num conjunto de validação (a última avaliação de cada
+pessoa é retirada e a penúltima vira o alvo), testando 0,5; 1; 2; 3; 5 e 8. O teste foi
+rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
+
+---
+
 ## 2026-11-25 · Custo medido, não estimado
 
 **Decisão:** cada etapa (importação, embeddings de texto, de imagem, busca)

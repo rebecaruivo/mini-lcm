@@ -11,12 +11,12 @@ import numpy as np
 import pytest
 
 from mini_lcm.armazenamento import ArmazenamentoLocal
-from mini_lcm.avaliacao_recomendacao import avaliar_recomendacao, dividir, intervalo_bootstrap, relatorio_recomendacao_markdown
+from mini_lcm.avaliacao_recomendacao import avaliar_recomendacao, dividir, intervalo_bootstrap, relatorio_recomendacao_markdown, sem_a_ultima
 from mini_lcm.busca import buscar
 from mini_lcm.embeddings import EmbedderFalso
 from mini_lcm.indexacao import gerar_embeddings
 from mini_lcm.modelos import Avaliacao, Filtros
-from mini_lcm.perfil import construir_perfil, peso_da_avaliacao, perfis_do_usuario
+from mini_lcm.perfil import construir_perfil, fator_recencia, peso_da_avaliacao, perfis_do_usuario, pesos_do_historico
 from mini_lcm.recomendacao import Catalogo, Recomendador, explicar, ranks
 
 from .conftest import item
@@ -278,3 +278,47 @@ def test_cli_importar_substitui_tambem_as_avaliacoes(tmp_path, monkeypatch, caps
     assert {a.usuario for a in depois.avaliacoes_de(categoria="placas")} == {"OUTRA_CATEGORIA"}  # intocada
     cli.main(["importar"])  # rodar de novo dá o mesmo resultado
     assert len(cli.abrir_armazenamento(cfg).avaliacoes_de(categoria="bonecas")) == 1
+
+
+# ───── recência ─────
+
+def test_fator_recencia():
+    assert fator_recencia(0, 2) == 1.0
+    assert fator_recencia(2, 2) == pytest.approx(0.5)
+    assert fator_recencia(4, 2) == pytest.approx(0.25)
+    assert fator_recencia(10, None) == 1.0  # desligado: média simples
+
+
+def test_pesos_do_historico_contam_a_idade_pela_ordem_no_tempo():
+    hist = [av("u", "c", dia=3), av("u", "a", dia=1), av("u", "b", dia=2, nota=4)]
+    pesos = pesos_do_historico(hist, meia_vida=1)
+    assert pesos == pytest.approx({"a": 1.5 * 0.25, "b": 1.0 * 0.5, "c": 1.5})
+    # reavaliar um produto antigo o torna recente de novo
+    pesos = pesos_do_historico(hist + [av("u", "a", dia=4)], meia_vida=1)
+    assert pesos["a"] == pytest.approx(1.5) and pesos["c"] == pytest.approx(0.75)
+
+
+def test_perfil_com_recencia_puxa_para_o_mais_recente():
+    vetores = {"texto": {"velho": np.array([1.0, 0.0]), "novo": np.array([0.0, 1.0])}}
+    hist = [av("u", "velho", dia=1), av("u", "novo", dia=2)]
+    sem = construir_perfil(hist, vetores)["texto"]
+    com = construir_perfil(hist, vetores, meia_vida=1)["texto"]
+    assert sem[0] == pytest.approx(sem[1])  # média simples: no meio
+    assert com[1] > com[0]  # com recência: mais perto do novo
+
+
+def test_sem_a_ultima_esconde_o_teste():
+    avs = [av("u", "a", dia=1), av("u", "b", dia=2), av("u", "c", dia=3), av("v", "a", dia=5)]
+    sobra = sem_a_ultima(avs, {"a", "b", "c"})
+    assert {(a.usuario, a.item_id) for a in sobra} == {("u", "a"), ("u", "b")}
+
+
+def test_avaliacao_de_validacao_nao_usa_o_teste(mundo):
+    arm, emb = mundo
+    cat = Catalogo.carregar(arm, emb, "bonecas")
+    avs = arm.avaliacoes_de(categoria="bonecas")
+    rel = avaliar_recomendacao(cat, avs, metodos=("conteudo",), meia_vida=1, validacao=True)
+    assert rel["conjunto"] == "validacao" and rel["meia_vida"] == 1
+    teste = {(c.usuario, c.teste.item_id) for c in dividir(avs, set(cat.ids))[0]}
+    validacao = {(c.usuario, c.teste.item_id) for c in dividir(sem_a_ultima(avs, set(cat.ids)), set(cat.ids))[0]}
+    assert not teste & validacao  # o alvo da validação nunca é o do teste

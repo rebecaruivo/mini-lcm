@@ -124,6 +124,7 @@ mini-lcm usuarios --categoria bonecas
 mini-lcm perfil USUARIO --categoria bonecas
 mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO
 mini-lcm avaliar-recomendacao --categoria bonecas --curva
+mini-lcm avaliar-recomendacao --categoria bonecas --validacao --meia-vida 2   # escolha de parâmetros
 
 # 7. Avaliar a busca (detalhes em docs/passo-a-passo.md)
 mini-lcm rotular "boneca gótica de cabelo rosa" --categoria bonecas --perfil "colecionadora adulta"
@@ -168,19 +169,18 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 Detalhes, intervalos e curva de histórico em
 [docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
 
-| Método | hit@10 bonecas (IC 95%) | hit@10 placas | cobertura bonecas |
-|---|---|---|---|
-| aleatório | 0,003 (0,001–0,004) | | 100,0% |
-| popularidade | 0,051 (0,044–0,059) | | 0,7% |
-| último produto | 0,169 (0,156–0,181) | | 78,8% |
-| conteúdo (perfil) | 0,113 (0,102–0,124) | | 57,0% |
-| coocorrência | **0,233** (0,219–0,247) | | 82,9% |
-| híbrido | 0,216 (0,203–0,230) | | 67,7% |
-| híbrido, só as 2 últimas avaliações | **0,261** (0,246–0,275) | | |
+| Método | hit@10 bonecas, média simples | hit@10 bonecas, com recência (IC 95%) | hit@10 placas | cobertura bonecas |
+|---|---|---|---|---|
+| aleatório | 0,003 | 0,003 (0,001–0,004) | | 100,0% |
+| popularidade | 0,051 | 0,051 (0,044–0,059) | | 0,7% |
+| último produto | 0,169 | 0,169 (0,156–0,181) | | 78,8% |
+| conteúdo (perfil) | 0,113 | 0,160 (0,147–0,172) | | 66,9% |
+| coocorrência | 0,233 | 0,260 (0,246–0,275) | | 86,6% |
+| híbrido | 0,216 | **0,267** (0,253–0,282) | | 73,3% |
 
-Com o histórico completo, a coocorrência é o melhor método. Usando só as avaliações
-mais recentes, o híbrido passa à frente: o perfil-média perde qualidade quando junta
-compras antigas, e a recência é um sinal forte nesta categoria.
+A média simples do histórico piorava quanto mais avaliações antigas entravam. Com um
+decaimento pela recência (meia-vida de 1 avaliação, escolhida num conjunto de validação
+separado do teste), o híbrido sobe 0,051 e passa a ser o melhor método.
 
 **Custo**
 
