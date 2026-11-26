@@ -29,35 +29,34 @@ hit@10 no teste, com os parâmetros escolhidos na validação:
 
 | Método | bonecas, por data | placas, por data | bonecas, por usuário (anterior) | placas, por usuário (anterior) |
 |---|---|---|---|---|
-| aleatório | 0,004 | 0,013 | 0,003 | 0,013 |
-| popularidade | 0,010 | 0,035 | 0,051 | 0,146 |
-| em alta | 0,117 | **0,083** | — | — |
-| último produto | 0,067 | 0,061 | 0,169 | 0,085 |
-| conteúdo (perfil) | 0,067 | 0,053 | 0,160 | 0,070 |
-| coocorrência | 0,061 | 0,018 | 0,260 | 0,041 |
-| híbrido | 0,077 | 0,031 | 0,267 | 0,060 |
-| híbrido + em alta | **0,133** | 0,066 | — | — |
+| aleatório | 0,001 | 0,004 | 0,003 | 0,013 |
+| popularidade | 0,009 | 0,035 | 0,051 | 0,146 |
+| em alta | 0,104 | **0,083** | — | — |
+| último produto | 0,048 | 0,031 | 0,169 | 0,085 |
+| conteúdo (perfil) | 0,045 | 0,022 | 0,160 | 0,070 |
+| coocorrência | 0,051 | 0,018 | 0,260 | 0,041 |
+| híbrido | 0,063 | 0,031 | 0,267 | 0,060 |
+| híbrido + em alta | **0,126** | 0,070 | — | — |
 
-1. **O protocolo anterior inflava a personalização.** No protocolo honesto, o híbrido das
-   bonecas cai de 0,267 para 0,077. A maior parte da diferença vem de compras em lote e
-   do vazamento entre pessoas, medidos abaixo.
+1. **O protocolo anterior inflava a personalização.** No protocolo por data, o híbrido das
+   bonecas cai de 0,267 para 0,063. A diferença vem de compras em lote e do vazamento
+   entre pessoas, medidos abaixo.
 2. **"O que está em alta" é a linha de base a bater.** A popularidade numa janela recente
    (30 dias nas bonecas, 90 nas placas) supera todos os métodos personalizados isolados
    nas duas categorias.
-3. **Gosto + momento:** nas bonecas, o híbrido com em alta (0,133) é o melhor método,
-   mas a vantagem sobre o em alta sozinho (+0,016) fica no limite da incerteza. Nas
-   placas, o em alta sozinho é o melhor.
-4. **Produtos novos:** 37% dos alvos das bonecas e 65% dos das placas são produtos sem
-   nenhuma interação antes do corte. Só os métodos de conteúdo acertam algum deles, e o
-   híbrido com em alta não acerta nenhum. *Ressalva:* o acerto do conteúdo em produtos
-   novos foi medido com um catálogo que favorecia esses produtos (ver a decisão de
-   26/11 sobre o catálogo completo em `decisoes.md`) e está sendo medido de novo.
+3. **Gosto + momento:** nas bonecas, o híbrido + em alta é o melhor método, 0,021 acima do
+   em alta sozinho (IC 95% de +0,009 a +0,034). Nas placas, o em alta sozinho é o melhor.
+4. **Produtos novos:** 40% dos alvos das bonecas e 65% dos das placas são produtos sem
+   nenhuma interação antes do corte. Só os métodos de conteúdo acertam algum (cerca de
+   3%, contra menos de 1% do acaso). Reservar vagas do top 10 para eles não compensou:
+   o que se ganha nos novos se perde, em dobro, nos já vistos.
 
 ## Protocolo principal: cortes semestrais por data
 
 ### Por que trocar de protocolo
 
-Dois problemas do corte por usuário, medidos nos dados:
+Dois problemas do corte por usuário, medidos nos dados (com o catálogo da primeira
+importação, de 3.000 bonecas):
 
 **Compras em lote.** Metade dos alvos das bonecas (52%) foi avaliada no mesmo dia da
 avaliação anterior da mesma pessoa, o que normalmente indica produtos comprados juntos.
@@ -86,9 +85,12 @@ que é a situação de um sistema de recomendação em produção.
   (popularidade, em alta, coocorrência) aprende só com as avaliações anteriores à data.
   Caso de teste: cada pessoa com pelo menos 3 produtos antes do corte e alguma avaliação
   nos seis meses seguintes; o alvo é a primeira delas.
-- **Catálogo do período:** num corte de 2015, cerca de 60% do catálogo importado ainda
-  não existia. Concorrem só os produtos cuja primeira avaliação no dataset é anterior ao
-  fim da janela do corte (aproximação da data de lançamento).
+- **Catálogo completo:** todos os produtos que passam no filtro da categoria (8.407
+  bonecas e 5.577 placas), avaliados ou não pelos usuários da amostra.
+- **Catálogo do período:** num corte, concorre um produto que já tinha alguma avaliação
+  antes da data ou cuja data de lançamento (metadados da Amazon) é anterior ao fim da
+  janela. Nenhuma avaliação posterior ao corte entra na regra. Produto novo sem data de
+  lançamento não concorre; se for o alvo, conta como erro para todos os métodos.
 - **Validação e teste:** os cortes mais antigos, até somar metade dos casos, formam a
   validação; os demais, o teste. Todos os parâmetros foram escolhidos na validação, e o
   teste foi rodado uma vez.
@@ -97,9 +99,11 @@ que é a situação de um sistema de recomendação em produção.
 
 | | Bonecas | Placas |
 |---|---|---|
-| Validação | 1.683 casos, 1.001 pessoas, cortes de 2003 a 2018 | 232 casos, 143 pessoas, cortes de 2002 a 2018 |
-| Teste | 1.655 casos, 996 pessoas, cortes de jul/2018 a jan/2024 | 228 casos, 144 pessoas, cortes de jul/2018 a jul/2023 |
-| Alvos novos no teste | 36,9% | 64,9% |
+| Validação | 2.166 casos, cortes de jul/2001 a jul/2018 | 232 casos, cortes de jul/2002 a jan/2018 |
+| Teste | 1.876 casos de 1.101 pessoas, cortes de jan/2019 a jul/2023 | 228 casos de 144 pessoas, cortes de jul/2018 a jan/2023 |
+| Produtos com data de lançamento | 2.550 de 8.407 (30%) | 5.367 de 5.577 (96%) |
+| Produtos novos candidatos por corte (teste) | 922 em média | 3.759 em média |
+| Alvos novos no teste | 39,8% (73% deles com data, portanto candidatos) | 64,9% (93% com data) |
 
 ### Escolha dos parâmetros na validação
 
@@ -107,67 +111,79 @@ que é a situação de um sistema de recomendação em produção.
 
 | Janela | 30 dias | 90 dias | 180 dias | 365 dias | 730 dias |
 |---|---|---|---|---|---|
-| Bonecas | **0,077** | 0,059 | 0,052 | 0,042 | 0,033 |
+| Bonecas | **0,066** | 0,054 | 0,045 | 0,036 | 0,027 |
 | Placas | 0,086 | **0,129** | 0,112 | 0,125 | 0,095 |
 
-**Meia-vida e peso do em alta** (hit@10 do híbrido com em alta, janela já escolhida):
+**Meia-vida e peso do em alta** (hit@10 do híbrido + em alta, janela já escolhida):
 
 Bonecas:
 
-| Meia-vida \ peso | 0,25 | 0,5 | 1 | 2 | 4 |
-|---|---|---|---|---|---|
-| sem recência | 0,065 | 0,071 | 0,081 | 0,081 | 0,079 |
-| 1 | 0,078 | 0,081 | **0,089** | 0,084 | 0,081 |
-| 2 | 0,078 | 0,078 | 0,088 | 0,087 | 0,083 |
-| 3 | 0,076 | 0,081 | 0,085 | 0,086 | 0,084 |
+| Meia-vida \ peso | 0,5 | 1 | 2 | 4 |
+|---|---|---|---|---|
+| sem recência | 0,058 | 0,067 | 0,068 | 0,067 |
+| 1 | 0,064 | 0,073 | 0,072 | 0,068 |
+| 2 | 0,065 | 0,071 | **0,075** | 0,070 |
+| 3 | 0,066 | 0,070 | 0,074 | 0,072 |
 
 Placas:
 
-| Meia-vida \ peso | 0,25 | 0,5 | 1 | 2 | 4 |
-|---|---|---|---|---|---|
-| sem recência | 0,078 | 0,091 | 0,112 | 0,112 | 0,112 |
-| 1 | 0,095 | 0,086 | 0,108 | **0,134** | 0,116 |
-| 2 | 0,078 | 0,091 | 0,108 | 0,125 | 0,116 |
-| 3 | 0,082 | 0,086 | 0,108 | 0,121 | 0,112 |
+| Meia-vida \ peso | 0,5 | 1 | 2 | 4 |
+|---|---|---|---|---|
+| sem recência | 0,091 | 0,108 | 0,108 | 0,108 |
+| 1 | 0,078 | 0,112 | **0,121** | 0,103 |
+| 2 | 0,082 | 0,116 | 0,116 | 0,108 |
+| 3 | 0,078 | 0,112 | 0,112 | 0,108 |
 
-Escolhidos (em `categorias.yaml`): bonecas com meia-vida 1, janela de 30 dias e peso 1;
-placas com meia-vida 1, janela de 90 dias e peso 2. A meia-vida de 1 avaliação, escolhida
-antes no protocolo anterior, também foi a melhor aqui nas duas categorias. As diferenças
-vizinhas na grade são menores que a incerteza da validação (cerca de ±0,013 nas bonecas e
-±0,04 nas placas), então os valores exatos importam pouco; a ordem de grandeza da janela
-(semanas nas bonecas, meses nas placas) é o que os dados sustentam.
+**Vagas reservadas para produtos novos** (as últimas posições do top 10 do híbrido + em
+alta vão para os produtos novos de maior pontuação de conteúdo):
+
+| Vagas | bonecas: total | novos | já vistos | placas: total | novos | já vistos |
+|---|---|---|---|---|---|---|
+| 0 | **0,075** | 0,001 | 0,122 | **0,121** | 0,000 | 0,378 |
+| 1 | 0,074 | 0,013 | 0,113 | **0,121** | 0,006 | 0,365 |
+| 2 | 0,071 | 0,020 | 0,103 | 0,116 | 0,006 | 0,351 |
+| 3 | 0,066 | 0,020 | 0,095 | 0,112 | 0,006 | 0,338 |
+| 5 | 0,054 | 0,030 | 0,069 | 0,108 | 0,032 | 0,270 |
+
+Escolhidos (em `categorias.yaml`): bonecas com meia-vida 2, janela de 30 dias, peso 2 e
+nenhuma vaga reservada; placas com meia-vida 1, janela de 90 dias, peso 2 e nenhuma vaga.
+As diferenças vizinhas na grade são menores que a incerteza da validação (cerca de
+±0,012 nas bonecas e ±0,04 nas placas): os valores exatos importam pouco. O que os dados
+sustentam é a ordem de grandeza da janela (semanas nas bonecas, meses nas placas), um
+peso alto para o em alta e alguma recência no perfil.
 
 ### Resultado no teste: bonecas
 
-1.655 casos, 996 pessoas, 11 cortes (jul/2018 a jan/2024); 36,9% dos alvos são novos.
+1.876 casos, 1.101 pessoas, 10 cortes (jan/2019 a jul/2023); 39,8% dos alvos são novos.
 
 | Método | hit@10 | IC 95% | NDCG@10 | cobertura | hit@10 alvos novos | hit@10 alvos já vistos |
 |---|---|---|---|---|---|---|
-| aleatório | 0,004 | 0,002–0,007 | 0,002 | 87,2% | 0,000 | 0,007 |
-| popularidade | 0,010 | 0,005–0,015 | 0,004 | 0,6% | 0,000 | 0,015 |
-| em alta | 0,117 | 0,101–0,133 | 0,065 | 4,1% | 0,000 | 0,185 |
-| último produto | 0,067 | 0,055–0,080 | 0,034 | 63,3% | **0,052** | 0,076 |
-| conteúdo (perfil) | 0,067 | 0,054–0,079 | 0,036 | 51,7% | 0,048 | 0,078 |
-| coocorrência | 0,061 | 0,049–0,072 | 0,033 | 75,0% | 0,000 | 0,097 |
-| híbrido | 0,077 | 0,063–0,089 | 0,039 | 59,8% | 0,003 | 0,120 |
-| híbrido + em alta | **0,133** | 0,116–0,150 | **0,067** | 50,1% | 0,000 | **0,211** |
+| aleatório | 0,001 | 0,000–0,003 | 0,000 | 54,9% | 0,000 | 0,002 |
+| popularidade | 0,009 | 0,005–0,013 | 0,004 | 0,2% | 0,000 | 0,014 |
+| em alta | 0,104 | 0,090–0,119 | 0,058 | 1,4% | 0,000 | 0,173 |
+| último produto | 0,048 | 0,038–0,058 | 0,024 | 37,6% | **0,031** | 0,059 |
+| conteúdo (perfil) | 0,045 | 0,036–0,055 | 0,022 | 25,6% | 0,025 | 0,058 |
+| coocorrência | 0,051 | 0,042–0,062 | 0,028 | 38,4% | 0,000 | 0,085 |
+| híbrido | 0,063 | 0,052–0,076 | 0,032 | 29,2% | 0,004 | 0,103 |
+| híbrido + em alta | **0,126** | 0,110–0,142 | **0,071** | 7,9% | 0,000 | **0,209** |
 
-Sem recência, o híbrido + em alta fica em 0,118, e o híbrido em 0,067.
+Curva de histórico (hit@10): o híbrido + em alta vai de 0,110 (só a última avaliação) a
+0,128 (as duas últimas) e fica estável daí em diante (0,126 com todas).
 
 ### Resultado no teste: placas de vídeo
 
-228 casos, 144 pessoas, 10 cortes (jul/2018 a jul/2023); 64,9% dos alvos são novos.
+228 casos, 144 pessoas, 10 cortes (jul/2018 a jan/2023); 64,9% dos alvos são novos.
 
 | Método | hit@10 | IC 95% | NDCG@10 | cobertura | hit@10 alvos novos | hit@10 alvos já vistos |
 |---|---|---|---|---|---|---|
-| aleatório | 0,013 | 0,000–0,029 | 0,006 | 69,6% | 0,013 | 0,013 |
-| popularidade | 0,035 | 0,013–0,063 | 0,019 | 1,5% | 0,000 | 0,100 |
-| em alta | **0,083** | 0,049–0,122 | **0,057** | 8,8% | 0,000 | **0,237** |
-| último produto | 0,061 | 0,032–0,093 | 0,030 | 58,0% | **0,054** | 0,075 |
-| conteúdo (perfil) | 0,053 | 0,025–0,085 | 0,027 | 54,5% | 0,041 | 0,075 |
-| coocorrência | 0,018 | 0,004–0,036 | 0,006 | 60,4% | 0,000 | 0,050 |
-| híbrido | 0,031 | 0,009–0,054 | 0,017 | 50,5% | 0,007 | 0,075 |
-| híbrido + em alta | 0,066 | 0,036–0,100 | 0,038 | 17,8% | 0,000 | 0,188 |
+| aleatório | 0,004 | 0,000–0,014 | 0,002 | 23,5% | 0,007 | 0,000 |
+| popularidade | 0,035 | 0,013–0,063 | 0,019 | 0,3% | 0,000 | 0,100 |
+| em alta | **0,083** | 0,049–0,122 | **0,057** | 1,8% | 0,000 | **0,237** |
+| último produto | 0,031 | 0,009–0,054 | 0,011 | 19,9% | **0,034** | 0,025 |
+| conteúdo (perfil) | 0,022 | 0,004–0,043 | 0,012 | 19,0% | 0,020 | 0,025 |
+| coocorrência | 0,018 | 0,004–0,036 | 0,006 | 12,1% | 0,000 | 0,050 |
+| híbrido | 0,031 | 0,012–0,054 | 0,018 | 15,1% | 0,013 | 0,062 |
+| híbrido + em alta | 0,070 | 0,040–0,105 | 0,041 | 3,5% | 0,000 | 0,200 |
 
 ### Comparações pareadas no teste
 
@@ -175,31 +191,48 @@ Bootstrap pareado por pessoa, IC 95%.
 
 | A | B | Bonecas | Placas |
 |---|---|---|---|
-| híbrido + em alta | em alta | +0,016 (−0,001 a +0,033) | −0,018 (−0,047 a +0,009) |
-| híbrido + em alta | híbrido | +0,056 (+0,044 a +0,070) | +0,035 (+0,000 a +0,071) |
-| híbrido + em alta | popularidade | +0,123 (+0,106 a +0,141) | +0,031 (−0,004 a +0,065) |
-| em alta | popularidade | +0,107 (+0,091 a +0,124) | +0,048 (+0,009 a +0,086) |
-| híbrido | coocorrência | +0,016 (+0,004 a +0,028) | +0,013 (−0,009 a +0,035) |
-| conteúdo | coocorrência | +0,005 (−0,009 a +0,019) | +0,035 (+0,005 a +0,068) |
+| híbrido + em alta | em alta | +0,021 (+0,009 a +0,034) | −0,013 (−0,040 a +0,010) |
+| híbrido + em alta | híbrido | +0,062 (+0,047 a +0,077) | +0,040 (+0,004 a +0,077) |
+| em alta | popularidade | +0,096 (+0,081 a +0,112) | +0,048 (+0,009 a +0,086) |
+| híbrido | coocorrência | +0,012 (+0,002 a +0,022) | +0,013 (−0,009 a +0,036) |
+| conteúdo | último produto | −0,003 (−0,012 a +0,006) | −0,009 (−0,023 a +0,000) |
+| último produto | aleatório | +0,047 (+0,037 a +0,057) | +0,026 (+0,004 a +0,051) |
+
+Como referência (não escolhido na validação): com 3 vagas reservadas, o híbrido + em alta
+fica em 0,118 nas bonecas (novos 0,035; já vistos 0,173) e 0,075 nas placas (novos 0,014;
+já vistos 0,188).
 
 ### Leitura
 
 1. **O momento prevê mais que a pessoa.** O em alta, igual para todos, ganha de qualquer
    método personalizado isolado nas duas categorias. Nas bonecas, a popularidade de todos
-   os tempos (0,010) é quase inútil, e a dos últimos 30 dias (0,117) é dez vezes melhor:
+   os tempos (0,009) é quase inútil, e a dos últimos 30 dias (0,104) é dez vezes melhor:
    lançamentos e reedições concentram as compras em semanas.
-2. **A personalização soma pouco ao momento.** Nas bonecas, juntar o gosto da pessoa ao
-   em alta acrescenta 0,016, no limite da incerteza; nas placas, não acrescenta. Com
-   históricos de 5 a 9 avaliações espalhadas em anos, o sinal individual é fraco.
-3. **O ganho do híbrido + em alta está todo nos produtos já vistos.** Nos alvos novos,
-   ele acerta zero: a lista em alta e a coocorrência só contêm produtos com interações, e
-   a fusão empurra as sugestões de conteúdo para fora do top 10.
-4. **Só o conteúdo alcança os produtos novos.** O último produto acerta 5% dos alvos
-   novos nas duas categorias, contra 0% dos métodos baseados em interações. Numa
-   plataforma de classificados, em que quase todo anúncio é novo e único, esta é a parte
-   do problema que mais pesa, e é onde melhores embeddings (fase 1) fazem diferença.
-5. **A recência continua ajudando.** Sem ela, o híbrido + em alta das bonecas cai de
-   0,133 para 0,118, e o conteúdo de 0,067 para 0,046.
+2. **Nas bonecas, gosto + momento é melhor que cada um.** O híbrido + em alta soma 0,021
+   ao em alta (IC sem zero) e 0,062 ao híbrido. Nas placas, compra rara e guiada pela
+   geração do produto, o gosto individual não acrescenta.
+3. **O ganho está todo nos produtos já vistos.** Nos alvos novos, o híbrido + em alta
+   acerta zero: a lista em alta e a coocorrência só contêm produtos com interações, e a
+   fusão empurra as sugestões de conteúdo para fora do top 10.
+4. **Só o conteúdo alcança produtos novos, e ainda pouco.** O último produto acerta 3,1%
+   (bonecas) e 3,4% (placas) dos alvos novos, entre centenas a milhares de candidatos
+   novos por semestre. É sinal real (o acaso fica abaixo de 1%), mas fraco demais para
+   ganhar posições no top 10: reservar vagas para novos troca cada acerto ganho neles
+   por cerca de dois perdidos nos já vistos.
+5. **Consequência:** a parte do problema que mais pesa em classificados, em que quase
+   todo anúncio é novo, é a que depende da qualidade dos embeddings. Melhorar o canal de
+   conteúdo (fase 1) é o caminho para os produtos novos, antes de qualquer ajuste de fusão.
+
+### Versão anterior do catálogo
+
+A primeira rodada deste protocolo usou o catálogo montado só com os produtos avaliados
+pela amostra (3.000 bonecas, 1.118 placas) e a data da primeira avaliação como data de
+lançamento. Com isso, os produtos novos candidatos de cada semestre eram justamente os
+que alguém da amostra ia avaliar, e as vagas reservadas pareciam levar as placas de 0,13
+a 0,33 na validação. Os métodos baseados em interações deram números parecidos nas duas
+versões (bonecas: em alta 0,117, híbrido + em alta 0,133); o acerto do conteúdo em
+produtos novos caiu de cerca de 5% para cerca de 3% com o catálogo completo. Detalhes na
+decisão de 26/11 em `decisoes.md`.
 
 ## Protocolo anterior: corte por usuário
 
@@ -518,11 +551,8 @@ validação, o que foi feito no protocolo principal (acima).
 
 ## Próximos experimentos
 
-- **Espaço reservado para novidades:** o híbrido + em alta não acerta nenhum produto novo.
-  Garantir algumas posições do top 10 para os melhores candidatos de conteúdo sem
-  interações (ou fundir com peso maior para eles) e medir a troca entre alvos novos e já
-  vistos.
 - **Variantes de texto (passo 6b):** o conteúdo é o único caminho para produtos novos;
-  melhorar o canal de texto deve aparecer diretamente no hit@10 dos alvos novos.
+  melhorar o canal de texto deve aparecer diretamente no hit@10 dos alvos novos, e só
+  então vale testar de novo as vagas reservadas.
 - **Perfil com mais de um vetor:** colecionadores misturam linhas diferentes, e a média
   (mesmo com recência) representa mal quem tem dois gostos.

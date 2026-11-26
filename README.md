@@ -167,26 +167,28 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 | Calibração | | | |
 | Auditoria às cegas | | | |
 
-**Recomendação** (cortes semestrais por data, teste de jul/2018 em diante, k = 10;
-parâmetros escolhidos na validação. Bonecas: 1.655 casos de 996 pessoas; placas: 228
-casos de 144 pessoas. Detalhes em [docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
+**Recomendação** (cortes semestrais por data, k = 10, catálogo completo da categoria;
+parâmetros escolhidos na validação. Bonecas: 1.876 casos de 1.101 pessoas, 2019 a 2023;
+placas: 228 casos de 144 pessoas, 2018 a 2023. Detalhes em
+[docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
 
 | Método | hit@10 bonecas (IC 95%) | hit@10 placas (IC 95%) | bonecas: alvos novos / já vistos |
 |---|---|---|---|
-| aleatório | 0,004 (0,002–0,007) | 0,013 (0,000–0,029) | 0,000 / 0,007 |
-| popularidade | 0,010 (0,005–0,015) | 0,035 (0,013–0,063) | 0,000 / 0,015 |
-| em alta | 0,117 (0,101–0,133) | **0,083** (0,049–0,122) | 0,000 / 0,185 |
-| último produto | 0,067 (0,055–0,080) | 0,061 (0,032–0,093) | **0,052** / 0,076 |
-| conteúdo (perfil) | 0,067 (0,054–0,079) | 0,053 (0,025–0,085) | 0,048 / 0,078 |
-| coocorrência | 0,061 (0,049–0,072) | 0,018 (0,004–0,036) | 0,000 / 0,097 |
-| híbrido | 0,077 (0,063–0,089) | 0,031 (0,009–0,054) | 0,003 / 0,120 |
-| híbrido + em alta | **0,133** (0,116–0,150) | 0,066 (0,036–0,100) | 0,000 / **0,211** |
+| aleatório | 0,001 (0,000–0,003) | 0,004 (0,000–0,014) | 0,000 / 0,002 |
+| popularidade | 0,009 (0,005–0,013) | 0,035 (0,013–0,063) | 0,000 / 0,014 |
+| em alta | 0,104 (0,090–0,119) | **0,083** (0,049–0,122) | 0,000 / 0,173 |
+| último produto | 0,048 (0,038–0,058) | 0,031 (0,009–0,054) | **0,031** / 0,059 |
+| conteúdo (perfil) | 0,045 (0,036–0,055) | 0,022 (0,004–0,043) | 0,025 / 0,058 |
+| coocorrência | 0,051 (0,042–0,062) | 0,018 (0,004–0,036) | 0,000 / 0,085 |
+| híbrido | 0,063 (0,052–0,076) | 0,031 (0,012–0,054) | 0,004 / 0,103 |
+| híbrido + em alta | **0,126** (0,110–0,142) | 0,070 (0,040–0,105) | 0,000 / **0,209** |
 
 - **O momento prevê mais que a pessoa:** a popularidade das últimas semanas ganha de
-  qualquer método personalizado isolado. Somar o gosto da pessoa ao que está em alta
-  acrescenta pouco nas bonecas e nada nas placas.
-- **Produtos novos** (37% dos alvos nas bonecas, 65% nas placas) só são alcançados pelos
-  métodos de conteúdo. É o caso típico de classificados, em que quase todo anúncio é novo.
+  qualquer método personalizado isolado. Nas bonecas, somar o gosto da pessoa ao que está
+  em alta acrescenta 0,021 (IC 95% de +0,009 a +0,034); nas placas, nada.
+- **Produtos novos** (40% dos alvos nas bonecas, 65% nas placas) só são alcançados pelos
+  métodos de conteúdo, e por pouco (cerca de 3%). Reservar vagas do top 10 para eles não
+  compensou. É o caso típico de classificados, e onde melhores embeddings fariam diferença.
 - O primeiro protocolo (esconder a última avaliação de cada pessoa) dava 0,267 ao híbrido
   das bonecas: compras feitas juntas e vazamento entre pessoas inflavam o resultado.
 
@@ -212,15 +214,16 @@ casos de 144 pessoas. Detalhes em [docs/resultados-recomendacao.md](docs/resulta
 - Preços em dólar, no momento da coleta do dataset (até 2023).
 - Avaliação escrita não é clique nem compra: o sinal de comportamento é mais esparso
   e enviesado que o de um marketplace real.
-- A data de lançamento de cada produto é aproximada pela primeira avaliação no dataset.
+- Só 30% das bonecas têm data de lançamento nos metadados; produto novo sem data não
+  concorre na avaliação por data (nas placas, 96% têm data).
 - Nas placas, o teste tem só 228 casos: os intervalos de confiança são largos.
 
 ## Próximas fases
 
 3. **Personas sintéticas:** usuários simulados com preferências ocultas
    escritas como regras, que servem de gabarito para medir se o sistema aprende.
-4. **Avaliação ampliada:** efeito da personalização na busca, espaço reservado para
-   produtos novos e custo por recomendação. (O corte por data já foi feito na fase 2.)
+4. **Avaliação ampliada:** efeito da personalização na busca e custo por recomendação.
+   (O corte por data e o teste de vagas para produtos novos já foram feitos na fase 2.)
 5. **Opcional:** treinar um modelo pequeno com as interações (two-tower).
 
 ## Dados e créditos

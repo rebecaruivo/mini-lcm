@@ -106,6 +106,7 @@ for j in 30 90 180 365 730; do mini-lcm avaliar-recomendacao --categoria bonecas
 for mv in 1 2 3; do for p in 0.25 0.5 1 2 4; do
   mini-lcm avaliar-recomendacao --categoria bonecas --validacao --metodos hibrido_alta --meia-vida $mv --peso-em-alta $p
 done; done
+for v in 0 1 2 3 4 5; do mini-lcm avaliar-recomendacao --categoria bonecas --validacao --metodos hibrido_alta --vagas-novos $v; done
 # os valores escolhidos vão para categorias.yaml (bloco recomendacao)
 
 # teste, uma vez, com os parâmetros de categorias.yaml (cortes semestrais por data)

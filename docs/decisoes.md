@@ -430,10 +430,11 @@ pessoa testada. Sortear 5 entre 41 já acertaria cerca de 12%.
   a data de lançamento é anterior ao fim da janela. Nenhuma avaliação posterior ao corte
   entra na regra. Produto novo sem data de lançamento não concorre.
 
-**Efeito nos resultados já publicados:** com a regra estrita, os métodos baseados em
-interações (popularidade, em alta, coocorrência, híbridos) não mudam, porque nunca
-acertavam produtos novos. O acerto do conteúdo em produtos novos (cerca de 5%) vinha em
-parte do grupo de candidatos viciado e será medido de novo com o catálogo completo.
+**Efeito nos resultados:** com o catálogo completo e a regra nova, os métodos baseados em
+interações mudam pouco (bonecas: em alta de 0,117 para 0,104, híbrido + em alta de 0,133
+para 0,126). O acerto do conteúdo em produtos novos cai de cerca de 5% para cerca de 3%,
+e as vagas reservadas deixam de compensar: na validação, 0 vagas é o melhor nas duas
+categorias. Os parâmetros foram escolhidos de novo na validação com os dados novos.
 
 **Limitação que fica:** o filtro `min_avaliacoes` usa o total de avaliações do produto na
 Amazon até 2023, que também é informação do futuro, embora não ligada à amostra.

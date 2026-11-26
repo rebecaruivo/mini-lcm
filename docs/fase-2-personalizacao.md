@@ -284,9 +284,13 @@ No corte por data, há uma data única para todos:
 
 - O modelo (popularidade, em alta, coocorrência) aprende **só** com o que veio antes da
   data. O perfil de cada pessoa usa o histórico dela até a data.
-- Concorrem só os produtos que já existiam naquele semestre (a data da primeira
-  avaliação no dataset aproxima a data de lançamento). Num corte de 2015, cerca de 60% do
-  catálogo importado ainda não existia.
+- O catálogo é completo: todos os produtos que passam no filtro da categoria
+  (`catalogo_completo: true`), e não só os que a amostra avaliou. Um catálogo montado com
+  o que a amostra avaliou conteria, em cada corte, só os produtos novos que alguém da
+  amostra vai comprar, e o alvo estaria entre poucos candidatos.
+- Concorrem só os produtos que já existiam naquele semestre: os que já tinham alguma
+  avaliação antes da data, ou cuja data de lançamento (metadados da Amazon) é anterior ao
+  fim da janela. Nenhuma avaliação posterior ao corte entra nessa regra.
 - Uma data só deixa poucos casos (460 nas bonecas, 66 nas placas). Por isso, há um corte
   a cada seis meses, cada um com o seu modelo ("rolling origin"), e os casos de todos os
   cortes são somados.
@@ -301,8 +305,12 @@ No corte por data, há uma data única para todos:
 Em cada corte, o relatório separa os alvos **novos** (produtos sem nenhuma interação
 antes da data) dos **já vistos**. Popularidade, em alta e coocorrência não conseguem
 recomendar um produto novo, porque não há nada a contar; só os métodos de conteúdo
-conseguem. Nos dados, 37% dos alvos das bonecas e 65% dos das placas são novos. Em
+conseguem. Nos dados, 40% dos alvos das bonecas e 65% dos das placas são novos. Em
 classificados, quase todo anúncio é novo.
+
+O `hibrido_alta` aceita reservar as últimas posições do top 10 para produtos novos,
+escolhidos pelo perfil de conteúdo (`vagas_novos`). O número de vagas é escolhido na
+validação como os outros parâmetros.
 
 ### Métricas (k = 10, um único produto certo por caso)
 
@@ -375,9 +383,10 @@ junto com a causa encontrada, em vez de omitidos.
 
 ## 7. Limitações
 
-- **Data de lançamento aproximada:** o catálogo de cada corte usa a primeira avaliação
-  do produto no dataset como data de lançamento. Um produto lançado meses antes da
-  primeira avaliação fica de fora dos candidatos nesse intervalo.
+- **Data de lançamento incompleta:** só 30% das bonecas têm data nos metadados (96% das
+  placas). Produto novo sem data não concorre; se for o alvo, conta como erro para todos.
+- **Filtro com informação futura:** `min_avaliacoes` usa o total de avaliações do produto
+  na Amazon até 2023. Não depende da amostra, mas também é posterior aos cortes.
 - **Poucos casos nas placas:** 228 no teste, com intervalos de confiança largos
   (cerca de ±0,035 no hit@10). Diferenças pequenas entre métodos não são conclusivas.
 - **Avaliação (review) não é compra nem clique:** só uma fração de quem compra
@@ -457,38 +466,41 @@ interações em escala muito maior.
 Tabelas completas, grades de validação e comparações pareadas em
 [resultados-recomendacao.md](resultados-recomendacao.md).
 
-### Protocolo principal (cortes por data, teste de jul/2018 em diante)
+### Protocolo principal (cortes por data, catálogo completo)
 
-| Método | bonecas (1.655 casos) | placas (228 casos) |
+| Método | bonecas (1.876 casos, 2019–2023) | placas (228 casos, 2018–2023) |
 |---|---|---|
-| aleatório | 0,004 | 0,013 |
-| popularidade | 0,010 | 0,035 |
-| em alta | 0,117 | **0,083** |
-| último produto | 0,067 | 0,061 |
-| conteúdo (perfil) | 0,067 | 0,053 |
-| coocorrência | 0,061 | 0,018 |
-| híbrido | 0,077 | 0,031 |
-| híbrido + em alta | **0,133** | 0,066 |
+| aleatório | 0,001 | 0,004 |
+| popularidade | 0,009 | 0,035 |
+| em alta | 0,104 | **0,083** |
+| último produto | 0,048 | 0,031 |
+| conteúdo (perfil) | 0,045 | 0,022 |
+| coocorrência | 0,051 | 0,018 |
+| híbrido | 0,063 | 0,031 |
+| híbrido + em alta | **0,126** | 0,070 |
 
-(hit@10; parâmetros escolhidos na validação: meia-vida 1 nas duas categorias, janela de
-30 dias e peso 1 nas bonecas, 90 dias e peso 2 nas placas.)
+(hit@10; parâmetros escolhidos na validação: bonecas com meia-vida 2, janela de 30 dias e
+peso 2; placas com meia-vida 1, janela de 90 dias e peso 2; nenhuma vaga reservada.)
 
 Confronto com as expectativas da seção 6:
 
 - **Popularidade forte:** só a recente. A popularidade de todos os tempos é quase inútil
-  nas bonecas (0,010); a dos últimos 30 dias, a mais forte das linhas de base (0,117).
+  nas bonecas (0,009); a dos últimos 30 dias, a mais forte das linhas de base (0,104).
 - **Coocorrência como melhor método individual:** não se confirmou no protocolo honesto.
   Nas bonecas, empata com o conteúdo; nas placas, fica perto do acaso.
 - **Conteúdo perde:** perde no total, mas é o **único** método que acerta produtos novos
-  (5% dos alvos novos nas duas categorias, contra 0% dos métodos de interações).
+  (cerca de 3% dos alvos novos, contra 0% dos métodos de interações e menos de 1% do acaso).
 - **Híbrido ≥ melhor componente:** confirmado nas bonecas. O híbrido + em alta é o melhor
-  método, mas sua vantagem sobre o em alta sozinho (+0,016) fica no limite da incerteza.
+  método, 0,021 acima do em alta sozinho (IC 95% de +0,009 a +0,034).
+- **Vagas para produtos novos:** não compensaram. Com 3 vagas, o acerto em novos nas
+  bonecas sobe de 0,000 para 0,035, mas o acerto nos já vistos cai de 0,209 para 0,173.
 
 A conclusão principal da fase: nestes dados, **o momento do mercado prevê a próxima
-compra melhor do que o gosto individual**, e o gosto individual acrescenta pouco a ele.
-A personalização faz diferença onde os métodos de popularidade não alcançam: os produtos
-novos. É exatamente o caso de classificados, e onde vale investir (melhores embeddings,
-espaço reservado para novidades).
+compra melhor do que o gosto individual**; o gosto individual acrescenta algo em
+colecionismo (bonecas) e nada em compra rara de tecnologia (placas). A personalização é o
+único caminho para os produtos novos, mas o sinal de conteúdo ainda é fraco demais para
+ganhar posições no top 10. É exatamente o caso de classificados, e o argumento para
+investir em embeddings melhores.
 
 ### Protocolo anterior (corte por usuário)
 

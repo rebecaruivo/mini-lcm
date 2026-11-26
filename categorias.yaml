@@ -42,9 +42,9 @@ categorias:
     min_avaliacoes_usuario: 5
     catalogo_completo: true
     recomendacao:
-      meia_vida: 1
+      meia_vida: 2
       janela_dias: 30
-      peso_em_alta: 1
+      peso_em_alta: 2
       vagas_novos: 0
 
   - slug: placas-de-video
