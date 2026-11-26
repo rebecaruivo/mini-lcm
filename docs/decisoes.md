@@ -179,7 +179,22 @@ mas o pool a rotular sai da própria busca. Com um canal de texto quebrado,
 o pool perde bons candidatos, e uma variante melhor traria depois muitos
 produtos sem nota no top 10.
 
-*Resultado: a preencher depois da sondagem.*
+**Resultado (26/11, catálogo completo de bonecas):** acerto@10 do canal de texto de 40%
+(CLIP, texto completo), 30% (CLIP, título), 96% (e5, texto completo) e 94% (e5, título);
+na fusão com a imagem, 52%, 52%, 88% e 96%. A hipótese 2 (modelo inadequado) se
+confirmou; a 1 (diluição do título) não: tirar os destaques não ajudou o CLIP.
+
+Na recomendação, que compara produto com produto, as quatro variantes empataram dentro
+da incerteza, inclusive nos produtos novos. A fraqueza do CLIP estava em entender a
+consulta curta, não em descrever o produto.
+
+Nas placas, o mesmo padrão: canal de texto de 6% e 0% (CLIP) contra 68% e 66% (e5),
+com teto de 76% (dois modelos aparecem em só 4 títulos). A imagem acerta 2% nas placas,
+que parecem todas iguais na foto, e a fusão puxa o e5 para 38%.
+
+**Escolha:** `EMBEDDER=clip+e5` com `TEXTO_ITEM=titulo`, a melhor na fusão nas bonecas e
+empatada nas placas. Tabelas em `sondagem.md`. O peso da imagem na fusão por categoria
+fica para a avaliação com gabarito.
 
 ---
 

@@ -31,23 +31,28 @@ Amazon Reviews 2023 (arquivos .jsonl.gz)
    ▼
 produtos ───────────────┐          avaliações reais (para a fase 2)
    │ indexar            │
-   ├─ texto → CLIP multilíngue ─┐
-   └─ foto  → CLIP imagem ──────┤  vetores de 512 dimensões, no mesmo espaço
-                                ▼
+   ├─ título → multilingual-e5 ───┐  384 dimensões (texto contra texto)
+   └─ foto   → CLIP imagem ───────┤  512 dimensões (texto contra imagem)
+                                  ▼
                     pgvector (ou arquivos locais)
-                                ▲
+                                  ▲
 consulta "boneca gótica até US$ 30"
-   │ CLIP multilíngue           │ vizinhos mais próximos em cada canal,
-   └────────────────────────────┘ já filtrados por preço/condição/categoria
+   │ e5 (canal texto) e CLIP     │ vizinhos mais próximos em cada canal,
+   │ multilíngue (canal imagem)  │ já filtrados por preço/condição/categoria
+   └─────────────────────────────┘
                                 │
                      Reciprocal Rank Fusion + remoção de duplicatas
                                 ▼
                           top 10 resultados
 ```
 
-- **Texto e foto no mesmo espaço:** o CLIP permite comparar a consulta
-  diretamente com a foto do produto. Com o codificador multilíngue, consultas
-  em português encontram produtos descritos em inglês.
+- **Consulta contra a foto:** o CLIP põe texto e imagem no mesmo espaço, então a
+  consulta é comparada diretamente com a foto do produto. Com o codificador
+  multilíngue, consultas em português encontram produtos descritos em inglês.
+- **Um modelo por canal:** no canal de texto, o multilingual-e5 (treinado para busca)
+  acerta 94% dos nomes testados, contra 30–40% do texto do CLIP
+  ([docs/sondagem.md](docs/sondagem.md)). Cada canal compara a consulta só com vetores
+  do próprio espaço.
 - **Fusão por posição (RRF):** os dois canais têm escalas de similaridade
   diferentes. Combinar pelas posições evita que um canal domine o outro.
 - **Filtros antes da ordenação:** "até US$ 30" nunca devolve um produto mais caro.
@@ -152,6 +157,21 @@ apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgr
 
 *Preenchido à medida que cada etapa roda com os dados reais.*
 
+**Sondagem do canal de texto** (5 nomes por categoria; acerto@10 = resultados com o nome
+no título. Detalhes em [docs/sondagem.md](docs/sondagem.md))
+
+| Variante de texto | bonecas: só texto | bonecas: fusão | placas: só texto | placas: fusão |
+|---|---|---|---|---|
+| CLIP, texto completo | 40% | 52% | 6% | 2% |
+| CLIP, só título | 30% | 52% | 0% | 0% |
+| multilingual-e5, texto completo | **96%** | 88% | **68%** | **38%** |
+| multilingual-e5, só título (escolhida) | 94% | **96%** | 66% | **38%** |
+| teto (produtos com o nome) | 100% | 100% | 76% | 76% |
+
+Na recomendação, que compara produto com produto, as variantes empatam. Nas placas, que
+parecem todas iguais na foto, a imagem atrapalha a fusão: o peso da imagem deve variar
+por categoria.
+
 **Busca** (notas combinadas: minhas onde existem, do juiz no resto)
 
 | Métrica | texto | imagem | fusão |
@@ -209,8 +229,8 @@ placas: 228 casos de 144 pessoas, 2018 a 2023. Detalhes em
   concorda comigo, não com "a verdade".
 - O gabarito sai dos resultados dos próprios modos (pooling): um produto
   relevante que nenhum modo encontrou nunca é avaliado. O recall é um teto otimista.
-- O CLIP local é gratuito, mas fica abaixo dos modelos pagos de ponta em
-  texto contra texto. A troca será medida, não suposta.
+- Os modelos locais (CLIP e multilingual-e5-small) são gratuitos, mas ficam abaixo dos
+  modelos pagos de ponta. A troca seria medida, não suposta.
 - Preços em dólar, no momento da coleta do dataset (até 2023).
 - Avaliação escrita não é clique nem compra: o sinal de comportamento é mais esparso
   e enviesado que o de um marketplace real.
@@ -233,7 +253,8 @@ Chen, X., & McAuley, J. (2024). *Bridging Language and Items for Retrieval and
 Recommendation*. arXiv:2403.03952. Os dados não são redistribuídos aqui: o
 script baixa direto da fonte.
 
-Modelos: CLIP (OpenAI) e clip-ViT-B-32-multilingual-v1 (sentence-transformers);
+Modelos: CLIP (OpenAI), clip-ViT-B-32-multilingual-v1 (sentence-transformers) e
+multilingual-e5-small (Wang et al., 2024, arXiv:2402.05672);
 juiz: Gemini (Google). Método de calibração do juiz inspirado em Thomas, Spielman,
 Craswell & Mitra (2024), *Large Language Models can Accurately Predict Searcher
 Preferences*, SIGIR.

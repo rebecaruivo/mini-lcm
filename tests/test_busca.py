@@ -131,3 +131,6 @@ def test_sondagem_mede_acerto_pelo_titulo(indexado):
     assert 0 <= mh["faixa_texto"] <= 2
     md = sondagem_markdown(linhas, emb.nome, k=2)
     assert "| monster high | 100%" in md and "média" in md
+    assert mh["teto"] is None  # sem categoria, sem teto
+    com_categoria = sondar(arm, emb, ["monster high"], Filtros(categoria="bonecas"), k=2)[0]
+    assert com_categoria["teto"] == 1.0  # há pelo menos 2 bonecas Monster High

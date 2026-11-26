@@ -86,6 +86,7 @@ EMBEDDER=clip+e5 TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "
 Faça o mesmo para placas de vídeo, com termos como `"rtx 4060" "rx 7600" "gtx 1650" asus msi`.
 Escolha a variante com melhor acerto e faixa de similaridade mais larga,
 grave a escolha no `.env` (`EMBEDDER=` e `TEXTO_ITEM=`) e teste as buscas descritivas do passo 6 de novo.
+Resultado e escolha (e5 com título): [sondagem.md](sondagem.md).
 
 ## 6c. Fase 2: personalização
 Guia completo, com os conceitos: [fase-2-personalizacao.md](fase-2-personalizacao.md).

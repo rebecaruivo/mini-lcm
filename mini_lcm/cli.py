@@ -266,7 +266,8 @@ def cmd_sondar(cfg: Config, arm: Armazenamento, args) -> None:
     if args.salvar:
         Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
         with open(args.salvar, "a", encoding="utf-8") as f:
-            f.write(texto + "\n\n")
+            tabela = texto.split("\n", 2)[2]  # sem a linha "Variante:", que vira o título
+            f.write(f"#### {args.categoria or 'todas as categorias'} · {embedder.nome}\n\n{tabela}\n\n")
         print(f"\nAcrescentado a {args.salvar}")
 
 
