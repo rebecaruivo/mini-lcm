@@ -82,8 +82,59 @@ ficam fora da média (14 consultas); com as notas combinadas, todas entram.
 2. **A imagem depende da categoria.** Nas placas, o texto ganha em 8 de 9 consultas, e a
    imagem fica perto de zero: toda placa parece igual na foto. Nas bonecas, a imagem ou a
    fusão ganham em 7 de 9, em especial nas buscas visuais (noiva, gótica, vampira).
-3. **Consequência:** o peso da imagem na fusão deve ser escolhido por categoria. A
-   escolha é feita nas 12 consultas originais e conferida nas 6 de validação.
+3. **Consequência:** o peso da imagem na fusão deve ser escolhido por categoria (seção
+   seguinte).
 
 As notas por consulta vêm de poucos produtos relevantes em vários casos (1 a 3): as
 diferenças por consulta são indicativas, não conclusivas.
+
+## Peso da imagem por categoria
+
+Regra fixada antes de ver os números: o peso de maior NDCG@10 nas 12 consultas originais
+(`avaliacao/consultas.yaml`); as 6 de validação só conferem.
+
+```bash
+mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1
+mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1
+```
+
+NDCG@10 da fusão (notas combinadas; 0 = só texto, 1 = só imagem):
+
+| Peso | bonecas, originais (6) | bonecas, validação (3) | placas, originais (6) | placas, validação (3) |
+|---|---|---|---|---|
+| 0 | 0,643 | 0,430 | **0,863** | 0,709 |
+| 0,1 | 0,656 | 0,430 | 0,837 | 0,716 |
+| 0,2 | 0,659 | 0,431 | 0,814 | 0,702 |
+| 0,3 | 0,667 | 0,474 | 0,792 | 0,741 |
+| 0,4 | 0,680 | 0,538 | 0,744 | **0,752** |
+| 0,5 | **0,716** | 0,653 | 0,515 | 0,646 |
+| 0,6 | 0,666 | **0,739** | 0,221 | 0,375 |
+| 0,7 | 0,680 | 0,633 | 0,168 | 0,354 |
+| 0,8 | 0,653 | 0,583 | 0,120 | 0,354 |
+| 0,9 | 0,630 | 0,583 | 0,116 | 0,325 |
+| 1 | 0,622 | 0,583 | 0,116 | 0,279 |
+
+**Escolhidos (em `categorias.yaml`): 0,5 nas bonecas e 0 nas placas.** Na validação, os
+picos ficam vizinhos da escolha (0,6 nas bonecas, 0,4 nas placas), mas com 3 consultas
+por categoria essas diferenças cabem no ruído.
+
+Comparação das três estratégias (média das duas categorias):
+
+| Estratégia | NDCG@10, originais | NDCG@10, validação |
+|---|---|---|
+| só texto | 0,753 | 0,570 |
+| peso 0,5 para todas (antes) | 0,616 | 0,650 |
+| **peso por categoria (0,5 e 0)** | **0,790** | **0,681** |
+
+O peso por categoria é o melhor nos dois conjuntos, inclusive nas consultas que não
+entraram na escolha.
+
+**Leitura:**
+- Nas placas, a imagem só atrapalha. Com peso acima de 0,5, o NDCG despenca (0,12 com só
+  imagem): a foto não distingue uma RTX 3060 de uma RX 6600.
+- Nas bonecas, o melhor é metade texto e metade imagem. Só imagem também piora (0,62): a
+  foto mostra o estilo, mas não lê o nome da personagem nem a função ("chora e faz xixi").
+- Um peso fixo por categoria ainda é grosso. Dentro das bonecas, as buscas por nome
+  ("monster high draculaura": texto 0,92, imagem 0,23) e as visuais ("boneca com vestido
+  de noiva": texto 0,59, imagem 0,95) pedem pesos opostos. O próximo nível seria um peso
+  que depende da consulta (ver `decisoes.md`, 27/11).

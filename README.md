@@ -1,105 +1,140 @@
 # mini-lcm
 
-Um motor de personalização em miniatura, inspirado no **Large Commerce Model
-(LCM)** da Prosus: em vez de aprender com documentos, como um LLM, ele aprende o
-gosto de cada pessoa a partir do que ela faz. Funciona para vários usuários e
-para qualquer categoria de produto.
+Busca e recomendação de produtos personalizadas, em miniatura, inspiradas no
+**Large Commerce Model (LCM)** da Prosus: em vez de aprender com documentos, como um LLM,
+o sistema aprende o gosto de cada pessoa a partir do que ela fez. Dados reais da Amazon
+(Amazon Reviews 2023) em duas categorias de comportamento oposto: **bonecas**
+(colecionismo, compras frequentes) e **placas de vídeo** (compra rara, guiada pela
+geração do produto). Nada no código é específico dessas categorias.
 
-> **Status: fases 1 e 2 de 5.** Fase 1 (busca): embeddings de texto e de imagem,
-> busca em linguagem natural com filtros, avaliação com notas de relevância
-> minhas e de um juiz de IA calibrado contra elas, e medição de custo.
-> Fase 2 (personalização): perfil de cada usuário aprendido com as avaliações
-> reais, seis métodos de recomendação comparados entre si, busca reordenada pelo
-> gosto da pessoa e avaliação temporal sem rótulos. Os números serão preenchidos
-> depois da execução com os dados reais.
-> Os números de avaliação e custo serão preenchidos depois da primeira
-> execução com os dados reais.
+O projeto tem três partes:
 
-## O problema
+1. **Busca** em linguagem natural, por texto e por foto, com filtros.
+2. **Recomendação** a partir do histórico de cada pessoa.
+3. **Avaliação** das duas, feita para não enganar quem a faz.
 
-Buscar produto por palavra-chave falha de dois jeitos: quando a pessoa descreve
-o que quer com outras palavras ("boneca gótica de cabelo rosa"), e quando o
-título do produto é pobre. E mesmo uma busca boa devolve a mesma lista para
-todos os usuários. O objetivo é chegar a uma lista que entende a consulta, respeita os
-filtros e, a partir da fase 2, é ordenada pelo gosto de quem busca.
+## Principais resultados
 
-## Como funciona (fase 1)
+- **Um modelo por canal na busca.** O codificador de texto do CLIP, feito para comparar
+  texto com imagem, acertava 30–40% dos nomes buscados nas bonecas; o multilingual-e5,
+  feito para busca, acerta 94–96%. Com o e5 no texto e o CLIP na foto, escolher o peso
+  da imagem por categoria leva o NDCG@10 médio de 0,62 (peso igual para todas) a 0,79.
+- **A foto ajuda nas bonecas e atrapalha nas placas.** Toda placa parece igual na foto:
+  o melhor peso da imagem é 0 nas placas e 0,5 nas bonecas.
+- **O momento prevê mais que a pessoa.** Na recomendação, "o que está em alta nas últimas
+  semanas" ganha de qualquer método personalizado isolado. Juntar o gosto da pessoa ao
+  que está em alta é o melhor nas bonecas (hit@10 de 0,126) e não acrescenta nada nas placas.
+- **Produtos novos são o ponto cego.** 40% das próximas compras nas bonecas e 65% nas
+  placas são de produtos sem nenhuma interação anterior. Só os métodos de conteúdo
+  (texto e foto) alcançam algum deles.
+- **Três resultados bons demais eram vazamento.** A primeira avaliação da recomendação
+  dava 0,267; com a correção, 0,063 (ver "Como a avaliação evita se enganar").
+
+## Como funciona
+
+### Busca
 
 ```text
-Amazon Reviews 2023 (arquivos .jsonl.gz)
-   │  importar: filtro por categoria (categorias.yaml) + amostra aleatória
-   ▼
-produtos ───────────────┐          avaliações reais (para a fase 2)
-   │ indexar            │
-   ├─ título → multilingual-e5 ───┐  384 dimensões (texto contra texto)
-   └─ foto   → CLIP imagem ───────┤  512 dimensões (texto contra imagem)
-                                  ▼
-                    pgvector (ou arquivos locais)
-                                  ▲
-consulta "boneca gótica até US$ 30"
-   │ e5 (canal texto) e CLIP     │ vizinhos mais próximos em cada canal,
-   │ multilíngue (canal imagem)  │ já filtrados por preço/condição/categoria
-   └─────────────────────────────┘
-                                │
-                     Reciprocal Rank Fusion + remoção de duplicatas
-                                ▼
-                          top 10 resultados
+consulta "boneca gótica de cabelo rosa"  +  filtros (categoria, preço, condição)
+   │
+   ├─ multilingual-e5 ──► compara com os TÍTULOS ──► lista A
+   └─ CLIP (texto) ─────► compara com as FOTOS ────► lista B
+                                                      │
+          Reciprocal Rank Fusion, com o peso da imagem da categoria
+                         │  remoção de duplicatas
+                         ▼
+                     top 10 resultados
 ```
 
-- **Consulta contra a foto:** o CLIP põe texto e imagem no mesmo espaço, então a
-  consulta é comparada diretamente com a foto do produto. Com o codificador
-  multilíngue, consultas em português encontram produtos descritos em inglês.
-- **Um modelo por canal:** no canal de texto, o multilingual-e5 (treinado para busca)
-  acerta 94% dos nomes testados, contra 30–40% do texto do CLIP
-  ([docs/sondagem.md](docs/sondagem.md)). Cada canal compara a consulta só com vetores
-  do próprio espaço.
-- **Fusão por posição (RRF):** os dois canais têm escalas de similaridade
-  diferentes. Combinar pelas posições evita que um canal domine o outro.
+- **Fusão por posição (RRF):** os canais têm escalas de similaridade diferentes;
+  combinar pelas posições evita que um domine o outro.
 - **Filtros antes da ordenação:** "até US$ 30" nunca devolve um produto mais caro.
-- **Nada é específico de categoria:** uma categoria nova é uma entrada em `categorias.yaml`.
+- **Consultas em português** encontram produtos descritos em inglês (modelos multilíngues).
+- **Vetores** em pgvector (Postgres/Supabase) ou em arquivos locais, com a mesma interface.
 
-## Personalização (fase 2)
+### Recomendação
 
 ```text
-avaliações reais de cada usuário (nota 1–5, data)
+histórico de cada pessoa (avaliações com nota e data)
    │
-   ├─ perfil = média dos vetores do que avaliou, ponderada pela nota e pela recência (conteúdo)
+   ├─ perfil: média dos vetores do que avaliou, com peso pela nota e pela recência  (conteúdo)
    ├─ "quem avaliou o que você avaliou também avaliou..."                          (colaborativa)
    └─ o que está em alta nas últimas semanas                                        (momento)
-                     │
-          recomendação (híbrido por RRF)  ·  busca reordenada pelo perfil
-                     │
-   avaliação: cortes semestrais por data; o modelo vê só o passado e tenta prever a próxima compra
+                         │
+              fusão por RRF  ·  cada recomendação diz por quê
 ```
 
-- **Oito métodos, quatro deles linhas de base** (aleatório, popularidade, em alta, último
-  produto): um método só vale se ganhar das réguas simples.
-- **A busca personalizada só reordena** o que a consulta trouxe; nunca empurra algo
-  sem relação com a busca só porque combina com o gosto.
-- **Avaliação temporal sem rótulos:** em cada data de corte, o modelo aprende só com o que
-  veio antes e tenta prever a próxima compra de cada pessoa. Parâmetros escolhidos num
-  período de validação, separado do teste. Também mede a **cobertura** (diversidade), a
-  **curva de histórico** (usuário novo) e o acerto em **produtos novos**.
-- **Cada recomendação diz por quê** ("parecido com: ...").
+Oito métodos comparados, quatro deles linhas de base (aleatório, popularidade, em alta,
+último produto). A mesma ideia de perfil reordena a busca pelo gosto de quem busca, sem
+trazer nada que a consulta não pediu.
 
-Conceitos, escolhas e limitações: [docs/fase-2-personalizacao.md](docs/fase-2-personalizacao.md).
+## Como a avaliação evita se enganar
 
-## Como a busca é avaliada
+A maior parte do trabalho foi descobrir quando um número bom não é verdade. Três vezes,
+um resultado bom demais era vazamento ou viés de medição:
 
-Rotular relevância à mão não escala, e confiar cegamente numa IA também não.
-O projeto usa as duas coisas, nesta ordem:
+1. **"Esconder a última avaliação de cada pessoa"**, o protocolo mais comum, dava 0,267 de
+   hit@10 à recomendação. Metade dos casos eram compras feitas no mesmo pedido, e o
+   modelo aprendia com o futuro de outras pessoas. A troca por **cortes semestrais por
+   data** (o modelo só vê o passado; o alvo é a próxima compra) levou o número a 0,063.
+2. **Vagas reservadas para produtos novos** pareciam mais que dobrar o acerto nas placas. O
+   catálogo só tinha produtos que alguém da amostra ia comprar. Com o **catálogo
+   completo** e a data de lançamento dos metadados, as vagas deixaram de compensar.
+3. **A rubrica do juiz de IA** foi ajustada olhando os desacordos de um conjunto de
+   consultas; medir nelas daria um número otimista. A validação foi feita em **consultas
+   novas**, que não guiaram o ajuste.
 
-1. **Eu rotulo um conjunto pequeno** (notas de 0 a 3, rubrica em
-   [avaliacao/rubrica.md](avaliacao/rubrica.md)): o padrão-ouro.
-2. **Um juiz de IA** (Gemini, vendo texto + foto + perfil de quem busca) julga os mesmos pares.
-3. **Mede-se a concordância** com kappa ponderado e intervalo de confiança.
-   A IA só é usada em escala se o limite inferior do kappa passar de 0,6.
-4. **Eu arbitro as discordâncias** e audito às cegas uma amostra do que só a IA julgou.
+Outros cuidados: todo parâmetro é escolhido num conjunto de validação e o teste roda uma
+vez; intervalos de confiança por bootstrap (pareado, e por pessoa quando a mesma pessoa
+aparece várias vezes); critérios definidos antes de ver os resultados.
 
-Métricas da busca: recall@10, MRR e NDCG@10, comparando os modos texto, imagem e fusão.
+**Juiz de IA.** As notas de relevância (0 a 3, [avaliacao/rubrica.md](avaliacao/rubrica.md))
+são dadas pelo Gemini e calibradas contra notas humanas dadas às cegas. O critério
+combinado (limite inferior do kappa ≥ 0,6) não foi atingido nas consultas novas, por um
+efeito conhecido do kappa quando uma nota domina; as conclusões sobre a busca são as
+mesmas com as notas da IA e com as humanas, e é para isso que o juiz é usado. Detalhes
+em [docs/resultados-busca.md](docs/resultados-busca.md).
 
-Cada escolha, com alternativas e motivos, está em [docs/decisoes.md](docs/decisoes.md).
-O passo a passo completo de execução está em [docs/passo-a-passo.md](docs/passo-a-passo.md).
+Cada decisão, com alternativas e motivos, está em [docs/decisoes.md](docs/decisoes.md).
+
+## Resultados
+
+**Busca** (18 consultas de quatro tipos: nome, visual, funcional e intenção com preço;
+[docs/resultados-busca.md](docs/resultados-busca.md))
+
+| Estratégia | NDCG@10, consultas da escolha | NDCG@10, consultas de validação |
+|---|---|---|
+| só texto | 0,753 | 0,570 |
+| texto + imagem, peso 0,5 para todas | 0,616 | 0,650 |
+| **texto + imagem, peso por categoria (bonecas 0,5, placas 0)** | **0,790** | **0,681** |
+
+**Canal de texto** (acerto@10 em buscas por nome; [docs/sondagem.md](docs/sondagem.md))
+
+| Modelo de texto | bonecas | placas (máximo possível: 76%) |
+|---|---|---|
+| CLIP | 30–40% | 0–6% |
+| multilingual-e5 | **94–96%** | **66–68%** |
+
+**Recomendação** (hit@10 no teste, cortes por data de 2018–2019 a 2023, catálogo completo;
+bonecas: 1.876 casos de 1.101 pessoas; placas: 228 casos de 144 pessoas;
+[docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
+
+| Método | bonecas (IC 95%) | placas (IC 95%) |
+|---|---|---|
+| aleatório | 0,001 (0,000–0,003) | 0,004 (0,000–0,014) |
+| popularidade de todos os tempos | 0,009 (0,005–0,013) | 0,035 (0,013–0,063) |
+| em alta (janela recente) | 0,104 (0,090–0,119) | **0,083** (0,049–0,122) |
+| último produto (conteúdo) | 0,048 (0,038–0,058) | 0,031 (0,009–0,054) |
+| híbrido (perfil + coocorrência) | 0,063 (0,052–0,076) | 0,031 (0,012–0,054) |
+| **híbrido + em alta** | **0,126** (0,110–0,142) | 0,070 (0,040–0,105) |
+
+**Custo** (CPU de notebook, sem GPU; modelos locais gratuitos)
+
+| Etapa | Itens | ms por item | US$ |
+|---|---|---|---|
+| vetores de texto (multilingual-e5, só título) | 13.984 | 30 | 0 |
+| vetores de imagem (CLIP, com download da foto) | 18.339 | 191 | 0 |
+| julgamento de relevância (Gemini 3.5 Flash-Lite) | 629 | 7.067 | ~1,2 milhão de tokens no total |
 
 ## Como rodar
 
@@ -108,165 +143,81 @@ Requer Python 3.11+.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[clip,dev]"            # + ".[postgres]" para usar o Supabase
-cp .env.example .env                     # preencha GEMINI_API_KEY
+cp .env.example .env                     # EMBEDDER, TEXTO_ITEM e GEMINI_API_KEY
 
-# 1. Baixar os dados (arquivos grandes, vários GB)
-bash scripts/baixar_amazon.sh            # Toys_and_Games e Electronics
+bash scripts/baixar_amazon.sh            # dados (vários GB): Toys_and_Games e Electronics
+mini-lcm importar                        # produtos e avaliações das categorias de categorias.yaml
+mini-lcm indexar                         # vetores de texto e imagem
 
-# 2. (opcional) Ver quais categorias existem, para ajustar os filtros
-mini-lcm inspecionar Toys_and_Games
-
-# 3. Importar produtos e avaliações das categorias de categorias.yaml
-mini-lcm importar
-
-# 4. Gerar os embeddings (na primeira vez, baixa ~1 GB de modelos)
-mini-lcm indexar
-
-# 5. Buscar
 mini-lcm buscar "boneca gótica de cabelo rosa" --categoria bonecas --preco-max 30
-mini-lcm buscar "placa para jogar em 1080p" --categoria placas-de-video --modo imagem
-
-# 6. Personalização (fase 2)
 mini-lcm usuarios --categoria bonecas
-mini-lcm perfil USUARIO --categoria bonecas
-mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO
-mini-lcm avaliar-recomendacao --categoria bonecas --curva
-mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90   # escolha de parâmetros
+mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO   # busca personalizada
+mini-lcm perfil USUARIO --categoria bonecas                                   # recomendações com o porquê
 
-# 7. Avaliar a busca (detalhes em docs/passo-a-passo.md)
-mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10                  # a IA julga tudo
-mini-lcm rotular --lote avaliacao/consultas.yaml --html avaliacao/rotular.html --amostra 100  # você: 100 com foto
-mini-lcm importar-notas notas-rotulagem.json     # arquivo baixado da página
-mini-lcm concordancia
-mini-lcm revisar
-mini-lcm avaliar --salvar docs/resultados-busca.md
-
-# Custos e tamanho dos dados
+mini-lcm avaliar                                          # busca, com o gabarito em avaliacao/
+mini-lcm avaliar-recomendacao --categoria bonecas --curva # recomendação, cortes por data
 mini-lcm custos
-mini-lcm status
 ```
 
-**Com Postgres (Supabase):** preencha `DATABASE_URL` no `.env`, rode
-`psql "$DATABASE_URL" -f sql/001_schema.sql -f sql/002_lancamento.sql` uma vez (ou cole os arquivos no SQL
-Editor do Supabase) e use os mesmos comandos.
+Passo a passo completo, incluindo rotulagem, calibração do juiz e escolha de
+parâmetros: [docs/passo-a-passo.md](docs/passo-a-passo.md).
 
-**Testes:** `pytest`. Eles rodam sem rede e sem modelos (com um embedder falso
-e determinístico). Para testar o Postgres, use um banco **de teste** (o teste
-apaga as tabelas): `DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgres.py`.
+**Postgres (Supabase):** preencha `DATABASE_URL` no `.env` e rode
+`psql "$DATABASE_URL" -f sql/001_schema.sql -f sql/002_lancamento.sql` uma vez.
 
-## Resultados
+**Testes:** `pytest` (sem rede e sem modelos, com um embedder falso e determinístico).
+O teste do Postgres usa um banco de teste, que ele apaga:
+`DATABASE_URL_TESTE=postgresql://... pytest tests/test_postgres.py`.
 
-*Preenchido à medida que cada etapa roda com os dados reais.*
+## Estrutura
 
-**Sondagem do canal de texto** (5 nomes por categoria; acerto@10 = resultados com o nome
-no título. Detalhes em [docs/sondagem.md](docs/sondagem.md))
-
-| Variante de texto | bonecas: só texto | bonecas: fusão | placas: só texto | placas: fusão |
-|---|---|---|---|---|
-| CLIP, texto completo | 40% | 52% | 6% | 2% |
-| CLIP, só título | 30% | 52% | 0% | 0% |
-| multilingual-e5, texto completo | **96%** | 88% | **68%** | **38%** |
-| multilingual-e5, só título (escolhida) | 94% | **96%** | 66% | **38%** |
-| teto (produtos com o nome) | 100% | 100% | 76% | 76% |
-
-Na recomendação, que compara produto com produto, as variantes empatam. Nas placas, que
-parecem todas iguais na foto, a imagem atrapalha a fusão: o peso da imagem deve variar
-por categoria.
-
-**Busca** (18 consultas, notas combinadas: humanas onde existem, do juiz de IA no resto;
-peso 0,5 na imagem. Detalhes em [docs/resultados-busca.md](docs/resultados-busca.md))
-
-| Métrica | texto | imagem | fusão |
-|---|---|---|---|
-| recall@10 | **0,653** | 0,210 | 0,510 |
-| MRR | **0,703** | 0,331 | 0,650 |
-| NDCG@10 | **0,692** | 0,390 | 0,627 |
-
-O texto (multilingual-e5) é o melhor modo na média. A imagem ajuda nas buscas visuais de
-bonecas e quase não acerta nas placas, que parecem todas iguais na foto: o peso da imagem
-na fusão deve variar por categoria.
-
-**Juiz de IA** (Gemini, rubrica v2; notas humanas dadas sem ver as da IA)
-
-| | Pares | Acordo exato | Kappa ponderado (IC 95%) |
-|---|---|---|---|
-| Calibração, consultas originais | 100 | 66% | 0,76 (0,64 a 0,85) |
-| Auditoria estratificada | 60 | 68% | 0,83 (0,73 a 0,91) |
-| Validação, consultas novas | 100 | 74% | 0,64 (0,46 a 0,78) |
-
-Na validação, o limite inferior do kappa ficou abaixo do critério (0,6), embora o acordo
-seja o maior dos três: 68% dos pares têm nota 1, e com uma nota dominante o kappa cai
-(paradoxo do kappa). A comparação entre os modos de busca é a mesma com as notas da IA e
-com as combinadas, e é para isso que o juiz é usado.
-
-**Recomendação** (cortes semestrais por data, k = 10, catálogo completo da categoria;
-parâmetros escolhidos na validação. Bonecas: 1.876 casos de 1.101 pessoas, 2019 a 2023;
-placas: 228 casos de 144 pessoas, 2018 a 2023. Detalhes em
-[docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
-
-| Método | hit@10 bonecas (IC 95%) | hit@10 placas (IC 95%) | bonecas: alvos novos / já vistos |
-|---|---|---|---|
-| aleatório | 0,001 (0,000–0,003) | 0,004 (0,000–0,014) | 0,000 / 0,002 |
-| popularidade | 0,009 (0,005–0,013) | 0,035 (0,013–0,063) | 0,000 / 0,014 |
-| em alta | 0,104 (0,090–0,119) | **0,083** (0,049–0,122) | 0,000 / 0,173 |
-| último produto | 0,048 (0,038–0,058) | 0,031 (0,009–0,054) | **0,031** / 0,059 |
-| conteúdo (perfil) | 0,045 (0,036–0,055) | 0,022 (0,004–0,043) | 0,025 / 0,058 |
-| coocorrência | 0,051 (0,042–0,062) | 0,018 (0,004–0,036) | 0,000 / 0,085 |
-| híbrido | 0,063 (0,052–0,076) | 0,031 (0,012–0,054) | 0,004 / 0,103 |
-| híbrido + em alta | **0,126** (0,110–0,142) | 0,070 (0,040–0,105) | 0,000 / **0,209** |
-
-- **O momento prevê mais que a pessoa:** a popularidade das últimas semanas ganha de
-  qualquer método personalizado isolado. Nas bonecas, somar o gosto da pessoa ao que está
-  em alta acrescenta 0,021 (IC 95% de +0,009 a +0,034); nas placas, nada.
-- **Produtos novos** (40% dos alvos nas bonecas, 65% nas placas) só são alcançados pelos
-  métodos de conteúdo, e por pouco (cerca de 3%). Reservar vagas do top 10 para eles não
-  compensou. É o caso típico de classificados, e onde melhores embeddings fariam diferença.
-- O primeiro protocolo (esconder a última avaliação de cada pessoa) dava 0,267 ao híbrido
-  das bonecas: compras feitas juntas e vazamento entre pessoas inflavam o resultado.
-
-**Custo**
-
-| Etapa | Itens | Tempo | ms/item | US$ |
-|---|---|---|---|---|
-| embeddings de texto | | | | 0 |
-| embeddings de imagem | | | | 0 |
-| busca (por consulta) | | | | 0 |
-| julgamento (por par) | | | | |
+```text
+mini_lcm/
+  amazon.py                  importação (centrada em usuários, catálogo completo, datas)
+  embeddings.py, indexacao.py  vetores de texto (e5 ou CLIP) e de imagem (CLIP)
+  armazenamento.py           arquivos locais ou pgvector, mesma interface
+  busca.py                   busca por canal, filtros e fusão RRF
+  perfil.py, recomendacao.py perfis, oito métodos de recomendação, explicações
+  avaliacao.py               métricas de busca (recall, MRR, NDCG) e pooling
+  avaliacao_recomendacao.py  cortes por data, validação, bootstrap
+  sondagem.py                teste rápido de variantes de embedding, sem rótulos
+  juiz.py, calibracao.py     juiz de IA, kappa, amostras de calibração e auditoria
+  rotulagem_html.py          página de rotulagem com fotos
+  custo.py, cli.py, config.py  medição de custo, linha de comando, configuração
+avaliacao/                   rubrica, consultas e gabarito (notas humanas e da IA)
+docs/                        decisões, resultados e passo a passo
+categorias.yaml              categorias, filtros e parâmetros escolhidos na validação
+```
 
 ## Limitações
 
-- Os produtos da Amazon são novos e bem descritos. O caso típico de
-  classificados (usado, título ruim) aparece pouco nestes dados.
-- O padrão-ouro é de uma pessoa só. A concordância mede o quanto a IA
-  concorda comigo, não com "a verdade".
-- O gabarito sai dos resultados dos próprios modos (pooling): um produto
-  relevante que nenhum modo encontrou nunca é avaliado. O recall é um teto otimista.
-- Os modelos locais (CLIP e multilingual-e5-small) são gratuitos, mas ficam abaixo dos
-  modelos pagos de ponta. A troca seria medida, não suposta.
-- Preços em dólar, no momento da coleta do dataset (até 2023).
+- Os produtos da Amazon são novos e bem descritos. O caso típico de classificados
+  (usado, título pobre, foto como principal informação) aparece pouco nestes dados.
+- As notas humanas de relevância são de uma pessoa só.
+- O gabarito da busca sai dos resultados dos próprios modos (pooling): um produto
+  relevante que nenhum modo encontrou nunca é avaliado, e o recall é otimista.
 - Avaliação escrita não é clique nem compra: o sinal de comportamento é mais esparso
-  e enviesado que o de um marketplace real.
-- Só 30% das bonecas têm data de lançamento nos metadados; produto novo sem data não
-  concorre na avaliação por data (nas placas, 96% têm data).
-- Nas placas, o teste tem só 228 casos: os intervalos de confiança são largos.
+  que o de um marketplace real.
+- Só 30% das bonecas têm data de lançamento nos metadados; nas placas, o teste da
+  recomendação tem 228 casos, com intervalos largos.
 
-## Próximas fases
+## Próximos passos
 
-3. **Personas sintéticas:** usuários simulados com preferências ocultas
-   escritas como regras, que servem de gabarito para medir se o sistema aprende.
-4. **Avaliação ampliada:** efeito da personalização na busca e custo por recomendação.
-   (O corte por data e o teste de vagas para produtos novos já foram feitos na fase 2.)
-5. **Opcional:** treinar um modelo pequeno com as interações (two-tower).
+- Testar o EmbeddingGemma 2 (texto e imagem num só espaço) contra o par e5 + CLIP, com a
+  mesma avaliação.
+- Peso da imagem que depende da consulta (mais imagem em buscas visuais, mais texto em
+  buscas por nome), com mais consultas julgadas pela IA para escolher e validar.
+- Personas sintéticas com preferências conhecidas, para medir se o perfil aprende o gosto.
+- Treinar um modelo próprio com as interações (two-tower).
 
 ## Dados e créditos
 
 Amazon Reviews 2023, McAuley Lab (UC San Diego). Hou, Y., Li, J., He, Z., Yan, A.,
 Chen, X., & McAuley, J. (2024). *Bridging Language and Items for Retrieval and
-Recommendation*. arXiv:2403.03952. Os dados não são redistribuídos aqui: o
-script baixa direto da fonte.
+Recommendation*. arXiv:2403.03952. Os dados não são redistribuídos aqui: o script baixa
+direto da fonte.
 
 Modelos: CLIP (OpenAI), clip-ViT-B-32-multilingual-v1 (sentence-transformers) e
-multilingual-e5-small (Wang et al., 2024, arXiv:2402.05672);
-juiz: Gemini (Google). Método de calibração do juiz inspirado em Thomas, Spielman,
-Craswell & Mitra (2024), *Large Language Models can Accurately Predict Searcher
-Preferences*, SIGIR.
+multilingual-e5-small (Wang et al., 2024, arXiv:2402.05672); juiz: Gemini (Google).
+Calibração do juiz inspirada em Thomas, Spielman, Craswell & Mitra (2024), *Large
+Language Models can Accurately Predict Searcher Preferences*, SIGIR.

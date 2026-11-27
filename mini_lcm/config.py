@@ -61,6 +61,9 @@ class Categoria:
     # true: o catálogo são todos os produtos que passam no filtro, e não só os avaliados pelos
     # usuários escolhidos (ver amazon.importar_por_usuarios). max_itens deixa de valer.
     catalogo_completo: bool = False
+    # Peso da imagem na fusão da busca (0 = só texto, 1 = só imagem), escolhido por categoria
+    # na avaliação com gabarito: ver docs/resultados-busca.md.
+    peso_imagem: float = 0.5
     recomendacao: ParametrosRecomendacao = field(default_factory=ParametrosRecomendacao)
 
 

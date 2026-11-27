@@ -130,3 +130,71 @@ Consultas avaliadas: 18 · notas: combinado
 | gtx 1660 super | 10 | 0.94 | 0.23 | 0.72 |
 | placa de vídeo com rgb | 2 | 0.92 | 0.30 | 0.61 |
 | placa para edição de vídeo até 400 dólares | 9 | 0.28 | 0.31 | 0.61 |
+Grade do peso da imagem na fusão · notas: combinado · consultas de avaliacao/consultas.yaml
+
+| Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
+|---|---|---|---|---|---|
+| bonecas | 6 | 0 | 0.643 | 0.437 | 0.722 |
+| bonecas | 6 | 0.1 | 0.656 | 0.437 | 0.722 |
+| bonecas | 6 | 0.2 | 0.659 | 0.460 | 0.722 |
+| bonecas | 6 | 0.3 | 0.667 | 0.477 | 0.722 |
+| bonecas | 6 | 0.4 | 0.680 | 0.484 | 0.750 |
+| bonecas | 6 | 0.5 ← maior NDCG | 0.716 | 0.562 | 0.722 |
+| placas-de-video | 6 | 0 ← maior NDCG | 0.863 | 0.923 | 0.792 |
+| placas-de-video | 6 | 0.1 | 0.837 | 0.923 | 0.695 |
+| placas-de-video | 6 | 0.2 | 0.814 | 0.827 | 0.691 |
+| placas-de-video | 6 | 0.3 | 0.792 | 0.827 | 0.688 |
+| placas-de-video | 6 | 0.4 | 0.744 | 0.788 | 0.616 |
+| placas-de-video | 6 | 0.5 | 0.515 | 0.458 | 0.561 |
+Atenção: o juiz não passou no critério de kappa (limite inferior do kappa (0.46) abaixo de 0.6). Ele é usado para comparar configurações de busca, com as ressalvas de docs/decisoes.md (27/11).
+
+Grade do peso da imagem na fusão · notas: combinado · consultas de avaliacao/consultas-validacao.yaml
+
+| Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
+|---|---|---|---|---|---|
+| bonecas | 3 | 0 | 0.430 | 0.528 | 0.481 |
+| bonecas | 3 | 0.1 | 0.430 | 0.528 | 0.481 |
+| bonecas | 3 | 0.2 | 0.431 | 0.528 | 0.481 |
+| bonecas | 3 | 0.3 | 0.474 | 0.553 | 0.704 |
+| bonecas | 3 | 0.4 | 0.538 | 0.605 | 0.704 |
+| bonecas | 3 | 0.5 ← maior NDCG | 0.653 | 0.395 | 0.667 |
+| placas-de-video | 3 | 0 | 0.709 | 0.670 | 0.708 |
+| placas-de-video | 3 | 0.1 | 0.716 | 0.707 | 0.704 |
+| placas-de-video | 3 | 0.2 | 0.702 | 0.707 | 0.733 |
+| placas-de-video | 3 | 0.3 | 0.741 | 0.744 | 0.833 |
+| placas-de-video | 3 | 0.4 ← maior NDCG | 0.752 | 0.819 | 0.667 |
+| placas-de-video | 3 | 0.5 | 0.646 | 0.626 | 0.667 |
+Grade do peso da imagem na fusão · notas: combinado · consultas de avaliacao/consultas.yaml
+
+| Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
+|---|---|---|---|---|---|
+| bonecas | 6 | 0.5 ← maior NDCG | 0.716 | 0.562 | 0.722 |
+| bonecas | 6 | 0.6 | 0.666 | 0.472 | 0.722 |
+| bonecas | 6 | 0.7 | 0.680 | 0.461 | 0.805 |
+| bonecas | 6 | 0.8 | 0.653 | 0.438 | 0.805 |
+| bonecas | 6 | 0.9 | 0.630 | 0.426 | 0.722 |
+| bonecas | 6 | 1 | 0.622 | 0.426 | 0.672 |
+| placas-de-video | 6 | 0.5 ← maior NDCG | 0.515 | 0.458 | 0.561 |
+| placas-de-video | 6 | 0.6 | 0.221 | 0.051 | 0.139 |
+| placas-de-video | 6 | 0.7 | 0.168 | 0.026 | 0.072 |
+| placas-de-video | 6 | 0.8 | 0.120 | 0.013 | 0.017 |
+| placas-de-video | 6 | 0.9 | 0.116 | 0.013 | 0.017 |
+| placas-de-video | 6 | 1 | 0.116 | 0.013 | 0.017 |
+Atenção: o juiz não passou no critério de kappa (limite inferior do kappa (0.46) abaixo de 0.6). Ele é usado para comparar configurações de busca, com as ressalvas de docs/decisoes.md (27/11).
+
+Grade do peso da imagem na fusão · notas: combinado · consultas de avaliacao/consultas-validacao.yaml
+
+| Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
+|---|---|---|---|---|---|
+| bonecas | 3 | 0.5 | 0.653 | 0.395 | 0.667 |
+| bonecas | 3 | 0.6 ← maior NDCG | 0.739 | 0.348 | 0.667 |
+| bonecas | 3 | 0.7 | 0.633 | 0.322 | 0.500 |
+| bonecas | 3 | 0.8 | 0.583 | 0.275 | 0.444 |
+| bonecas | 3 | 0.9 | 0.583 | 0.275 | 0.444 |
+| bonecas | 3 | 1 | 0.583 | 0.275 | 0.444 |
+| placas-de-video | 3 | 0.5 ← maior NDCG | 0.646 | 0.626 | 0.667 |
+| placas-de-video | 3 | 0.6 | 0.375 | 0.219 | 0.500 |
+| placas-de-video | 3 | 0.7 | 0.354 | 0.107 | 0.500 |
+| placas-de-video | 3 | 0.8 | 0.354 | 0.107 | 0.500 |
+| placas-de-video | 3 | 0.9 | 0.325 | 0.107 | 0.417 |
+| placas-de-video | 3 | 1 | 0.279 | 0.107 | 0.167 |

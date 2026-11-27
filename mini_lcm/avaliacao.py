@@ -140,19 +140,26 @@ def avaliar(
     gabarito: list[ConsultaRotulada],
     modos: tuple[Modo, ...] = MODOS,
     k: int = 10,
-    peso_imagem: float = 0.5,
+    peso_imagem: float | dict[str, float] = 0.5,
     fonte: Fonte = "combinado",
 ) -> dict:
+    """peso_imagem: um número para todas as consultas, ou {categoria: peso} (o peso de cada
+    consulta vem da categoria do filtro dela; categoria ausente no dicionário usa 0,5)."""
     consultas = [c for c in gabarito if any(n >= NOTA_RELEVANTE for n in c.notas(fonte).values())]
     if not consultas:
         raise ValueError(f"Nenhuma consulta tem produto com nota >= {NOTA_RELEVANTE} na fonte '{fonte}'. "
                          "Rode `mini-lcm rotular` ou `mini-lcm julgar` primeiro.")
     todos = armazenamento.obter_itens(sorted({i for c in consultas for i in c.notas(fonte)}))
     relatorio: dict = {"k": k, "fonte": fonte, "consultas": len(consultas), "modos": {}}
+    def peso_de(c: ConsultaRotulada) -> float:
+        if isinstance(peso_imagem, dict):
+            return float(peso_imagem.get(c.filtros.get("categoria", ""), 0.5))
+        return float(peso_imagem)
+
     for modo in modos:
-        cfg = ConfigBusca(modo=modo, peso_imagem=peso_imagem)
         por_consulta = []
         for c in consultas:
+            cfg = ConfigBusca(modo=modo, peso_imagem=peso_de(c))
             resultados = buscar(armazenamento, embedder, c.texto, c.filtros_obj(), k=k, config=cfg)
             itens = todos | {r.item.id: r.item for r in resultados}
             notas = _por_grupo(c.notas(fonte), itens)

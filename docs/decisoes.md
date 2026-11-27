@@ -426,6 +426,32 @@ rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
 
 ---
 
+## 2026-11-27 · Peso da imagem por categoria
+
+**Decisão:** `peso_imagem` em `categorias.yaml`: 0,5 nas bonecas e 0 nas placas (só
+texto), escolhido pelo maior NDCG@10 nas 12 consultas originais. É o padrão de `buscar`
+e `avaliar` quando a consulta tem categoria.
+
+**Motivo:** com peso 0,5 para todas, a fusão ficava abaixo do texto sozinho na média,
+porque nas placas a imagem quase não acerta. Com o peso por categoria, o NDCG@10 médio
+vai de 0,616 para 0,790 nas consultas originais e de 0,650 para 0,681 nas de validação,
+que não entraram na escolha.
+
+**Alternativas consideradas:**
+- *Só texto em tudo:* 0,753 e 0,570; perde nas buscas visuais de bonecas.
+- *Peso que depende da consulta* (mais imagem em "boneca com vestido de noiva", mais
+  texto em "monster high draculaura"): é o próximo nível, mas 18 consultas não bastam
+  para escolher e validar um peso por tipo de busca. Caminhos possíveis, do mais simples
+  ao mais complexo: classificar a consulta (regras ou um LLM) em "nome", "visual" ou
+  "funcional" com um peso por tipo; ajustar o peso pela confiança de cada canal
+  (diferença de similaridade entre o 1º e o 10º resultado); ou aprender o peso a partir
+  do vetor da consulta, com centenas de consultas julgadas pela IA.
+- *Peso que depende do produto:* em anúncios de usados, o título costuma ser pobre
+  ("boneca") e a foto carrega quase toda a informação; o peso da imagem poderia subir
+  quando o título é pouco informativo. Não testado: os títulos da Amazon são completos.
+
+---
+
 ## 2026-11-27 · Juiz de IA usado para comparar modos, com o critério de kappa não atingido
 
 **Situação:** com mais 70 pares sorteados ao acaso, a validação nas consultas novas ficou

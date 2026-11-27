@@ -191,6 +191,30 @@ Você vê a nota e a justificativa da IA. Às vezes ela viu algo na foto que
 passou batido; às vezes errou. Corrija a sua nota só se ela estava errada.
 Depois rode `mini-lcm concordancia` de novo.
 
+## 10b. Escolher o peso da imagem por categoria
+```bash
+# escolha: o peso de maior NDCG@10 nas consultas originais
+mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5
+# conferência: as consultas de validação (não entram na escolha)
+mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5
+```
+O peso escolhido vai para `categorias.yaml` (`peso_imagem` de cada categoria) e passa a
+ser o padrão de `buscar` e `avaliar`.
+
+## 10c. Testar outro modelo de embedding (EmbeddingGemma 2)
+O EmbeddingGemma 2 faz texto e imagem num espaço só. Para comparar com o par e5 + CLIP
+com a mesma régua:
+```bash
+python scripts/testar_gemma.py                      # carrega, testa 6 produtos, estima o tempo
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm indexar  # vetores de texto e imagem (demora)
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.25,0.5,0.75,1
+```
+O `julgar` só chama a IA para os produtos novos que o modelo trouxer ao topo; os que já
+têm nota não são julgados de novo.
+
 ## 11. Escalar com a IA
 Crie mais consultas e deixe só a IA julgar. Use `--limite` para controlar o custo:
 ```bash

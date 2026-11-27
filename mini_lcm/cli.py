@@ -138,7 +138,10 @@ def cmd_indexar(cfg: Config, arm: Armazenamento, args) -> None:
 def cmd_buscar(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder, cfg.texto_item)
     reg = RegistroCusto(etapa="busca", modelo=embedder.nome)
-    config = ConfigBusca(modo=args.modo, peso_imagem=args.peso_imagem)
+    peso = args.peso_imagem
+    if peso is None:  # o peso escolhido para a categoria, ou 0,5 sem categoria
+        peso = next((c.peso_imagem for c in cfg.categorias if c.slug == args.categoria), 0.5)
+    config = ConfigBusca(modo=args.modo, peso_imagem=peso)
     perfis = None
     if args.usuario:
         perfis = perfis_do_usuario(arm, embedder, args.usuario, meia_vida=_meia_vida_comum(cfg))
@@ -306,22 +309,59 @@ def cmd_auditar(cfg: Config, arm: Armazenamento, args) -> None:
     print(f"\n{feitos} pares auditados. Veja: mini-lcm concordancia --origem auditoria --min-pares 20")
 
 
+def _so_do_lote(gabarito: list[ConsultaRotulada], caminho: str | None) -> list[ConsultaRotulada]:
+    if not caminho:
+        return gabarito
+    chaves = {(c["texto"], json.dumps(c["filtros"], sort_keys=True)) for c in carregar_lote(Path(caminho))}
+    return [c for c in gabarito if (c.texto, json.dumps(c.filtros, sort_keys=True)) in chaves]
+
+
 def cmd_avaliar(cfg: Config, arm: Armazenamento, args) -> None:
     embedder = criar_embedder(cfg.embedder, cfg.texto_item)
-    gabarito = carregar_gabarito(cfg.gabarito)
+    gabarito = _so_do_lote(carregar_gabarito(cfg.gabarito), args.lote)
     if args.fonte != "humano":
         calib = concordancia(gabarito)
         if not calib.aprovado:
-            print(f"Atenção: o juiz ainda não passou na calibração ({calib.motivo}). "
-                  f"Use --fonte humano ou trate estes números como provisórios.\n")
+            print(f"Atenção: o juiz não passou no critério de kappa ({calib.motivo}). Ele é usado para comparar "
+                  f"configurações de busca, com as ressalvas de docs/decisoes.md (27/11).\n")
+    if args.pesos:
+        return _grade_de_pesos(arm, embedder, gabarito, args)
     modos = tuple(m.strip() for m in args.modos.split(","))
-    rel = avaliar(arm, embedder, gabarito, modos, k=args.k, peso_imagem=args.peso_imagem, fonte=args.fonte)
+    peso = args.peso_imagem if args.peso_imagem is not None else {c.slug: c.peso_imagem for c in cfg.categorias}
+    rel = avaliar(arm, embedder, gabarito, modos, k=args.k, peso_imagem=peso, fonte=args.fonte)
     texto = relatorio_markdown(rel)
     print(texto)
     if args.salvar:
         Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
         Path(args.salvar).write_text(f"# Avaliação da busca ({embedder.nome})\n\n{texto}\n", encoding="utf-8")
         print(f"\nSalvo em {args.salvar}")
+
+
+def _grade_de_pesos(arm: Armazenamento, embedder, gabarito: list[ConsultaRotulada], args) -> None:
+    """NDCG@k, recall@k e MRR da fusão para cada peso da imagem, separado por categoria."""
+    pesos = [float(p) for p in args.pesos.split(",")]
+    k = args.k
+    categorias = sorted({c.filtros.get("categoria", "") for c in gabarito})
+    linhas = [f"Grade do peso da imagem na fusão · notas: {args.fonte}" + (f" · consultas de {args.lote}" if args.lote else ""),
+              "", f"| Categoria | Consultas | Peso da imagem | NDCG@{k} | recall@{k} | MRR |", "|---|---|---|---|---|---|"]
+    for categoria in categorias:
+        doCat = [c for c in gabarito if c.filtros.get("categoria", "") == categoria]
+        resultados = []
+        for peso in pesos:
+            try:
+                r = avaliar(arm, embedder, doCat, ("fusao",), k=k, peso_imagem=peso, fonte=args.fonte)
+            except ValueError:
+                continue
+            m = r["modos"]["fusao"]
+            resultados.append((peso, r["consultas"], m))
+        if not resultados:
+            continue
+        melhor = max(resultados, key=lambda x: x[2][f"ndcg@{k}"])[0]
+        for peso, n, m in resultados:
+            marca = " ← maior NDCG" if peso == melhor else ""
+            linhas.append(f"| {categoria} | {n} | {peso:g}{marca} | {m[f'ndcg@{k}']:.3f} | {m[f'recall@{k}']:.3f} | "
+                          f"{m['mrr']:.3f} |")
+    print("\n".join(linhas))
 
 
 def cmd_sondar(cfg: Config, arm: Armazenamento, args) -> None:
@@ -455,7 +495,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("consulta")
     _args_filtros(s)
     s.add_argument("--modo", choices=MODOS, default="fusao")
-    s.add_argument("--peso-imagem", type=float, default=0.5)
+    s.add_argument("--peso-imagem", type=float, help="na fusão: 0 = só texto, 1 = só imagem (padrão: o da categoria)")
     s.add_argument("--usuario", help="personaliza a ordem pelo histórico deste usuário")
     s.add_argument("--peso-perfil", type=float, default=0.5, help="quanto o gosto pesa contra a consulta (0 = sem)")
     s.add_argument("-k", type=int, default=10)
@@ -507,7 +547,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--modos", default=",".join(MODOS))
     s.add_argument("--fonte", choices=["humano", "ia", "combinado"], default="combinado")
     s.add_argument("-k", type=int, default=10)
-    s.add_argument("--peso-imagem", type=float, default=0.5)
+    s.add_argument("--peso-imagem", type=float, help="um peso para todas (padrão: o de cada categoria em categorias.yaml)")
+    s.add_argument("--lote", help="só as consultas deste YAML (ex.: avaliacao/consultas.yaml)")
+    s.add_argument("--pesos", help='grade de pesos da imagem na fusão, por categoria, ex.: "0,0.1,0.2,0.3,0.5"')
     s.add_argument("--salvar", help="caminho de um .md para guardar o relatório")
     s.set_defaults(func=cmd_avaliar)
 

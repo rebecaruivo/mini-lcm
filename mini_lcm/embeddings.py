@@ -234,6 +234,114 @@ class ClipComE5(ClipLocal):
         return self._e5([f"passage: {texto_do_item(i, self.texto_item, self.MAX_PALAVRAS)}" for i in itens], registro)
 
 
+# ─────────────────────────── EmbeddingGemma 2 ───────────────────────────
+
+
+class EmbeddingGemma2(ClipLocal):
+    """Um só modelo para texto e imagem: o EmbeddingGemma 2 (Google DeepMind, Apache 2.0).
+
+    Ele põe texto, imagem (e áudio e vídeo, que não usamos) no MESMO espaço de 768
+    dimensões. Na prática, faz sozinho o papel do e5 (consulta contra títulos) e do CLIP
+    (consulta contra fotos). O codificador de áudio (300M de parâmetros) não é carregado:
+    texto + visão somam cerca de 440M.
+
+    Prefixos de tarefa (do cartão do modelo): consultas com "task: search result | query:"
+    (prompt_name="SearchQuery") e produtos como "title: {título} | text: {resto}". As
+    fotos entram sem prefixo, como {"text": "<|image|>", "image": [arquivo]}.
+
+    A consulta é a mesma nos dois canais (um espaço só), mas as chaves continuam
+    separadas por canal, para os vetores não se misturarem com os de outros modelos.
+    """
+
+    MODELO = "google/embeddinggemma-2"
+    NOME_G = "embeddinggemma-2"
+
+    def __init__(self, texto_item: str = "titulo", lote: int = 16, timeout_foto_s: float = 15,
+                 downloads_paralelos: int = 8):
+        if texto_item not in MODOS_TEXTO:
+            raise ValueError(f"TEXTO_ITEM deve ser um de {MODOS_TEXTO}")
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError as e:
+            raise RuntimeError('Instale os modelos locais com: pip install -e ".[clip]"') from e
+        self.texto_item = texto_item
+        self.nome = f"{self.NOME_G}@{texto_item}"
+        self._st = SentenceTransformer(self.MODELO, config_kwargs={"audio_config": None})
+        self.lote = lote
+        self.timeout_foto_s = timeout_foto_s
+        self.downloads_paralelos = downloads_paralelos
+        self._http = requests.Session()
+        self._http.headers["User-Agent"] = "mini-lcm/0.1"
+
+    def chave(self, canal: Canal) -> str:
+        return self.NOME_G if canal == "imagem" else self.nome
+
+    def _codificar(self, entradas: list, registro: RegistroCusto | None, etapa: str, **kw) -> np.ndarray:
+        reg = registro or RegistroCusto(etapa=etapa, modelo=self.nome)
+        with cronometro(reg):
+            m = self._st.encode(entradas, batch_size=self.lote, convert_to_numpy=True, show_progress_bar=False, **kw)
+        reg.itens += len(entradas)
+        return normalizar_linhas(np.asarray(m))
+
+    def consulta(self, texto: str, canal: Canal) -> np.ndarray:
+        return self._codificar([texto], RegistroCusto(etapa="_", modelo=self.nome), "_", prompt_name="SearchQuery")[0]
+
+    def texto_do_produto(self, item: Item) -> str:
+        completo = texto_do_item(item, self.texto_item, ClipComE5.MAX_PALAVRAS)
+        resto = completo[len(item.titulo):].lstrip(" .") if completo.startswith(item.titulo) else completo
+        return f"title: {item.titulo} | text: {resto or 'none'}"
+
+    def textos_itens(self, itens: list[Item], registro: RegistroCusto | None = None) -> np.ndarray:
+        return self._codificar([self.texto_do_produto(i) for i in itens], registro, "embeddings:texto")
+
+    def imagens(self, urls: list[str], registro: RegistroCusto | None = None) -> list[np.ndarray | None]:
+        import tempfile
+        from pathlib import Path
+
+        reg = registro or RegistroCusto(etapa="embeddings:imagem", modelo=self.NOME_G)
+        saida: list[np.ndarray | None] = [None] * len(urls)
+
+        def tentar(url: str):
+            try:
+                return self._baixar(url)
+            except Exception as e:
+                log.warning("Foto ignorada (%s): %s", url, e)
+                return None
+
+        with cronometro(reg), tempfile.TemporaryDirectory() as pasta:
+            with ThreadPoolExecutor(self.downloads_paralelos) as pool:
+                baixadas = list(pool.map(tentar, urls))
+            reg.chamadas += len(urls)
+            # o cartão do modelo mostra as fotos passadas como arquivo: gravamos cada uma numa pasta temporária
+            entradas, posicoes = [], []
+            for i, foto in enumerate(baixadas):
+                if foto is None:
+                    continue
+                caminho = str(Path(pasta) / f"{i}.jpg")
+                foto.save(caminho, "JPEG", quality=92)
+                entradas.append({"text": "<|image|>", "image": [caminho]})
+                posicoes.append(i)
+            if entradas:
+                try:
+                    m = self._st.encode(entradas, batch_size=self.lote, convert_to_numpy=True, show_progress_bar=False)
+                    linhas = list(normalizar_linhas(np.asarray(m)))
+                except Exception as e:  # lote multimodal não suportado nesta versão: uma foto por vez
+                    log.info("Codificando fotos uma a uma (%s)", e)
+                    linhas = []
+                    for entrada in entradas:
+                        try:
+                            v = self._st.encode(entrada, convert_to_numpy=True, show_progress_bar=False)
+                            linhas.append(normalizar_linhas(np.asarray(v).reshape(1, -1))[0])
+                        except Exception as e2:
+                            log.warning("Foto não codificada (%s): %s", entrada["image"][0], e2)
+                            linhas.append(None)
+                for linha, i in zip(linhas, posicoes):
+                    saida[i] = linha
+            reg.falhas += sum(1 for v in saida if v is None)
+        reg.itens += len(urls)
+        return saida
+
+
 # ─────────────────────────── Falso (testes) ───────────────────────────
 
 
@@ -303,7 +411,7 @@ class EmbedderFalso:
         return saida
 
 
-EMBEDDERS = ("clip", "clip+e5", "fake")
+EMBEDDERS = ("clip", "clip+e5", "gemma2", "fake")
 
 
 def criar_embedder(nome: str, texto_item: str = "completo") -> Embedder:
@@ -311,6 +419,8 @@ def criar_embedder(nome: str, texto_item: str = "completo") -> Embedder:
         return ClipLocal(texto_item)
     if nome == "clip+e5":
         return ClipComE5(texto_item)
+    if nome == "gemma2":
+        return EmbeddingGemma2(texto_item)
     if nome == "fake":
         return EmbedderFalso(texto_item=texto_item)
     raise ValueError(f"EMBEDDER desconhecido: '{nome}'. Use um de {EMBEDDERS}.")

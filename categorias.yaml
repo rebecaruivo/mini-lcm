@@ -22,6 +22,8 @@
 # catalogo_completo:  true = o catálogo são TODOS os produtos que passam no filtro (max_itens
 #                     deixa de valer). Necessário para medir o acerto em produtos novos sem
 #                     vazamento: ver amazon.importar_por_usuarios.
+# peso_imagem:        peso da imagem na fusão da busca (0 = só texto, 1 = só imagem), escolhido
+#                     nas consultas de avaliacao/consultas.yaml (ver docs/resultados-busca.md)
 # recomendacao:       parâmetros escolhidos na VALIDAÇÃO de cada categoria (cortes por data
 #                     mais antigos; o teste não foi usado). Ver docs/resultados-recomendacao.md.
 #   meia_vida:          decaimento pela recência no perfil e na coocorrência, em avaliações
@@ -41,6 +43,7 @@ categorias:
     selecao: usuarios
     min_avaliacoes_usuario: 5
     catalogo_completo: true
+    peso_imagem: 0.5
     recomendacao:
       meia_vida: 2
       janela_dias: 30
@@ -58,6 +61,7 @@ categorias:
     selecao: usuarios
     min_avaliacoes_usuario: 5
     catalogo_completo: true
+    peso_imagem: 0
     recomendacao:
       meia_vida: 1
       janela_dias: 90

@@ -174,5 +174,8 @@ def test_cli_fluxo_de_calibracao(catalogo, tmp_path, monkeypatch, capsys):
     assert "julgamentos novos" in capsys.readouterr().out
     cli.main(["avaliar", "--fonte", "combinado"])
     saida = capsys.readouterr().out
-    assert "Atenção: o juiz ainda não passou" in saida  # 4 pares < 50
+    assert "Atenção: o juiz não passou no critério" in saida  # 4 pares < 50
     assert "| fusao |" in saida
+    cli.main(["avaliar", "--pesos", "0,0.5,1"])
+    grade = capsys.readouterr().out
+    assert grade.count("| bonecas |") == 3 and "← maior NDCG" in grade
