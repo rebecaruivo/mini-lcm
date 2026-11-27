@@ -140,3 +140,25 @@ def test_cli_julgar_lote_e_rotular_amostra(indexado, tmp_path, monkeypatch, caps
     assert "sorteados ao acaso" in capsys.readouterr().out
     produtos = _dados_da_pagina(pagina.read_text(encoding="utf-8"))[0]["produtos"]
     assert 0 < len(produtos) <= 4 and any(p["auditoria"] for p in produtos) and not all(p["auditoria"] for p in produtos)
+
+
+def test_cli_concordancia_so_do_lote(tmp_path, monkeypatch, capsys):
+    from mini_lcm import cli
+    from mini_lcm.avaliacao import salvar_gabarito
+    from mini_lcm.config import Config
+
+    pasta_aval = tmp_path / "avaliacao"
+    pasta_aval.mkdir()
+    cfg = Config(database_url=None, embedder="fake", pasta_dados=tmp_path / "d", pasta_brutos=tmp_path / "b",
+                 pasta_avaliacao=pasta_aval)
+    monkeypatch.setattr(cli, "carregar_config", lambda: cfg)
+    ia = lambda n: {"nota": n, "rubrica": "x", "modelo": "m"}  # noqa: E731
+    salvar_gabarito(cfg.gabarito, [
+        ConsultaRotulada(id="a", texto="usada", filtros={}, notas_humanas={"1": 3, "2": 0}, notas_ia={"1": ia(3), "2": ia(0)}),
+        ConsultaRotulada(id="b", texto="nova", filtros={}, notas_humanas={"3": 3}, notas_ia={"3": ia(0)}),
+    ])
+    lote = tmp_path / "v.yaml"
+    lote.write_text("consultas:\n  - texto: nova\n    perfil: p\n    tipo: nome\n", encoding="utf-8")
+    cli.main(["concordancia", "--lote", str(lote), "--min-pares", "1"])
+    saida = capsys.readouterr().out
+    assert "Pares com nota humana e da IA: 1" in saida and "só as consultas de" in saida

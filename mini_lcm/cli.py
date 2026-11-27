@@ -269,8 +269,12 @@ def cmd_julgar(cfg: Config, arm: Armazenamento, args) -> None:
 
 def cmd_concordancia(cfg: Config, arm: Armazenamento, args) -> None:
     gabarito = carregar_gabarito(cfg.gabarito)
-    rel = concordancia(gabarito, kappa_minimo=args.kappa_minimo, min_pares=args.min_pares, origem=args.origem)
-    print(f"Conjunto: {args.origem}\n")
+    medir = gabarito
+    if args.lote:
+        chaves = {(c["texto"], json.dumps(c["filtros"], sort_keys=True)) for c in carregar_lote(Path(args.lote))}
+        medir = [c for c in gabarito if (c.texto, json.dumps(c.filtros, sort_keys=True)) in chaves]
+    rel = concordancia(medir, kappa_minimo=args.kappa_minimo, min_pares=args.min_pares, origem=args.origem)
+    print(f"Conjunto: {args.origem}" + (f" · só as consultas de {args.lote}" if args.lote else "") + "\n")
     print(relatorio_concordancia_texto(rel))
     try:
         versao = hash_rubrica(carregar_rubrica(cfg.rubrica))
@@ -486,6 +490,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--origem", choices=["rotulagem", "auditoria", "todos"], default="rotulagem")
     s.add_argument("--kappa-minimo", type=float, default=0.6)
     s.add_argument("--min-pares", type=int, default=50)
+    s.add_argument("--lote", help="mede só as consultas deste YAML (ex.: as de validação, que não guiaram a rubrica)")
     s.set_defaults(func=cmd_concordancia)
 
     s = sub.add_parser("revisar", help="passo 4: você arbitra as discordâncias, vendo a justificativa da IA")

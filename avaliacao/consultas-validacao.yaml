@@ -1,0 +1,41 @@
+# Consultas de VALIDAÇÃO do juiz.
+#
+# A rubrica foi ajustada olhando as discordâncias das consultas de `consultas.yaml`, então
+# a concordância medida nelas sai otimista (a rubrica foi escrita para elas). Estas
+# consultas ficaram de fora desse ajuste: a concordância medida aqui diz se o juiz
+# generaliza para buscas que não guiaram a rubrica.
+#
+#   mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
+#   mini-lcm rotular --lote avaliacao/consultas-validacao.yaml --html avaliacao/rotular-validacao.html --amostra 60
+#   mini-lcm concordancia --lote avaliacao/consultas-validacao.yaml --min-pares 25
+
+consultas:
+  - texto: boneca vampira com roupa preta
+    tipo: visual
+    filtros: {categoria: bonecas}
+    perfil: colecionadora adulta de bonecas de terror; a marca não importa
+
+  - texto: barbie sereia
+    tipo: nome
+    filtros: {categoria: bonecas}
+    perfil: quer uma Barbie em versão sereia para a sobrinha
+
+  - texto: boneca que fala português
+    tipo: funcional
+    filtros: {categoria: bonecas}
+    perfil: avó procurando uma boneca interativa que fale em português com a neta
+
+  - texto: gtx 1660 super
+    tipo: nome
+    filtros: {categoria: placas-de-video}
+    perfil: quer exatamente uma GeForce GTX 1660 Super; a 1660 comum ou Ti não serve
+
+  - texto: placa de vídeo com rgb
+    tipo: visual
+    filtros: {categoria: placas-de-video}
+    perfil: quer uma placa com iluminação RGB que apareça pelo vidro do gabinete
+
+  - texto: placa para edição de vídeo até 400 dólares
+    tipo: intenção
+    filtros: {categoria: placas-de-video, preco_max: 400}
+    perfil: editor de vídeo amador que precisa de aceleração para exportar em 4K

@@ -1,0 +1,60 @@
+Conjunto: rotulagem
+
+Pares com nota humana e da IA: 100
+Acordo exato (mesma nota): 66%
+Acordo em 'relevante ou não' (nota >= 2): 80%
+Kappa ponderado: 0.76 (intervalo de 95%: 0.64 a 0.85)
+Kappa em 'relevante ou não': 0.61
+Viés médio (IA - você): -0.29  (IA mais rigorosa)
+
+Matriz (linhas = sua nota, colunas = nota da IA):
+        IA0  IA1  IA2  IA3
+  você0    7    3    0    0
+  você1    6   30    1    0
+  você2    3   13    1    2
+  você3    1    2    3   28
+
+Resultado: APROVADO (limite inferior do kappa (0.64) >= 0.6)
+Discordâncias: 34 (revise com `mini-lcm revisar`)
+
+Atenção: 1 notas da IA são de uma versão antiga da rubrica. Rode `mini-lcm julgar`.
+Conjunto: auditoria
+
+Pares com nota humana e da IA: 60
+Acordo exato (mesma nota): 68%
+Acordo em 'relevante ou não' (nota >= 2): 87%
+Kappa ponderado: 0.83 (intervalo de 95%: 0.73 a 0.91)
+Kappa em 'relevante ou não': 0.73
+Viés médio (IA - você): -0.22  (IA mais rigorosa)
+
+Matriz (linhas = sua nota, colunas = nota da IA):
+        IA0  IA1  IA2  IA3
+  você0    3    3    0    0
+  você1    4   10    0    0
+  você2    1    6    2    1
+  você3    0    1    3   26
+
+Resultado: APROVADO (limite inferior do kappa (0.73) >= 0.6)
+Discordâncias: 19 (revise com `mini-lcm revisar`)
+
+Atenção: 1 notas da IA são de uma versão antiga da rubrica. Rode `mini-lcm julgar`.
+Conjunto: rotulagem · só as consultas de avaliacao/consultas-validacao.yaml
+
+Pares com nota humana e da IA: 30
+Acordo exato (mesma nota): 57%
+Acordo em 'relevante ou não' (nota >= 2): 77%
+Kappa ponderado: 0.70 (intervalo de 95%: 0.47 a 0.83)
+Kappa em 'relevante ou não': 0.52
+Viés médio (IA - você): -0.17  (IA mais rigorosa)
+
+Matriz (linhas = sua nota, colunas = nota da IA):
+        IA0  IA1  IA2  IA3
+  você0    1    2    0    0
+  você1    1   12    0    0
+  você2    0    7    1    2
+  você3    0    0    1    3
+
+Resultado: NÃO APROVADO (limite inferior do kappa (0.47) abaixo de 0.6)
+Discordâncias: 13 (revise com `mini-lcm revisar`)
+
+Atenção: 1 notas da IA são de uma versão antiga da rubrica. Rode `mini-lcm julgar`.

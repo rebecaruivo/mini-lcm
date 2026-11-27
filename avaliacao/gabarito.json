@@ -1,0 +1,3047 @@
+{
+  "consultas": [
+    {
+      "id": "c1",
+      "texto": "monster high draculaura",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "colecionadora adulta de Monster High procurando a personagem Draculaura",
+      "notas_humanas": {
+        "B006DR6XXW": 1,
+        "B008B68I4K": 2,
+        "B0037V0PDG": 3,
+        "B004W8EUHU": 1,
+        "B0B9PQXT94": 3,
+        "B0B624TPWZ": 3,
+        "B008EQB8AI": 3,
+        "B00EF1IVL0": 3,
+        "B008HZAMKS": 3,
+        "B015QZMSG2": 1,
+        "B00DT93AEM": 1,
+        "B0060S313Y": 3,
+        "B009EWI4QW": 3,
+        "B00SV9MS34": 3,
+        "B01ARGBKU0": 3,
+        "B00283HKSC": 0,
+        "B00C799YFO": 3,
+        "B01BI5M5X0": 1,
+        "B007BD3T8E": 1,
+        "B00U3SSPJ2": 1,
+        "B09Y3NDGP5": 3,
+        "B00ARN4JA2": 2,
+        "B006O6ETYC": 2
+      },
+      "notas_ia": {
+        "B00C799YFO": {
+          "nota": 2,
+          "justificativa": "O produto é uma pelúcia estilizada da personagem Draculaura da franquia Monster High. Como a busca é pela personagem e a regra indica que pelúcias atendem a quem busca a personagem, recebe nota 2 por ser uma versão em formato de pelúcia.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00U3SSPJ2": {
+          "nota": 1,
+          "justificativa": "O produto é um kit de blocos de montar da Monster High, mas traz a personagem Ghoulia Yelps em vez de Draculaura. Por ser da mesma franquia mas de outra personagem, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B9PQXT94": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a boneca Draculaura da linha Reel Drama de Monster High, atendendo perfeitamente à busca e ao perfil de colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00283HKSC": {
+          "nota": 0,
+          "justificativa": "O produto é um cofre do personagem Geléia (Slimer) de Os Caça-Fantasmas, completamente irrelevante para a busca por uma boneca Draculaura de Monster High.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00DT93AEM": {
+          "nota": 0,
+          "justificativa": "O produto é um enfeite tiki de painel de carro, completamente irrelevante para quem busca uma boneca Draculaura da Monster High.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B015QZMSG2": {
+          "nota": 1,
+          "justificativa": "O produto é um kit de blocos de montar da franquia Monster High, mas traz a personagem Clawdeen Wolf em vez de Draculaura. Recebe nota 1 por ser da mesma franquia e tipo de colecionável, porém de outra personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00SV9MS34": {
+          "nota": 1,
+          "justificativa": "O produto é um conjunto de pelúcia e manta da Draculaura de Monster High, sendo um item relacionado da personagem buscada mas não a boneca colecionável esperada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00EF1IVL0": {
+          "nota": 3,
+          "justificativa": "O produto é um playset da Monster High que inclui a boneca Draculaura buscada, perfeita para a colecionadora adulta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008HZAMKS": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a boneca Draculaura da linha Ghouls Rule de Monster High, atendendo perfeitamente à busca e ao perfil da colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0037V0PDG": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a boneca Draculaura da franquia Monster High buscada pela colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01BI5M5X0": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca da personagem Ari Hauntington da linha Monster High, não da Draculaura pedida na busca. Recebe nota 1 por ser um item do mesmo tipo e franquia, mas de outra personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006O6ETYC": {
+          "nota": 1,
+          "justificativa": "O produto é um playset (banheiro e penteadeira) temático da personagem Draculaura, sendo um item ligado à coleção Monster High mas não a boneca principal buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00ARN4JA2": {
+          "nota": 1,
+          "justificativa": "O produto é um conjunto de anéis temáticos da franquia Monster High, sendo um item relacionado de outro tipo que não atende diretamente à busca específica pela personagem Draculaura.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B009EWI4QW": {
+          "nota": 3,
+          "justificativa": "O produto é um conjunto de carrinho com a boneca Draculaura da Monster High, atendendo perfeitamente à busca da colecionadora pela personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B007BD3T8E": {
+          "nota": 1,
+          "justificativa": "O produto é um caderno de rascunhos da franquia Monster High, mas trata-se de um item de papelaria e não da boneca da personagem Draculaura buscada pela colecionadora adulta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006DR6XXW": {
+          "nota": 1,
+          "justificativa": "O produto é um jogo de cartas UNO temático de Monster High, e não uma boneca ou item focado especificamente na personagem Draculaura para uma colecionadora. Trata-se de um item licenciado relacionado à franquia, recebendo nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B624TPWZ": {
+          "nota": 3,
+          "justificativa": "O produto é a boneca Draculaura da linha Skulltimate Secrets da Monster High acompanhada de acessórios, atendendo perfeitamente à busca da colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008B68I4K": {
+          "nota": 1,
+          "justificativa": "O produto é um conjunto de roupas e acessórios da personagem Draculaura, e não a boneca em si buscada pela colecionadora. Por ser um item ligado de outro tipo, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01ARGBKU0": {
+          "nota": 3,
+          "justificativa": "O produto é um conjunto de blocos de montar da Mega Bloks da Draculaura de Monster High. Como a busca é pela personagem e as regras indicam que formato em blocos atende a quem busca a personagem, recebe nota alta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09Y3NDGP5": {
+          "nota": 3,
+          "justificativa": "O produto é a boneca Draculaura da linha Haunt Couture da Monster High, atendendo perfeitamente à busca e ao perfil da colecionadora adulta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0060S313Y": {
+          "nota": 3,
+          "justificativa": "O produto é a boneca Draculaura da linha Skull Shores, exatamente a personagem e a marca buscadas pela colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008EQB8AI": {
+          "nota": 3,
+          "justificativa": "O produto é um playset da Monster High que inclui a boneca Draculaura buscada, atendendo perfeitamente aos requisitos da colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004W8EUHU": {
+          "nota": 1,
+          "justificativa": "O produto é um caderno de rascunhos da franquia Monster High, sendo um item ligado à marca mas de outro tipo, sem a personagem Draculaura buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B0B9PQXT94",
+        "B0B624TPWZ"
+      ]
+    },
+    {
+      "id": "c2",
+      "texto": "boneca gótica de cabelo rosa",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "colecionadora adulta, gosta de estética gótica; a personagem não importa",
+      "notas_humanas": {
+        "B08ZMCJW9S": 1,
+        "B001U3ZH7C": 2,
+        "B09KQ9XH6H": 2,
+        "B01AT5NFQQ": 3,
+        "B00P2SM3NC": 2,
+        "B004QBH1T2": 1,
+        "B07L94468L": 2,
+        "B000306A06": 1,
+        "B000Q9GRHK": 1,
+        "B07Y2J8YY7": 0,
+        "B001IQ9PXS": 1,
+        "B00PFOWPN6": 3,
+        "B01N27U4T9": 1,
+        "B08WYZ895C": 1,
+        "B00ARAFUC6": 0,
+        "B01IT3VBKW": 3,
+        "B0018XYBE4": 1,
+        "B08SWFQBXH": 0,
+        "B01IKOZLX8": 3,
+        "B00TYJV6EW": 1,
+        "B00M5AUR3S": 2,
+        "B01IT3VBJS": 2
+      },
+      "notas_ia": {
+        "B00M5AUR3S": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Monster High com estética gótica e mechas rosa no cabelo, atendendo a todos os pontos da busca da colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07Y2J8YY7": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca DIY de estética alternativa, mas o cabelo é loiro e o visual é neutro em vez de gótico com cabelo rosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08ZMCJW9S": {
+          "nota": 1,
+          "justificativa": "O produto é um boneco Troll vintage com cabelo rosa, que tem ligação com o tipo de boneca mas não possui a estética gótica solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004QBH1T2": {
+          "nota": 1,
+          "justificativa": "O produto é um torso de boneca com cabelo castanho e sem estética gótica, faltando os dois elementos principais da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00TYJV6EW": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca Monster High com estética fantástica e gótica adequada à colecionadora, mas o cabelo é azul em vez de rosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08WYZ895C": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca com cabelo rosa, mas tem uma estética fofa e rosa (estilo pijama de gatinho) em vez da estética gótica exigida pela busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001IQ9PXS": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie loira com roupas cor-de-rosa, o que não atende à busca por uma boneca gótica e de cabelo rosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00PFOWPN6": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca gótica da linha Living Dead Dolls com cabelo rosa, atendendo perfeitamente à busca e ao perfil da colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01N27U4T9": {
+          "nota": 1,
+          "justificativa": "O produto é uma figura da Poppy (Trolls) com cabelo rosa, mas tem um estilo fofo e infantil, falhando em atender à estética gótica buscada pela colecionadora adulta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07L94468L": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca articulada com cabelo rosa, mas apresenta uma estética de fada/romântica em tons claros em vez da estética gótica solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000306A06": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie colecionável com trajes tradicionais russos em vermelho e branco, sem qualquer elemento da estética gótica ou cabelo rosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000Q9GRHK": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie da personagem Rose de Titanic, com cabelo castanho e vestido vermelho e preto, faltando o cabelo rosa e a estética gótica buscadas.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01IT3VBKW": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Draculaura da linha Monster High, que possui estética gótica e cabelo preto com mechas rosa. Atende perfeitamente a todos os requisitos da busca e do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001U3ZH7C": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca com cabelo rosa, mas sua estética é de enfermeira fofa em tons de rosa e branco, sem qualquer elemento gótico.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01IKOZLX8": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Monster High com estética gótica e cabelo rosa, atendendo perfeitamente a todos os critérios da busca e do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09KQ9XH6H": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca com cabelo rosa, mas tem uma estética de princesa romântica e tradicional, faltando o estilo gótico solicitado na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01AT5NFQQ": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Draculaura da Monster High, que possui estética gótica e cabelo rosa conforme buscado pela colecionadora. Atende perfeitamente a todos os pontos da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0018XYBE4": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie com cabelo loiro e estética totalmente rosa e fofa, não possuindo nenhuma característica da estética gótica pedida na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00P2SM3NC": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca com cabelo rosa, mas tem uma estética pop e colorida de My Little Pony, faltando a estética gótica pedida pela colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01IT3VBJS": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca Monster High com estética gótica e cabelo roxo e azul, faltando apenas a cor rosa exata pedida no cabelo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08SWFQBXH": {
+          "nota": 0,
+          "justificativa": "O produto é um bicho de pelúcia de coala da marca American Girl, sem nenhuma relação com a busca por uma boneca gótica de cabelo rosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00ARAFUC6": {
+          "nota": 0,
+          "justificativa": "O produto é uma pelúcia azul de personagem infantil, totalmente sem relação com a busca por uma boneca gótica de cabelo rosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B08ZMCJW9S",
+        "B004QBH1T2",
+        "B07L94468L",
+        "B07Y2J8YY7",
+        "B01N27U4T9"
+      ]
+    },
+    {
+      "id": "c3",
+      "texto": "boneca com vestido de noiva",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "quer uma boneca vestida de noiva para decorar um bolo de casamento",
+      "notas_humanas": {
+        "B0018WZUJ0": 3,
+        "B00DD1FTJA": 3,
+        "B00GRMJKLA": 3,
+        "B00004YTL0": 3,
+        "B0013TOEIG": 3,
+        "B0020LMSOI": 3,
+        "B000F4LOBK": 3,
+        "B0007CK2L8": 1,
+        "B000VUMCB4": 3,
+        "B000ELIXJU": 2,
+        "B0051WHHS0": 2,
+        "B002E4RNS2": 3,
+        "B00C6UBELG": 1,
+        "B000306A06": 1,
+        "B0007W6LRW": 3,
+        "B000324YTS": 2,
+        "B00005O7O3": 3,
+        "B00F42L73I": 3,
+        "B000V9A9GK": 3,
+        "B000LWQZ1K": 3,
+        "B000OSK9BS": 3
+      },
+      "notas_ia": {
+        "B0051WHHS0": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Rapunzel com um vestido rosa e branco com detalhes de fada, e não um vestido de noiva, embora seja uma boneca. Como a busca exige especificamente um vestido de noiva, a nota é 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000ELIXJU": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca My Scene vestida com roupas normais e modernas, não com um vestido de noiva como exigido na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00004YTL0": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie colecionável vestida de noiva com vestido branco e véu, atendendo perfeitamente à busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000306A06": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com traje tradicional russo vermelho, e não com um vestido de noiva, embora seja uma boneca. Recebe nota 1 por ser o mesmo tipo de produto mas não atender ao requisito principal da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000VUMCB4": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva, atendendo perfeitamente à busca e sendo adequada para a finalidade descrita.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00C6UBELG": {
+          "nota": 0,
+          "justificativa": "O produto é uma boneca assustadora de Halloween, com visual macabro, sem qualquer relação com um vestido de noiva para bolo de casamento.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000F4LOBK": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva, atendendo perfeitamente à busca, independentemente do uso pretendido no bolo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0013TOEIG": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie com vestido de noiva completa, atendendo perfeitamente ao que foi buscado, independentemente de ser uma edição de colecionador.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B002E4RNS2": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva, atendendo exatamente ao que foi buscado, independentemente de ser uma edição de colecionador.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0018WZUJ0": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva, atendendo perfeitamente ao que foi buscado. Como a busca não restringe o tamanho ou o preço, o fato de ser uma edição de colecionador não impede o uso.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00DD1FTJA": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca com vestido de noiva, atendendo perfeitamente à busca, embora com 30 cm de altura possa ser grande para um bolo padrão.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0007W6LRW": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva, atendendo exatamente ao que foi buscado, mesmo sendo uma edição de colecionador.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0007CK2L8": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca vestida com calças e jaqueta de pele, sem o vestido de noiva pedido na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00GRMJKLA": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie de colecionador vestida com um elegante vestido de noiva e véu, atendendo perfeitamente à busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0020LMSOI": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva, atendendo perfeitamente ao que foi buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000V9A9GK": {
+          "nota": 3,
+          "justificativa": "O produto é uma Barbie colecionável vestida de noiva, atendendo exatamente à busca por uma boneca com vestido de noiva.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000324YTS": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca My Scene vestida com roupas de festa vermelhas, sem o vestido de noiva exigido pela busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000LWQZ1K": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva com vestido longo e véu, atendendo perfeitamente à busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00005O7O3": {
+          "nota": 3,
+          "justificativa": "O produto é uma Barbie colecionável vestida de noiva, atendendo perfeitamente ao que foi buscado. Como a busca não estipula o tamanho ou preço, a edição de colecionador não impede a nota máxima.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00F42L73I": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca com um vestido branco formal e tiara, que pode ser usada com o propósito desejado, embora o título indique ser para uma festa de quinze anos. Recebe nota 2 por atender ao essencial com uma pequena variação na temática da vestimenta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07BZX93NV": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Boxy Girls Nomi com roupas casuais e coloridas, sem o vestido de noiva pedido na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000OSK9BS": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie vestida de noiva, atendendo perfeitamente ao que foi buscado. Embora seja uma edição de colecionador e um pouco cara, a busca não restringe o tipo ou o preço.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B0018WZUJ0",
+        "B000306A06",
+        "B0007W6LRW",
+        "B000324YTS",
+        "B00005O7O3",
+        "B00F42L73I",
+        "B000V9A9GK",
+        "B000LWQZ1K"
+      ]
+    },
+    {
+      "id": "c4",
+      "texto": "boneca bebê que chora e faz xixi",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "mãe comprando uma boneca interativa para uma criança de 4 anos",
+      "notas_humanas": {
+        "B000RHK9RK": 2,
+        "B082Q5SLX5": 3,
+        "B09FLF544W": 1,
+        "B0793PS7QX": 2,
+        "B0BHWHX66W": 2,
+        "B007BGTZCK": 1,
+        "B0BPPS2865": 1,
+        "B0BNXKJC99": 2,
+        "B0BV24B9YN": 2,
+        "B0BB6KPYQ7": 2,
+        "B00M5AUR3S": 1
+      },
+      "notas_ia": {
+        "B09GDZDT72": {
+          "nota": 0,
+          "justificativa": "O produto é um boneco de vodu de feltro com alfinetes, totalmente inadequado para uma criança e sem nenhuma relação com uma boneca bebê interativa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BNXKJC99": {
+          "nota": 1,
+          "justificativa": "O produto é um kit de boneca reborn em branco e sem pintura, inadequado para uma criança pequena e sem nenhuma das funções interativas buscadas.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00TYJV6EW": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Monster High no estilo centauro, que é outro tipo de boneca e não atende aos requisitos essenciais de ser uma boneca bebê interativa que chora e faz xixi.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09FLF544W": {
+          "nota": 0,
+          "justificativa": "O produto é uma boneca reborn em formato de macaco, o que difere completamente de um bebê humano que chora e faz xixi. Recebe nota 0 por ser um tipo de boneca totalmente inadequado para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004DL2IYI": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca bebê da marca Baby Born, mas o modelo apresentado é macio e de pelúcia, não possuindo as funções interativas de chorar e fazer xixi exigidas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09C8YB44Y": {
+          "nota": 1,
+          "justificativa": "O produto é um kit de boneca reborn para montar e pintar, não uma boneca pronta e interativa para uma criança pequena.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BHWHX66W": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca bebê reborn realista de silicone, mas não possui as funções interativas de chorar e fazer xixi exigidas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07BMVRJ5B": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca reborn realista de silicone, que é do mesmo tipo de boneca bebê, mas não possui as funções interativas de chorar e fazer xixi exigidas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07GX6YZ44": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca reborn de silicone, que é do mesmo tipo de boneca bebê, mas não possui as funções interativas de chorar e fazer xixi exigidas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000RHK9RK": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca bebê interativa da marca Baby Born, mas o texto e os detalhes não especificam se ela chora e faz xixi, faltando esse ponto essencial da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00M5AUR3S": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Monster High fashion, que é um tipo de boneca completamente diferente da boneca bebê interativa que chora e faz xixi buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BB6KPYQ7": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca bebê reborn de silicone pesada, que não possui as funções de chorar e fazer xixi exigidas pela busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B097L1MRJZ": {
+          "nota": 0,
+          "justificativa": "O produto é um kit de boneca reborn não pintada para montagem, o que não atende à busca por uma boneca interativa pronta que chora e faz xixi para uma criança pequena.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01FFSN896": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca reborn realista, mas não possui as funções interativas de chorar e fazer xixi buscadas para a criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B56J3RV3": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca reborn realista, sendo do mesmo tipo de boneca mas sem as funções específicas de chorar e fazer xixi pedidas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BPPS2865": {
+          "nota": 0,
+          "justificativa": "O produto é um kit de partes de boneca Reborn de silicone para montar, sendo inadequado para uma criança de 4 anos e sem funções interativas.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B082Q5SLX5": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca interativa Cry Babies que chora de verdade e emite sons de bebê, mas não há indicação de que faça xixi. Recebe nota 2 por atender ao essencial de ser uma boneca bebê interativa que chora, faltando apenas a função de fazer xixi.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BV24B9YN": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca bebê reborn realista de silicone, mas não possui as funções interativas de chorar e fazer xixi pedidas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B8SMD5XZ": {
+          "nota": 1,
+          "justificativa": "O produto é um kit de boneca bebê reborn em branco e sem pintura para colecionadores, totalmente inadequado para uma criança de 4 anos e sem as funções interativas de chorar e fazer xixi.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B007BGTZCK": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca realista em formato de macaco, o que difere de um bebê humano e não possui as funções interativas de chorar e fazer xixi solicitadas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09N3Z2M19": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca bebê da marca Corolle, sendo do mesmo tipo de boneca bebê buscada, mas não possui as funções específicas de chorar e fazer xixi.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000EPFFS8": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca do tipo criança (Blonde Suzie), enquanto a busca pede especificamente uma boneca bebê que chora e faz xixi, faltando a função e a faixa etária principal do bebê.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0793PS7QX": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca bebê realista (reborn), que é do mesmo tipo de boneca bebê, mas não possui as funções interativas de chorar e fazer xixi exigidas na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B000RHK9RK",
+        "B082Q5SLX5",
+        "B09FLF544W",
+        "B0BNXKJC99",
+        "B0BV24B9YN",
+        "B0BB6KPYQ7"
+      ]
+    },
+    {
+      "id": "c5",
+      "texto": "boneca negra de cabelo cacheado",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "quer uma boneca com a qual a filha negra de cabelo cacheado se identifique",
+      "notas_humanas": {
+        "B0BSVRT5FD": 2,
+        "B08BMMKRXB": 1,
+        "B002CZPS4Y": 2,
+        "B09GGF2TTN": 3,
+        "B07KBFJBN4": 3,
+        "B07XTQTNG3": 2,
+        "B012IYWZUI": 3,
+        "B00BG6IBIA": 1,
+        "B00M5AUR3S": 2,
+        "B00FZLHXGI": 2,
+        "B007QVOZD4": 3,
+        "B07FKDLBWB": 2,
+        "B00000ISBG": 2
+      },
+      "notas_ia": {
+        "B00M5AUR3S": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Monster High com pele azul clara e cabelo liso, o que não atende aos requisitos essenciais da busca por uma boneca negra de cabelo cacheado e nem ao perfil de identificação.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00PFQXP0Q": {
+          "nota": 0,
+          "justificativa": "O produto é uma boneca gótica com pele branca e cabelo metade preto e metade branco, não atendendo aos critérios de boneca negra com os quais a criança possa se identificar.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00000ISBG": {
+          "nota": 0,
+          "justificativa": "O produto é uma Barbie loira de pele clara e cabelo liso, o que não atende aos requisitos de ser uma boneca negra com cabelo cacheado para identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BSVRT5FD": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca colecionable da Elvira, que possui pele clara e cabelo liso, falhando em atender aos requisitos de ser negra e de cabelo cacheado buscados para a identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09GGF2TTN": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca negra, mas a foto mostra que o cabelo é trançado/liso em vez de cacheado. Como o perfil busca representatividade para uma criança com cabelo cacheado, a diferença no cabelo resulta em nota 2.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00BG6IBIA": {
+          "nota": 0,
+          "justificativa": "O produto é um chaveiro em formato de boneco inspirado no Edward Mãos de Tesoura, com pele branca e cabelo espetado, não correspondendo aos requisitos de boneca negra de cabelo cacheado. Recebe nota 0 por ser um tipo de produto completamente diferente do buscado e sem relação com a identidade solicitada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0984SJX5K": {
+          "nota": 0,
+          "justificativa": "O produto é um adereço de Halloween assustador estilo Annabelle, que não atende aos requisitos de ser uma boneca negra com cabelo cacheado para identificação infantil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07KBFJBN4": {
+          "nota": 1,
+          "justificativa": "O produto é um enfeite de árvore de natal (ornament) em miniatura de cerca de 10 cm, e não uma boneca para brincar conforme o perfil de quem busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000W23LY8": {
+          "nota": 0,
+          "justificativa": "O produto é uma Barbie loira e branca, o oposto do que foi buscado. Portanto, é um item completamente irrelevante para a identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B012IYWZUI": {
+          "nota": 0,
+          "justificativa": "O produto é uma boneca Monster High com pele clara e cabelo roxo e liso, não atendendo aos requisitos de ser negra e de cabelo cacheado buscados para a identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07XTQTNG3": {
+          "nota": 0,
+          "justificativa": "O produto é uma boneca de pele clara e cabelo castanhato liso, falhando em atender ao requisito principal da busca por uma boneca negra.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004ZH7I5E": {
+          "nota": 0,
+          "justificativa": "O produto é uma boneca gótica da linha Living Dead Dolls de pele branca e estilo sombrio, não atendendo ao pedido de uma boneca negra para identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08BG7S8HH": {
+          "nota": 0,
+          "justificativa": "O produto é um boneco colecionável do filme O Corvo, com pele branca e visual gótico, que não atende em nada aos critérios de ser uma boneca negra e de cabelo cacheado buscados para a identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00FZLHXGI": {
+          "nota": 1,
+          "justificativa": "O produto é um conjunto de roupas para boneca, e não uma boneca negra de cabelo cacheado conforme buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B002CZPS4Y": {
+          "nota": 0,
+          "justificativa": "O produto é uma boneca colecionável com pele clara e cabelo liso, o que não atende aos requisitos de ser uma boneca negra com cabelo cacheado para identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B007QVOZD4": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie negra com cabelo curto e cacheado, atendendo perfeitamente a todos os pontos da busca e ao perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07FKDLBWB": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Baby Alive com cabelo castanho e tom de pele claro, falhando no requisito de ser uma boneca negra conforme buscado e necessário para a identificação da criança.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00QCALDOO": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Monster High (Catty Noir) que tem pele preta e cabelo rosa liso, não atendendo ao requisito de cabelo cacheado e sendo uma personagem de pele preta em formato humano-animal fantástico.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07KMLG4VH": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca loira de cabelo liso, o que contraria diretamente os requisitos essenciais da busca por uma boneca negra de cabelo cacheado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08BMMKRXB": {
+          "nota": 0,
+          "justificativa": "O produto é um boneco de terror colecionável em formato de coruja, totalmente irrelevante para a busca por uma boneca negra de cabelo cacheado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B0BSVRT5FD",
+        "B09GGF2TTN",
+        "B07KBFJBN4",
+        "B00BG6IBIA",
+        "B00M5AUR3S",
+        "B007QVOZD4"
+      ]
+    },
+    {
+      "id": "c6",
+      "texto": "presente para menina de 6 anos",
+      "filtros": {
+        "categoria": "bonecas",
+        "preco_max": 30
+      },
+      "perfil": "tia procurando um presente de aniversário, sem uma personagem em mente",
+      "notas_humanas": {
+        "B001GGB2YA": 3,
+        "B005IZ0HFK": 3,
+        "B000QCHMI0": 3,
+        "B001NR02FW": 3,
+        "B08PPHK2NZ": 3,
+        "B001NTMIJI": 3,
+        "B000I6O7YG": 3,
+        "B000X4MGQO": 3,
+        "B00121VTGK": 3,
+        "B00IDDL67W": 3,
+        "B0012J7F56": 3,
+        "B09Z5RRBWG": 3,
+        "B000MVH3QG": 3,
+        "B000PAX0OI": 1,
+        "B08PPMHMTC": 3
+      },
+      "notas_ia": {
+        "B07GXK1T11": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Boxy Girls voltada exatamente para crianças a partir de 6 anos, atendendo perfeitamente à busca da tia por um presente de aniversário sem personagem específica.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08PPMHMTC": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Kindi Kids Minis, ideal como brinquedo para uma menina de 6 anos, sem exigência de personagem específica. Recebe nota 3 por atender perfeitamente à busca aberta por um presente infantil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IDDL67W": {
+          "nota": 3,
+          "justificativa": "O produto é um kit de pintura de bonecas russas adequado para crianças a partir de 5 anos, funcionando perfeitamente como um presente criativo para uma menina de 6 anos. Por isso, recebe nota 3.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005IZ0HFK": {
+          "nota": 3,
+          "justificativa": "O produto é um boneco de pelúcia educativo em formato de rato adequado para crianças, funcionando perfeitamente como presente para uma menina de 6 anos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00EGDMMOO": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie, que é um presente clássico e adequado para uma menina de 6 anos, atendendo perfeitamente à busca aberta da tia.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001NR02FW": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie de edição especial, que atende perfeitamente à busca por um presente de aniversário para uma menina de 6 anos sem preferência de personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000P7AP30": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie de edição especial, adequada como presente para uma menina de 6 anos, pois a busca e o perfil não especificam restrições de colecionador ou personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001NTMIJI": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie, que atende perfeitamente como presente para uma menina de 6 anos, pois a busca é ampla e não exige uma personagem ou tema específico.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08PPHK2NZ": {
+          "nota": 3,
+          "justificativa": "O produto é uma mini boneca adequada para a faixa etária da criança e atende ao perfil sem exigências específicas de personagem. Recebe nota 3 por ser um presente exato e adequado para o que foi buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001GGB2YA": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie que atende perfeitamente como presente para uma menina de 6 anos, pois a busca é ampla e sem personagem definida. Recebe nota 3 por ser exato para a intenção de presente infantil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00121VTGK": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie, que atende perfeitamente como presente para uma menina de 6 anos sem personagem específica.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000QCHMI0": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie, que atende perfeitamente como presente de aniversário para uma menina de 6 anos, conforme o perfil fornecido. Recebe nota máxima por ser um brinquedo ideal para a faixa etária sem restrições específicas.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000I6O7YG": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie de edição de colecionador, o que atende perfeitamente à busca por um presente para uma menina de 6 anos sem personagem específica, conforme as regras que indicam que edições especiais não rebaixam a nota se a busca não as veda.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07GXL3JPK": {
+          "nota": 3,
+          "justificativa": "O produto é uma mini boneca com caixas surpresa adequada para a idade de 6 anos, atendendo perfeitamente ao presente buscado sem exigências específicas.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00149QH30": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie, que atende perfeitamente como presente para uma menina de 6 anos, mesmo sendo uma edição de colecionador já que a busca não restringe isso.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0012J7F56": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie que funciona perfeitamente como presente para uma menina de 6 anos, atendendo plenamente à busca aberta por um presente sem personagem específica.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000MVH3QG": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie em edição especial que serve perfeitamente como presente para uma menina de 6 anos, pois atende a todas as expectativas de um brinquedo adequado sem restrições de personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0006SEPUW": {
+          "nota": 3,
+          "justificativa": "O produto é uma Barbie de colecionador, que atende perfeitamente à busca aberta por presente para uma menina de 6 anos, pois bonecas são ótimas opções para essa idade.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000X4MGQO": {
+          "nota": 1,
+          "justificativa": "O produto é um ornamento/porta-retrato da Barbie que funciona como um item de decoração ou colecionável, e não um brinquedo adequado para uma criança de 6 anos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B072R1RKW2": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca surpresa L.O.L. Surprise adequada para uma menina de 6 anos, atendendo perfeitamente à busca aberta por um presente de aniversário sem personagem específica.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01NCNTMAP": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca infantil com acessórios, ideal para presentear uma menina de 6 anos sem preferência específica de personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000PAX0OI": {
+          "nota": 0,
+          "justificativa": "O produto é uma estatueta de porcelana colecionável voltada para o aniversário de nove anos, inadequada para uma criança de seis anos brincar. Recebe nota 0 por ser um item decorativo inadequado para a faixa etária buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BBSSVRPQ": {
+          "nota": 3,
+          "justificativa": "O produto é uma mochila com acessórios infantis do tema Frozen voltada para meninas a partir de 3 anos, atendendo perfeitamente à busca por um presente para uma menina de 6 anos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001JYBA14": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Barbie de edição especial, ideal como presente para uma menina de 6 anos que não tem personagem específica.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00LIS2GCI": {
+          "nota": 3,
+          "justificativa": "O produto é um conjunto de mini bonecas (worry dolls) que servem como presente lúdico para uma criança. Atende bem ao perfil de uma tia buscando um presente genérico de aniversário para uma menina de 6 anos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09Z5RRBWG": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca adequada para crianças acima de 3 anos, servindo perfeitamente como presente de aniversário para uma menina de 6 anos sem preferência de personagem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0007TZX6A": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca fashion com acessórios, ideal como presente para uma menina de 6 anos que não tem personagem específica.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01NGYKG9S": {
+          "nota": 1,
+          "justificativa": "O produto é um conjunto de roupas e acessórios para boneca (Fashion Pack), e não uma boneca ou um brinquedo completo para presentear. Trata-se de um item ligado, mas que depende de outro produto para ser utilizado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B001GGB2YA",
+        "B005IZ0HFK",
+        "B000QCHMI0",
+        "B001NR02FW",
+        "B001NTMIJI",
+        "B000I6O7YG",
+        "B00121VTGK",
+        "B00IDDL67W",
+        "B09Z5RRBWG",
+        "B000MVH3QG",
+        "B000PAX0OI"
+      ]
+    },
+    {
+      "id": "c7",
+      "texto": "rtx 3060 12gb",
+      "filtros": {
+        "categoria": "placas-de-video"
+      },
+      "perfil": "quer exatamente uma GeForce RTX 3060 com 12 GB; outra memória não serve",
+      "notas_humanas": {
+        "B0B2KJYZB6": 3,
+        "B08X4V8N5Q": 3,
+        "B097PZT7J3": 1,
+        "B097RPTML6": 3,
+        "B08WTFG5BX": 3,
+        "B004G5YXV2": 1,
+        "B07KKN3HXL": 1,
+        "B09Q6J9BD9": 3,
+        "B09P4DCP3Q": 3,
+        "B09G1LMC55": 1,
+        "B0971BG25M": 3,
+        "B00IGQ4I4Y": 1
+      },
+      "notas_ia": {
+        "B0B8QWL94V": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB de VRAM buscada, embora seja uma edição temática da ASUS com Demon Slayer.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09DTSR5NB": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB de VRAM solicitada na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B096L83WV8": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo RTX 3080 Ti, enquanto a busca exige especificamente o modelo RTX 3060 de 12GB. Por ser outro modelo de placa bem diferente do pedido, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IGQ4I4Y": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo FX 5700 de 256 MB, totalmente diferente do modelo RTX 3060 12GB buscado, recebendo nota 1 por ser apenas uma placa de vídeo de outro modelo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B2KGSFN4": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo RTX 3090 de 24GB, enquanto a busca é especificamente por uma RTX 3060 de 12GB. Por ser um modelo de placa diferente, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08WT47L8B": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB de memória solicitada na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09P4DCP3Q": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB buscada, acompanhada de um cabo HDMI opcional. Atende perfeitamente a todos os pontos da busca e ao perfil do usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09G1LMC55": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo RTX 3080 de 10GB, enquanto a busca exige uma RTX 3060 de 12GB. Por ser um modelo de placa bem diferente do pedido, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08P2DQ28S": {
+          "nota": 1,
+          "justificativa": "O produto é uma RTX 3060 Ti de 8GB, enquanto a busca exige especificamente a RTX 3060 de 12GB. Por ser um modelo e quantidade de memória diferentes dos exigidos pelo perfil, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B092CTD2XR": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo RTX 3070 de 8GB, enquanto a busca exige especificamente o modelo RTX 3060 de 12GB. Por ser outro modelo de placa bem diferente do pedido, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B097PZT7J3": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo RTX 3070 Ti de 8GB, sendo de outro modelo e com capacidade de memória diferente da solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08S6Z5285": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa RTX 3060 Ti com 8GB, mas a busca e o perfil exigem especificamente a versão de 12GB. Por ser outro modelo com quantidade de memória diferente da solicitada, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09FMSGHND": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB de VRAM solicitada na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09DMCQ6KQ": {
+          "nota": 1,
+          "justificativa": "O produto é uma RTX 3060 Ti de 8GB, mas a busca e o perfil exigem especificamente o modelo com 12GB de VRAM.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08ZDSMKTG": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica RTX 3070 de 8GB, enquanto a busca exige especificamente o modelo RTX 3060 de 12GB conforme o perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08X4V8N5Q": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB solicitada na busca e perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07KKN3HXL": {
+          "nota": 0,
+          "justificativa": "O produto é uma ponte NVLink para placas de vídeo e não a placa RTX 3060 buscada, tratando-se de um acessório completamente diferente.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004G5YXV2": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Radeon HD 6950, que pertence a um modelo e fabricante completamente diferentes da GeForce RTX 3060 buscada. Por ser outro modelo de placa muito diferente, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0971BG25M": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12 GB buscada, atendendo perfeitamente a todos os requisitos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09Q6J9BD9": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB de memória solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08X4VJ6SB": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB de VRAM solicitada na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00007FJXY": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de vídeo antiga ATI 9700 Pro, completamente diferente da RTX 3060 12GB solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B097RPTML6": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12 GB buscada, atendendo perfeitamente a todos os requisitos do usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08WTFG5BX": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB de VRAM buscada pelo usuário, atendendo a todos os pontos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0925PC7SH": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte para placa de vídeo (acessório), e não uma placa de vídeo RTX 3060 12gb.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B2KJYZB6": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce RTX 3060 com 12GB solicitada na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B091H2KFDH": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente uma placa de vídeo EVGA GeForce RTX 3060 com 12 GB, atendendo perfeitamente a todos os requisitos da busca e do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B0B2KJYZB6",
+        "B097RPTML6",
+        "B09P4DCP3Q",
+        "B09G1LMC55",
+        "B0971BG25M",
+        "B00IGQ4I4Y"
+      ]
+    },
+    {
+      "id": "c8",
+      "texto": "placa de vídeo branca",
+      "filtros": {
+        "categoria": "placas-de-video"
+      },
+      "perfil": "está montando um PC todo branco e quer que a placa combine",
+      "notas_humanas": {
+        "B08DRS5NLR": 0,
+        "B005IB6JN8": 1,
+        "B001OFV7L6": 1,
+        "B000VEJE84": 0,
+        "B0009Y7AI2": 2,
+        "B0007PO3II": 0,
+        "B00O6MQ2O6": 1,
+        "B0C3ZKX6CX": 0,
+        "B09GBHSVZ8": 0,
+        "B000PBVS2S": 1
+      },
+      "notas_ia": {
+        "B005V22R0S": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo MSI com acabamento em prata e preto, falhando no requisito essencial de ser branca para combinar com o PC.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000FLWCB4": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo, mas a placa em si tem circuito azul e a embalagem é preta, não atendendo ao requisito de ser branca conforme o perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0002R8UZI": {
+          "nota": 0,
+          "justificativa": "O produto é um gabinete de computador (Micro ATX), e não uma placa de vídeo, sendo portanto totalmente irrelevante para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0007PO3II": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de captura de vídeo externa USB, que serve para capturar sinais de vídeo analógicos e não uma placa de vídeo (GPU) para jogos ou montagem de PC. Por ser um outro tipo de dispositivo completamente diferente do buscado, recebe nota zero.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0009Y7AI2": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga cujas embalagem e características não correspondem à cor branca desejada na busca, embora seja uma placa de vídeo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005IB6JN8": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo, mas possui circuito verde e cooler preto, falhando no requisito essencial de ser uma placa de vídeo branca para o PC temático.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006VXNHXW": {
+          "nota": 0,
+          "justificativa": "O produto é um adaptador de vídeo USB para HDMI e não uma placa de vídeo dedicada, além de ser preto e não atender ao requisito de cor da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BGJV152Q": {
+          "nota": 0,
+          "justificativa": "O produto é um cartão de saudação com vídeo e tela horizontal (cartão postal digital), não tendo nenhuma relação com uma placa de vídeo para computador.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0036Z9TB2": {
+          "nota": 0,
+          "justificativa": "O produto é uma base refrigeradora para notebook, que é um item completamente diferente de uma placa de vídeo e além disso possui cor preta, falhando em atender aos requisitos de tipo e cor da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00O6MQ2O6": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo, mas a placa e a placa-mãe mostradas na foto são verdes, não atendendo ao requisito de ser branca para combinar com o PC.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0C3ZKX6CX": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte vertical para placa de vídeo (GPU mount), que é um item ligado mas de outro tipo, além de ser na cor preta e não branca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005VULT2C": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo com PCB preto e dissipador prata, não atendendo ao requisito de ser uma placa de vídeo branca para combinar com o PC.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000VEJE84": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga e a embalagem exibida na foto é majoritariamente preta, não atendendo ao requisito de ser branca buscado pelo usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000PBVS2S": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo, mas possui PCB vermelha e não atende ao requisito essencial de ser branca para combinar com o PC.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00009YUPS": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de captura de vídeo externa USB, não uma placa de vídeo (GPU) para PC. Por ser um tipo de hardware completamente diferente e não atender à busca, recebe nota zero.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09GBHSVZ8": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte para instalação vertical de placa de vídeo, e não uma placa de vídeo em si. Trata-se de um item ligado ao que se busca, mas de outro tipo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001OFV7L6": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo, mas possui placa de circuito azul, o que contraria o requisito de ser uma placa branca conforme solicitado no perfil de busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000219P3U": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo externa (PCMCIA) para notebooks, o que é um modelo bem diferente e incompatível com a montagem de um PC de mesa buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08DRS5NLR": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte vertical para placa de vídeo com cabo riser e não uma placa de vídeo, embora tenha relação com o componente buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000MNFVUO": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga com circuito verde, falhando no requisito essencial de cor exigido na busca para combinar com um PC branco.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00000JBBG": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga com circuito verde e dissipador preto, não atendendo ao requisito de ser uma placa branca conforme solicitado na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0045JSQJO": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga com circuito verde, que não atende ao requisito de cor branca solicitado na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0019EIBPM": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de captura de vídeo externa (sintonizador de TV), e não uma placa de vídeo de processamento gráfico para jogos. Recebe nota 0 por ser um tipo de produto completamente diferente do buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B00O6MQ2O6",
+        "B09GBHSVZ8"
+      ]
+    },
+    {
+      "id": "c9",
+      "texto": "placa de vídeo low profile para pc pequeno",
+      "filtros": {
+        "categoria": "placas-de-video"
+      },
+      "perfil": "tem um PC de escritório compacto em que só cabe placa de perfil baixo",
+      "notas_humanas": {
+        "B00L4GEGHC": 3,
+        "B00DOH8IRS": 3,
+        "B0007PO3II": 0,
+        "B006LR841I": 3,
+        "B005C983O4": 1,
+        "B0036Z9TB2": 0,
+        "B00IDF5H98": 2,
+        "B000BI2NK6": 3
+      },
+      "notas_ia": {
+        "B000BI2NK6": {
+          "nota": 2,
+          "justificativa": "O produto é uma placa de vídeo GeForce FX 5500 com indicação explícita de formato low profile. No entanto, é um modelo muito antigo com interface PCI padrão (não PCI Express), o que limita sua utilidade atual, mas atende tecnicamente ao requisito de perfil baixo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000WR8CHY": {
+          "nota": 0,
+          "justificativa": "O produto é um sintonizador de TV USB, que não tem nenhuma relação com uma placa de vídeo para PC.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07S4G995H": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo PNY NVIDIA NVS 510 que possui o formato low profile explicitamente citado no título e na imagem, atendendo perfeitamente ao requisito da busca para um PC compacto.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IDF5H98": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon HD 6350 em formato low profile (LP), exatamente o que foi buscado para o computador compacto.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006N0FGPK": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo ATI Radeon X1300 com formato low profile, atendendo exatamente aos requisitos da busca e do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B9Y58Q8W": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo Radeon RX 550 no formato low profile, ideal para gabinetes pequenos SFF conforme buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005GIWBIA": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo ATI Radeon HD5450 explicitly low profile, atendendo perfeitamente ao requisito da busca e do perfil por um componente de perfil baixo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005C983O4": {
+          "nota": 0,
+          "justificativa": "O produto é um adaptador para SSD e não uma placa de vídeo, embora utilize um slot PCIe. Por ser um componente de computador diferente do solicitado, recebe nota zero.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00L4GEGHC": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo ATI Radeon X1300 Pro com fator de forma low profile, atendendo perfeitamente ao que a pessoa buscou para seu PC compacto.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00DOH8IRS": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo NVIDIA NVS 315 no formato low profile, atendendo perfeitamente ao que foi buscado para um PC compacto.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00F5Q7R1O": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo Radeon HD6350 explicitamente indicada como low profile e com o espelho adequado na imagem, atendendo perfeitamente à busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09GBHSVZ8": {
+          "nota": 0,
+          "justificativa": "O produto é um kit de suporte para instalação vertical de placa de vídeo, e não uma placa de vídeo propriamente dita.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006LR841I": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo ATI Radeon HD 2400 XT explicitamente projetada no formato low profile (perfil baixo), confirmando tanto pelo título quanto pela foto com o espelho curto.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08DRS5NLR": {
+          "nota": 1,
+          "justificativa": "O produto é um kit de suporte para instalação vertical de placa de vídeo, e não uma placa de vídeo propriamente dita. Por ser um acessório relacionado à placa, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B002DUD1DS": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de captura de TV e não uma placa de vídeo, portanto não atende ao que foi buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0019EIBPM": {
+          "nota": 0,
+          "justificativa": "O produto é um gravador de vídeo externo (captura de TV via USB), e não uma placa de vídeo dedicada para o computador. Por ser um tipo de hardware completamente diferente do buscado, recebe nota zero.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B1M5PND6": {
+          "nota": 0,
+          "justificativa": "O produto é uma câmera para placa de desenvolvimento (como Raspberry Pi), sendo completamente irrelevante para quem busca uma placa de vídeo para PC.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00NI6S0P0": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon HD 7570 no formato low profile (perfil baixo), ideal para PCs compactos conforme buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01M4G129Y": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon HD6450 explicitamente indicada como low profile, atendendo perfeitamente ao requisito da busca e ao perfil de PC compacto.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0036Z9TB2": {
+          "nota": 0,
+          "justificativa": "O produto é uma base de resfriamento para notebook com ventiladores USB, sendo completamente irrelevante para quem busca uma placa de vídeo de perfil baixo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0007PO3II": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de captura de vídeo USB externa e não uma placa de vídeo interna para processamento gráfico, portanto não serve para o que a pessoa busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BNDM3BTX": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo Radeon RX 550 com formato low profile e suporte para gabinetes pequenos SFF, atendendo perfeitamente a todos os requisitos da busca e do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B00L4GEGHC",
+        "B006LR841I",
+        "B0036Z9TB2",
+        "B00IDF5H98"
+      ]
+    },
+    {
+      "id": "c10",
+      "texto": "placa silenciosa sem ventoinha",
+      "filtros": {
+        "categoria": "placas-de-video"
+      },
+      "perfil": "quer uma placa passiva (fanless) para um PC de sala silencioso",
+      "notas_humanas": {
+        "B000XVNH4W": 3,
+        "B072HRD3CY": 3,
+        "B01LZLBRI3": 0,
+        "B000219P3U": 2,
+        "B00DOH8IRS": 1,
+        "B091YBZ5VM": 0,
+        "B0815SP7PK": 1
+      },
+      "notas_ia": {
+        "B091YBZ5VM": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace) e não uma placa de vídeo, sendo completamente irrelevante para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B072HRD3CY": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo com resfriamento passivo (Silent, sem ventoinha), atendendo perfeitamente à busca e à intenção de um PC silencioso.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0815SP7PK": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo MSI GeForce GTX 1660 Super com duas ventoinhas físicas visíveis na foto e no título, o que contradiz diretamente a busca por uma placa sem ventoinha (fanless). Recebe nota 1 por ser uma placa de vídeo, mas falha no requisito essencial de refrigeração passiva.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B092D3ZZGC": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace) com iluminação ARGB, e não uma placa gráfica passiva. Recebe nota 0 por ser um acessório totalmente diferente do que foi buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006VXNHXW": {
+          "nota": 0,
+          "justificativa": "O produto é um adaptador de vídeo USB para HDMI externo e não uma placa de vídeo dedicada interna para PC. Trata-se de outro tipo de hardware, sendo irrelevante para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0085MQNX8": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo ASUS GT610 com refrigeração passiva (Silent, sem ventoinha e com 0 dBA), atendendo perfeitamente ao que a busca e o perfil solicitam.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000853QV2": {
+          "nota": 0,
+          "justificativa": "O produto é um conjunto de adesivos de teflon para pés de mouse, não tendo nenhuma relação com uma placa de vídeo silenciosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B071HH79CD": {
+          "nota": 0,
+          "justificativa": "O produto é uma ponte SLI para placas de vídeo e não uma placa de vídeo em si, sendo irrelevante para a busca por uma placa silenciosa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000XVNH4W": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo GeForce 8600GT com resfriamento passivo (fanless), atendendo perfeitamente ao pedido de uma placa silenciosa sem ventoinha.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B2KPRJW9": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo ASUS GT 730 com refrigeração passiva de 0dB, exatamente o que foi buscado para montar um PC de sala silencioso.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08W5DLZ4Y": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace) e não uma placa de vídeo em si. Por ser um acessório e não a placa buscada, recebe nota 0.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00SWCZOV8": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo com resfriamento passivo e sem ventoinha ('Silent'), atendendo perfeitamente ao que a busca e o perfil pedem.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01LZLBRI3": {
+          "nota": 0,
+          "justificativa": "O produto é um cabo conector SLI para placas de vídeo e não uma placa de vídeo passiva, sendo um item irrelevante para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000219P3U": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de vídeo externa PCMCIA (VTBook) voltada para computadores portáteis antigos, sendo totalmente incompatível com a busca por uma placa silenciosa interna para um PC de sala.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004X8EO6Q": {
+          "nota": 3,
+          "justificativa": "Trata-se de uma placa de vídeo com design passivo (silent, sem ventoinha) e formato low profile, ideal para HTPC e totalmente aderente à busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00DOH8IRS": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo que possui uma ventoinha visível na imagem, contradizendo o requisito de ser sem ventoinha.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "c1c93788baa2"
+        },
+        "B00070IO7E": {
+          "nota": 0,
+          "justificativa": "O produto é uma ventoinha para gabinete ou CPU, o oposto de uma placa sem ventoinha.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07MBX8Q28": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace) com luzes LED, e não uma placa de vídeo em si.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08M5X6KMJ": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo com iluminação ARGB, e não uma placa gráfica passiva. Recebe nota zero por ser um acessório e não o tipo de hardware buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0972S7YWY": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU support bracket) e não uma placa de vídeo passiva buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B000XVNH4W",
+        "B072HRD3CY",
+        "B01LZLBRI3",
+        "B000219P3U",
+        "B0815SP7PK"
+      ]
+    },
+    {
+      "id": "c11",
+      "texto": "radeon com 16gb de memória",
+      "filtros": {
+        "categoria": "placas-de-video"
+      },
+      "perfil": "quer uma placa AMD Radeon com 16 GB de memória de vídeo, qualquer modelo",
+      "notas_humanas": {
+        "B004FPYJF8": 1,
+        "B07N4QDM3X": 3,
+        "B072HTFZM4": 2,
+        "B072NB72SV": 1,
+        "B086CQVC4F": 1,
+        "B005FNC0JG": 0,
+        "B000MNFVUO": 1
+      },
+      "notas_ia": {
+        "B000E5VQOU": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica ATI Radeon X1600 Pro com apenas 512 MB de memória, o que está muito abaixo dos 16 GB exigidos pela busca. Recebe nota 1 por ser uma placa de vídeo do mesmo fabricante, mas de modelo e especificação completamente diferentes do essencial.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006N0FGPK": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo ATI Radeon X1300 com apenas 128MB de memória, ficando muito abaixo dos 16GB exigidos pela busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000E5RJJ6": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica ATI Radeon de 512 MB, enquanto a busca pede 16 GB de memória. Recebe nota 1 por ser uma placa de vídeo do mesmo tipo geral, mas com especificações totalmente diferentes do essencial buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B072HTFZM4": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa gráfica AMD Radeon Pro Duo, que possui exatamente 16 GB de memória de vídeo, atendendo perfeitamente à busca e ao perfil do usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07S4G995H": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de vídeo NVIDIA NVS 510 com apenas 2GB de memória, sendo totalmente incompatível com a marca Radeon e os 16GB exigidos na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00030EYOK": {
+          "nota": 0,
+          "justificativa": "O produto é um módulo de memória RAM DDR de 512MB para computadores antigos, totalmente irrelevante para quem busca uma placa de vídeo AMD Radeon com 16GB.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B072NB72SV": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica AMD Radeon HD 6570 com apenas 2 GB de memória, o que difere significativamente dos 16 GB exigidos na busca, recebendo nota 1 por ser um modelo diferente do mesmo tipo de componente.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07GVSPL2K": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon X1300 com apenas 128MB de memória, o que difere drasticamente do requisito essencial de 16GB buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006IUXL1G": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de captura de TV da ATI, e não uma placa de vídeo Radeon com 16GB de memória buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07ZPM3388": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Nvidia GeForce GTX 1660 Super com 6GB, enquanto a busca pede uma placa AMD Radeon com 16GB. Por ser outro modelo de placa bem diferente do pedido, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008RZTJJ8": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica AMD Radeon HD 5850 com apenas 1 GB de memória, falhando no requisito essencial de 16 GB pedido na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004J6WG44": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica ATI Rage 128 Pro com apenas 32MB de memória, sendo de um modelo muito antigo e incompatível com o requisito de 16GB da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005FNC0JG": {
+          "nota": 0,
+          "justificativa": "O produto é uma ponte Crossfire (acessório), e não uma placa de vídeo Radeon com 16GB de memória.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B086CQVC4F": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Nvidia GeForce GTX 1660 com 6GB de memória, falhando tanto na marca buscada (AMD Radeon) quanto na quantidade de memória (16GB), recebendo nota 1 por ser apenas uma placa de vídeo de outro modelo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008YB30K4": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon HD 7850 com apenas 2 GB de memória, enquanto a busca exige 16 GB. Recebe nota 1 por ser um modelo do mesmo tipo de placa, mas sem atender ao requisito essencial de memória.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09V2GYKPJ": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon RX 550 com apenas 2GB de memória, falhando no requisito essencial de 16GB buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08Q3292PD": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon RX 6900 XT com 16 GB de memória, atendendo perfeitamente a todos os requisitos da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000IXZ3QU": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon X1650 Pro com apenas 512MB de memória, o que difere drasticamente dos 16GB exigidos pela busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00EA83ZT6": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de vídeo Nvidia GeForce GT 610 com 2GB de memória, o que difere totalmente da marca AMD Radeon e dos 16GB buscados. Por ser uma placa de vídeo de marca e especificações completamente diferentes, recebe nota zero.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07MBX8Q28": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace), que é um acessório e não uma placa de vídeo Radeon de 16GB.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07N4QDM3X": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon VII com 16GB de memória, atendendo perfeitamente a todos os requisitos da busca e do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004FPYJF8": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon HD 6970 com 2 GB de memória, mas a busca exige especificamente 16 GB de memória.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000MNFVUO": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de vídeo NVIDIA antiga com apenas 16MB de memória, o que é completamente diferente da busca por uma placa AMD Radeon com 16GB de memória.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B000MNFVUO"
+      ]
+    },
+    {
+      "id": "c12",
+      "texto": "placa barata para jogar em full hd",
+      "filtros": {
+        "categoria": "placas-de-video",
+        "preco_max": 250
+      },
+      "perfil": "primeira montagem de PC gamer, orçamento curto, jogos atuais em 1080p",
+      "notas_humanas": {
+        "B000EHP608": 1,
+        "B00H71JJOS": 1,
+        "B00K362LAS": 1,
+        "B001C7KMQ2": 1,
+        "B000YTLZ3S": 1,
+        "B00LVUPG48": 0,
+        "B0012IK8MY": 1,
+        "B007XW8FX2": 1,
+        "B09TPNTLHR": 0,
+        "B005EDG750": 1,
+        "B00I4ZUMF6": 1
+      },
+      "notas_ia": {
+        "B004JMZXM0": {
+          "nota": 1,
+          "justificativa": "Esta é uma placa de vídeo antiga (Radeon HD 6850 com apenas 1 GB de VRAM), o que a torna totalmente incapaz de rodar jogos atuais em 1080p, falhando no requisito essencial da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00LVUPG48": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiquada para notebooks (GeForce 8600M GS de 128MB), totalmente incapaz de rodar jogos atuais em Full HD, embora seja uma placa de vídeo barata.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00H71JJOS": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo, mas trata-se de um modelo MXM para notebooks antigos e extremamente fraco, incapaz de rodar jogos atuais em Full HD em um PC de mesa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0053WU4I8": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo antiga e de entrada (Radeon HD 4350), incapaz de rodar jogos atuais em Full HD, embora seja barata e do tipo de produto buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0012IK8MY": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Radeon HD 3870, que pertence ao mesmo tipo de produto buscado, mas é um modelo extremamente antigo incapaz de rodar jogos atuais em 1080p. Por ser uma placa de outra geração e totalmente inadequada para o perfil de jogos atuais, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00SKTF83W": {
+          "nota": 2,
+          "justificativa": "O produto é uma placa de vídeo GTX 960 de 2GB, modelo mais antigo com desempenho limitado para jogos atuais em Full HD, mas serve como uma opção barata para entrada na plataforma.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005EDG750": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo antiga (ATI Radeon HD 5770 de 1GB), que é muito fraca para rodar jogos atuais em 1080p, falhando no essencial do perfil do usuário. Recebe nota 1 por ser uma placa de vídeo, mas totalmente inadequada para o propósito buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09TPNTLHR": {
+          "nota": 0,
+          "justificativa": "O produto é apenas um suporte de metal (bracket) para placa de vídeo, e não uma placa de vídeo funcional para jogos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0091RT37O": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo antiga e de entrada (Radeon HD 2400 XT de 256MB), totalmente incapaz de rodar jogos atuais em Full HD, embora seja uma placa de vídeo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00K362LAS": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Nvidia GeForce 8800 GT antiga que não possui capacidade para rodar jogos atuais em Full HD, recebendo nota 1 por ser uma placa de vídeo mas totalmente inadequada para o propósito da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004QIPNSQ": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo muito antiga e fraca (Radeon 6350 com 512MB), totalmente incapaz de rodar jogos atuais em Full HD, recebendo nota baixa por ser inadequada para o propósito da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00I4ZUMF6": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo muito antiga (HD 3650 com 512MB), incapaz de rodar jogos atuais em Full HD conforme o perfil do usuário busca. Recebe nota 1 por ser uma placa de vídeo, mas totalmente inadequada para o propósito pretendido.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001C7KMQ2": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo ATI Radeon HD 2400 XT, sendo do mesmo tipo de componente buscado, mas trata-se de um modelo extremamente antigo e obsoleto incapaz de rodar jogos atuais em Full HD.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00NH2D5DC": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo GeForce GTX 980 acessível, adequada para o orçamento curto e capaz de rodar jogos em Full HD conforme buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000HJ99GK": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo obsoleta com apenas 32 MB de memória, sendo totalmente incapaz de rodar jogos atuais em Full HD.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000EHP608": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo obsoleta (GeForce 7800GS com padrão AGP), incapaz de rodar jogos atuais em 1080p, portanto não atende ao perfil de montagem gamer moderna.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B007XW8FX2": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo muito antiga (Radeon HD 3450 de 256MB), totalmente incapaz de rodar jogos atuais em Full HD, embora seja uma placa de vídeo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08W5DLZ4Y": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace) e não uma placa de vídeo para jogos. Por ser apenas um acessório ligado a placas, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000KAAEHY": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Radeon X1300 muito antiga, incapaz de rodar jogos atuais em 1080p para um PC gamer. Recebe nota 1 por ser uma placa de vídeo, mas totalmente inadequada para o uso buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B12FM6XB": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Radeon HD 6570 antiga e de entrada, incapaz de rodar jogos atuais em Full HD conforme o perfil do usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07WNLZG6F": {
+          "nota": 0,
+          "justificativa": "O produto é uma ponte NVLink para placas Titan RTX, sendo um acessório e não uma placa de vídeo para jogos.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000YTLZ3S": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo antiga e obsoleta (Radeon X1950PRO AGP), incapaz de rodar jogos atuais em Full HD, embora seja do mesmo tipo de produto buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B092D3ZZGC": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace) e não uma placa de vídeo para jogos, sendo um item ligado mas de outro tipo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IDF5H98": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon HD 6350 antiga com apenas 512MB de memória, sendo totalmente incapaz de rodar jogos atuais em Full HD conforme o perfil busca, embora seja uma placa de vídeo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B001C7KMQ2",
+        "B00LVUPG48",
+        "B007XW8FX2",
+        "B09TPNTLHR"
+      ]
+    },
+    {
+      "id": "c13",
+      "texto": "boneca vampira com roupa preta",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "colecionadora adulta de bonecas de terror; a marca não importa",
+      "notas_humanas": {
+        "B004Z6HI1O": 2,
+        "B00GLGX67G": 1,
+        "B002CZPS4Y": 2,
+        "B006O6EP14": 3,
+        "B008HZAMKS": 3,
+        "B00471LBF6": 2,
+        "B00PFQ7K52": 2,
+        "B00XV6URIK": 2,
+        "B000306A06": 1,
+        "B08BG7S8HH": 1,
+        "B0984SJX5K": 1,
+        "B09Y3NDGP5": 3,
+        "B008Y2UKF6": 1,
+        "B005D6ABGE": 2,
+        "B004ZH7I5E": 2,
+        "B000YQ6AVI": 2
+      },
+      "notas_ia": {
+        "B0BPW84KZR": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Draculaura da Monster High, que é uma vampira vestindo uma roupa preta e rosa. Atende perfeitamente à busca e ao perfil da colecionadora adulta, recebendo nota máxima.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09Y3NDGP5": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca vampira (Draculaura de Monster High) ideal para uma colecionadora adulta, mas sua roupa principal é rosa em vez de preta, recebendo nota 2 pela diferença de cor.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00PFQ7K52": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Living Dead Dolls que possui traços góticos e veste um casaco preto, atendendo perfeitamente ao perfil da colecionadora de terror e aos detalhes da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004ZH7I5E": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca Living Dead Doll com temática gótica e de terror, perfeita para o perfil da colecionadora, embora a roupa tenha detalhes roxos e listrados em vez de ser inteiramente preta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00GLGX67G": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Monster High que, embora seja de terror e agrade à colecionadora, é uma autômata (Robecca Steam) e não uma vampira.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00XV6URIK": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca gótica da linha Living Dead Dolls com roupa totalmente preta que agrada ao perfil de colecionadora de terror, mas não há indicação explícita de que seja especificamente uma vampira.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006O6EP14": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca Draculaura de Monster High, que é uma vampira, mas sua roupa é predominantemente rosa e branca com detalhes pretos, e não preta como pedido.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00PFPKSUM": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca colecionável de terror (Living Dead Dolls) com visual gótico e roupa preta que atende perfeitamente à busca da colecionadora e se alinha ao seu perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B012IYWZUI": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Monster High (personagem Spectra Vondergeist na foto, que tem presas e estilo vampanesco) com roupas pretas, atendendo perfeitamente à busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IVFCPYU": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca com visual gótico e vestido preto e roxo, mas não se trata especificamente de uma vampira. Por ser uma boneca do mesmo tipo e estilo gótico escuro que agrada a colecionadores de terror, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B007K60ORG": {
+          "nota": 1,
+          "justificativa": "O produto é uma fantasia de Draculaura para pessoa, e não uma boneca. Recebe nota 1 por ser um item ligado (roupa/acessório da personagem) de outro tipo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08J7NGKV4": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca de terror vestida de freira, que apesar de ser um item de terror para uma colecionadora, representa especificamente uma freira e não uma vampira.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005D6ABGE": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca gótica/de terror da linha Living Dead Dolls com vestido preto que vem dentro de um caixão, encaixando-se perfeitamente no estilo buscado e no perfil da colecionadora, embora não seja explicitamente uma vampira mas sim uma boneca morta-viva.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00F14IMIM": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Spectra Vondergeist (fantasma, não vampira) da Monster High com roupa preta e rosa, atendendo ao perfil de colecionadora de terror, mas falhando no detalhe específico de ser vampira.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00471LBF6": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca colecionável com visual gótico e sombrio vestindo roupas pretas, atendendo perfeitamente à busca da colecionadora de terror por uma boneca vampira com roupa preta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0984SJX5K": {
+          "nota": 2,
+          "justificativa": "O produto é uma boneca de terror (estilo Annabelle) com vestido branco e detalhes vermelhos, faltando o requisito da roupa preta da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004Z6HH0Q": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca vampira com roupa preta e detalhes roxos, atendendo perfeitamente à busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BSVRT5FD": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca colecionável da Elvira, inspirada em temática de terror e vestida de preto, atendendo perfeitamente ao perfil da colecionadora e aos pontos da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008HZAMKS": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca Draculaura da Monster High, que é uma vampira com detalhes em preto e rosa na roupa e asas de morcego. Atende perfeitamente à busca da colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004XV3B5S": {
+          "nota": 1,
+          "justificativa": "O produto é uma fantasia infantil da Draculaura e não uma boneca, tratando-se de um item ligado mas de outro tipo para a colecionadora.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000YQ6AVI": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca gótica/estilo terror da linha Living Dead Dolls vestida de preto, perfeita para uma colecionadora adulta. Atende perfeitamente à busca por uma boneca vampira com roupa preta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08BG7S8HH": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca colecionável do personagem O Corvo, que tem visual gótico mas não é especificamente uma vampira, tratando-se de um item do mesmo estilo e formato buscados.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000306A06": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie colecionável vestida de russa imperial com roupas brancas e vermelhas. Recebe nota 1 por ser apenas do mesmo tipo de produto (boneca), sem o tema de vampira e sem a roupa preta pedidos na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B002CZPS4Y": {
+          "nota": 3,
+          "justificativa": "O produto é uma boneca gótica com vestido preto de visual sombrio que atende perfeitamente ao perfil de colecionadora de terror e aos requisitos da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004Z6HI1O": {
+          "nota": 2,
+          "justificativa": "O produto é um boneco vampiro (Boyz) com roupa preta, diferindo apenas no gênero e na menor escala por ser uma figura masculina em vez de feminina.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008Y2UKF6": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Monster High (Abbey Bominable) com temática de monstro, mas trata-se de uma criatura de gelo usando roupas brancas e azuis, não sendo uma vampira com roupa preta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B004Z6HI1O",
+        "B00GLGX67G",
+        "B008HZAMKS",
+        "B00PFQ7K52",
+        "B00XV6URIK",
+        "B08BG7S8HH",
+        "B0984SJX5K",
+        "B09Y3NDGP5",
+        "B005D6ABGE",
+        "B000YQ6AVI"
+      ]
+    },
+    {
+      "id": "c14",
+      "texto": "barbie sereia",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "quer uma Barbie em versão sereia para a sobrinha",
+      "notas_humanas": {
+        "B000YQX6CY": 2,
+        "B000QCO6LQ": 2,
+        "B000W23LY8": 2,
+        "B003J39X8A": 2,
+        "B000MMO6QA": 2,
+        "B0016WLUOQ": 2,
+        "B000PJS00I": 2
+      },
+      "notas_ia": {
+        "B000YQX6CY": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie líder de torcida (cheerleader) e não possui a versão sereia buscada. Trata-se de uma boneca Barbie de outro modelo, recebendo nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B003J39X8A": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie em versão princesa e não sereia, sendo da mesma marca e tipo geral, mas sem o tema principal buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001E2XW2G": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com vestido de festa tradicional e não possui a versão sereia solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000MMO6QA": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie colecionable de borboleta (Le Papillon), não sendo uma Barbie sereia conforme buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0029XMX2Y": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie colecionável com tema de deusa, mas não possui cauda de sereia conforme solicitado na busca. Recebe nota 1 por ser uma boneca Barbie de outro modelo/tema.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000PJS00I": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com vestido de festa natalino, sem relação com a versão sereia buscada. Recebe nota 1 por ser do mesmo tipo de produto (boneca Barbie), mas faltar o essencial da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0016J7SLS": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie da edição Arizona Jean Company vestida com roupas normais, sem relação com a versão sereia buscada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00EGDMMOO": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com tema marinho (resgatadora de animais do SeaWorld), mas ela tem pernas normais e não a cauda de sereia pedida na busca. Por ser uma Barbie, recebe nota 1 por ser o mesmo tipo de produto sem o essencial da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B003GKCELY": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com tema de férias no mar, mas não é a versão sereia pedida na busca, sendo apenas do mesmo tipo de boneca. Por isso, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0016WLUOQ": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com vestido de tema primaveril, sem a característica de sereia solicitada na busca. Recebe nota 1 por ser uma boneca Barbie, mas de outro modelo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000K5QAFE": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com vestido de festa tradicional de aniversário, sem a versão sereia solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000QD9CT6": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie da coleção Dolls of the World em versão tradicional brasileira, e não na versão sereia buscada. Trata-se de uma boneca Barbie, mas sem o tema de sereia solicitado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000VV8CVC": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie em versão vitoriana com vestido longo e um ursinho, não atendendo ao pedido de ser uma versão sereia.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000JVWECC": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie em edição temática de Halloween, sendo do mesmo tipo de boneca, mas sem a versão de sereia solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001GUUVMA": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com foco em cabelo (Hollywood Hair), que embora seja uma Barbie, não é a versão sereia pedida na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000X7DIYU": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie colecionable de vestido longo com tema de festas, não sendo uma versão sereia conforme buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000YQVD92": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie líder de torcida, o que pertence ao mesmo tipo de boneca, mas não tem a versão sereia solicitada.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000W23LY8": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie em edição de comemoração com vestido longo, e não uma versão sereia solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000QCO6LQ": {
+          "nota": 1,
+          "justificativa": "O produto é um conjunto de bonecas Barbie e Kelly com carrinho de passeio, que pertence ao mesmo tipo (boneca Barbie), mas não possui a versão de sereia solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B003JV75VO": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com tema de festa do chá, sendo portanto o mesmo tipo de produto mas sem a versão de sereia solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00124T9FU": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie tradicional com vestido rosa, sem a cauda de sereia exigida pela busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B003I1A4FY": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie Sparkle Eyes em versão comum com vestido longo, e não na versão sereia solicitada. Por ser do mesmo tipo mas faltar a característica essencial de sereia, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000XCQIFG": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie com temática de cartomante de Halloween, portanto não se trata de uma Barbie sereia. Recebe nota 1 por ser uma boneca da mesma marca, mas de um tipo completamente diferente do solicitado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B000YQX6CY",
+        "B003J39X8A",
+        "B0016WLUOQ",
+        "B000PJS00I"
+      ]
+    },
+    {
+      "id": "c15",
+      "texto": "boneca que fala português",
+      "filtros": {
+        "categoria": "bonecas"
+      },
+      "perfil": "avó procurando uma boneca interativa que fale em português com a neta",
+      "notas_humanas": {
+        "B00ARAFUC6": 0,
+        "B00IOFBAZM": 1,
+        "B0016DVA3G": 1,
+        "B00008XL2R": 1,
+        "B000297PG6": 0,
+        "B086VDH5GC": 1,
+        "B002GYVFDO": 0,
+        "B007QVOZD4": 1,
+        "B004RXILBQ": 1,
+        "B000H2FO2U": 1
+      },
+      "notas_ia": {
+        "B0016DVA3G": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie colecionável comum que não possui nenhuma função de fala ou interação, falhando no requisito essencial da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004RXILBQ": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca comum sem recursos interativos ou capacidade de falar, falhando no requisito principal da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B003ANTZIW": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca interativa em inglês (Bratz Talking Doll), falhando no requisito essencial de falar em português exigido na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000H2FO2U": {
+          "nota": 1,
+          "justificativa": "O produto é uma Barbie colecionável temática norueguesa, que não possui função de voz ou interatividade em português. Por ser uma boneca comum sem os recursos interativos exigidos na busca, recebe nota baixa.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000297PG6": {
+          "nota": 1,
+          "justificativa": "O produto é um brinquedo interativo que emite apenas sons, sem falar português e sem ser uma boneca tradicional, mas tem alguma ligação por ser um boneco sonoro.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00008XL2R": {
+          "nota": 1,
+          "justificativa": "O produto é um boneco interativo em inglês do personagem Murray da turma The Wiggles, não atendendo ao requisito de falar em português.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09XTR71NC": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca reborn realista comum, mas falta o requisito essencial da busca por ser interativa e falar português.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00ERG4SLA": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca interativa que fala frases, mas por ser importada da Disney, fala em inglês e não em português conforme solicitado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00BFRENSC": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca comum sem nenhuma indicação de que fala português ou possui recursos interativos solicitados na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B007QVOZD4": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie colecionável de 1998 que não possui função de fala em português conforme solicitado na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B086VDH5GC": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca realista reborn, que é do mesmo tipo de boneca, mas não possui a funcionalidade interativa de falar em português exigida na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000NO6V42": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie colecionável comum, sem nenhum recurso eletrônico ou interativo que fale português.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IOFBAZM": {
+          "nota": 0,
+          "justificativa": "O produto é uma pequena boneca de porcelana em formato de palhaço, que não possui nenhuma função de fala ou interatividade em português. Por se tratar de um tipo de boneca completamente diferente do buscado e sem os recursos solicitados, o item é irrelevante.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00ARAFUC6": {
+          "nota": 0,
+          "justificativa": "O produto é um brinquedo de pelúcia em japonês que não fala português e não é uma boneca humana, recebendo nota zero por ser totalmente inadequado ao pedido.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00BPFUML6": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca colecionável comum de vinil, sem qualquer indicação de que seja interativa ou que fale português. Por ser apenas uma boneca sem as funções buscadas, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0006FUEB4": {
+          "nota": 1,
+          "justificativa": "O produto é um boneco falante do político Donald Rumsfeld que fala apenas em inglês, não atendendo ao requisito essencial de falar português para a neta.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B002GYVFDO": {
+          "nota": 1,
+          "justificativa": "O produto é um boneco do personagem Stig de Top Gear que fala apenas em inglês, não atendendo ao requisito essencial de falar português.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0017IAGNK": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca Barbie falante (Super Talk) em inglês, como indicado pelo texto na embalagem 'I say over 100,000 things!', mas não atende ao requisito essencial de falar em português.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B077352JNP": {
+          "nota": 1,
+          "justificativa": "O produto é uma boneca interativa da Minnie que fala frases, mas a caixa mostra que ela fala em outros idiomas (como inglês, francês, espanhol e turco) sem indicação de português.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00ERG3T6K": {
+          "nota": 1,
+          "justificativa": "O produto é um boneco falante do Jake da Disney, mas é um boneco de ação e muito provavelmente fala apenas em inglês, não atendendo ao requisito essencial de falar português.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B00ARAFUC6",
+        "B00IOFBAZM",
+        "B000H2FO2U"
+      ]
+    },
+    {
+      "id": "c16",
+      "texto": "gtx 1660 super",
+      "filtros": {
+        "categoria": "placas-de-video"
+      },
+      "perfil": "quer exatamente uma GeForce GTX 1660 Super; a 1660 comum ou Ti não serve",
+      "notas_humanas": {
+        "B07ZPK84RY": 3,
+        "B08CBPH3P9": 3,
+        "B01II1CDB6": 1,
+        "B0BWJ5763Y": 3,
+        "B00IGHD812": 1,
+        "B00IGQ4I4Y": 0,
+        "B0B2KJJ6HY": 3,
+        "B083MR61B9": 3
+      },
+      "notas_ia": {
+        "B0BWJ5763Y": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce GTX 1660 Super da marca 51RISC, atendendo perfeitamente à busca e ao perfil do comprador.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00GDQ0V4K": {
+          "nota": 1,
+          "justificativa": "O produto ofertado é uma placa de vídeo GTX 780 Ti, enquanto a busca exige especificamente o modelo GTX 1660 Super. Recebe nota 1 por ser uma placa de vídeo de modelo totalmente diferente do buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08CBKQV8C": {
+          "nota": 1,
+          "justificativa": "O produto ofertado é uma placa de vídeo GTX 1650 Super, enquanto a busca exige especificamente o modelo GTX 1660 Super conforme o perfil. Recebe nota 1 por ser uma placa de vídeo do mesmo fabricante e linha geral, mas de um modelo inferior diferente do solicitado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08CBPH3P9": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo MSI GeForce GTX 1660 Super buscada, atendendo a todos os requisitos e ao perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07ZPM3388": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo MSI GeForce GTX 1660 Super buscada, atendendo a todos os critérios e especificações do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005AY5OQG": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo GeForce 9600GSO, que pertence a uma linha e geração completamente diferentes da buscada (GTX 1660 Super). Recebe nota 1 por ser um item do mesmo tipo geral (placa de vídeo), mas sem atender ao modelo solicitado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B097WXVG57": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce GTX 1660 Super solicitada, atendendo a todos os pontos da busca e do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0B2KJJ6HY": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce GTX 1660 Super buscada, atendendo a todos os requisitos do usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B007RFXVAC": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo GeForce GTX 550 Ti, sendo de um modelo totalmente diferente da GTX 1660 Super buscada. Recebe nota 1 por ser uma placa de vídeo de outra geração e modelo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07ZPK84RY": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce GTX 1660 Super buscada, atendendo a todos os requisitos e ao perfil informado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B083MR61B9": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce GTX 1660 Super da PNY buscada, atendendo perfeitamente a todos os requisitos e ao perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0BBSSP4GM": {
+          "nota": 1,
+          "justificativa": "O produto ofertado é uma placa de vídeo GTX 1660 Ti, enquanto o perfil especifica que busca exatamente a versão Super e que a versão Ti não serve. Recebe nota 1 por ser um modelo diferente da mesma linha de placas.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00I7PSQJM": {
+          "nota": 1,
+          "justificativa": "O produto ofertado é uma placa de vídeo GTX 770, enquanto a busca exige exatamente uma GTX 1660 Super. Por ser um modelo de placa diferente do especificado, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01II1CDB6": {
+          "nota": 0,
+          "justificativa": "O produto é uma ponte SLI para placas de vídeo e não a placa GTX 1660 Super buscada, sendo irrelevante.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07PSSLPWH": {
+          "nota": 1,
+          "justificativa": "O produto ofertado é a placa de vídeo GTX 1660 comum, enquanto o perfil exige especificamente a versão Super, tornando o item apenas relacionado (modelo diferente).",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004BA117G": {
+          "nota": 1,
+          "justificativa": "O produto ofertado é uma placa de vídeo GTX 580, enquanto a busca exige especificamente o modelo GTX 1660 Super.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IGHD812": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo GeForce GTX 750, enquanto a busca exige especificamente o modelo GTX 1660 Super.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08ZNNG2Y2": {
+          "nota": 3,
+          "justificativa": "O produto é exatamente a placa de vídeo GeForce GTX 1660 Super da MSI solicitada na busca e reforçada pelo perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00I7PSQ4M": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo GeForce GTX 760, pertencente a um modelo totalmente diferente da GTX 1660 Super solicitada na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IGQ4I4Y": {
+          "nota": 0,
+          "justificativa": "O produto ofertado é uma placa de vídeo FX 5700 antiga, totalmente diferente do modelo GTX 1660 Super exigido pela busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B07ZPK84RY",
+        "B08CBPH3P9",
+        "B0BWJ5763Y",
+        "B083MR61B9"
+      ]
+    },
+    {
+      "id": "c17",
+      "texto": "placa de vídeo com rgb",
+      "filtros": {
+        "categoria": "placas-de-video"
+      },
+      "perfil": "quer uma placa com iluminação RGB que apareça pelo vidro do gabinete",
+      "notas_humanas": {
+        "B000OOS036": 0,
+        "B0019EIBPM": 0,
+        "B0036Z9TB2": 0,
+        "B004FPYJF8": 1,
+        "B006VXNHXW": 0,
+        "B07T86GSGK": 2,
+        "B00ZGF40QO": 2,
+        "B08W5DLZ4Y": 0,
+        "B018IZ9EXW": 1
+      },
+      "notas_ia": {
+        "B07T86GSGK": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Radeon RX 5700 modelo de referência blower, que não possui iluminação RGB conforme solicitado na busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B005C983O4": {
+          "nota": 0,
+          "justificativa": "O produto é um adaptador SSD PCIe, que é outro tipo de placa e não uma placa de vídeo, sendo irrelevante para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08W5DLZ4Y": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para placa de vídeo (GPU brace) e não uma placa de vídeo, sendo irrelevante para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B008RZTJJ8": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo ATI Radeon HD 5850 que possui apenas detalhes vermelhos e não conta com iluminação RGB conforme buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B018LJ3TJA": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Radeon R9 380 da Gigabyte que não possui iluminação RGB, falhando no requisito principal da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004FPYJF8": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Sapphire Radeon HD 6970, que é do mesmo tipo de componente buscado, mas não possui iluminação RGB conforme solicitado no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0036Z9TB2": {
+          "nota": 0,
+          "justificativa": "O produto é uma base refrigeradora para notebook, sendo completamente irrelevante para quem busca uma placa de vídeo com RGB para gabinete.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006VXNHXW": {
+          "nota": 0,
+          "justificativa": "O produto é um adaptador de vídeo USB para HDMI, que não tem nenhuma relação com uma placa de vídeo interna com RGB para gabinete.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B017Z5K8D6": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon R5 230 básica, sem iluminação RGB conforme a busca exige.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0019EIBPM": {
+          "nota": 0,
+          "justificativa": "O produto é um gravador de vídeo externo via USB para captura de TV, que não tem relação com uma placa de vídeo para jogos ou processamento gráfico com RGB.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B004J6WG44": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga ATI Rage 128 Pro sem qualquer tipo de iluminação RGB, falhando no requisito essencial da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000OOS036": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa de captura e conversão de vídeo analógico, não sendo uma placa de vídeo para jogos com iluminação RGB.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08JVGL3ZH": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte com RGB para placa de vídeo, e não a placa de vídeo em si, sendo um item ligado de outro tipo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00ZGF3U2O": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Gigabyte AMD R7 360, mas não possui iluminação RGB conforme solicitado na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B013XFK0NK": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD R9 390, que corresponde ao tipo de produto buscado, mas não possui iluminação RGB conforme exigido na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00ZGF40QO": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo que corresponde ao tipo buscado, mas não possui iluminação RGB conforme exigido na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B018IZ9EXW": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo GT 610 básica, sem iluminação RGB conforme exigido na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00FRHIHVU": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo MSI R7 250 básica, que não possui iluminação RGB conforme solicitado na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00FONIODI": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Gigabyte R7 250, mas não possui iluminação RGB conforme exigido na busca e no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B08DRS5NLR": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte para instalação vertical de placa de vídeo, e não uma placa de vídeo em si. Trata-se de um item relacionado, mas de outro tipo, por isso recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B000OOS036",
+        "B0019EIBPM",
+        "B0036Z9TB2",
+        "B006VXNHXW",
+        "B08W5DLZ4Y"
+      ]
+    },
+    {
+      "id": "c18",
+      "texto": "placa para edição de vídeo até 400 dólares",
+      "filtros": {
+        "categoria": "placas-de-video",
+        "preco_max": 400
+      },
+      "perfil": "editor de vídeo amador que precisa de aceleração para exportar em 4K",
+      "notas_humanas": {
+        "B008HZ1IZG": 2,
+        "B0046TTC3W": 1,
+        "B001N0QBRM": 1,
+        "B0013FDMP6": 1,
+        "B01GOOWOS6": 3,
+        "B01CZ20BA4": 2,
+        "B01CZ27T18": 1,
+        "B06X9TNDFF": 3,
+        "B07NY3FGN3": 3,
+        "B00PB1FYU4": 2
+      },
+      "notas_ia": {
+        "B008HZ1IZG": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo NVIDIA antiga de baixo desempenho (modelo B4J92AT), totalmente inadequada e incapaz de fornecer aceleração para exportação de vídeo em 4K conforme o perfil do usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B003N19VUS": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo ATI FirePro V4800 antiga com apenas 1 GB de memória VRAM, o que é totalmente inadequado e obsoleto para aceleração de exportação em 4K.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01GOOWOS6": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo GeForce GTX 1080 com 8GB de VRAM por US$ 278,54, atendendo perfeitamente ao requisito de preço abaixo de 400 dólares e oferecendo capacidade de aceleração para edição e exportação em 4K.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01CZ27T18": {
+          "nota": 2,
+          "justificativa": "O produto é uma placa de vídeo profissional AMD FirePro W2100 de 2GB, que atende à busca por uma placa de vídeo dentro do orçamento e voltada para esta aplicação, embora seja um modelo de entrada antigo com limitações para edição pesada em 4K.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01CZ20BA4": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa gráfica AMD FirePro W4300, que embora seja voltada para uso profissional/estação de trabalho e dentro do orçamento, possui arquitetura antiga e apenas 4GB de VRAM, sendo insuficiente e inadequada para aceleração de exportação em 4K conforme a necessidade do perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B006N4RTVA": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Radeon HD 5450, que embora seja uma placa de vídeo, é um modelo extremamente antigo e obsoleto incapaz de atender à necessidade de aceleração para exportar em 4K mencionada no perfil. Recebe nota 1 por ser uma placa de vídeo (mesmo tipo de produto), mas totalmente inadequada para o requisito essencial da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09GBHSVZ8": {
+          "nota": 0,
+          "justificativa": "O produto é um suporte para instalação vertical de placa de vídeo com cabo riser, e não a placa de vídeo em si necessária para a edição de vídeo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07NY3FGN3": {
+          "nota": 3,
+          "justificativa": "Trata-se de uma placa de vídeo NVIDIA Quadro M4000 de 8GB por um preço bem abaixo do limite de 400 dólares, ideal para aceleração em edição de vídeo. Recebe nota exata pois atende perfeitamente a todos os requisitos da busca e do perfil do usuário.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0034D7CMO": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo obsoleta (GeForce2 MX400) incapaz de realizar aceleração para exportação em 4K conforme exigido pelo perfil. Recebe nota 1 por ser uma placa de vídeo, mas de modelo totalmente inadequado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0013FDMP6": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo antiga e de entrada (Radeon HD 2400 PRO com 256 MB), totalmente incapaz de acelerar edição ou exportação em 4K.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B003N12E8O": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo ATI FirePro V5800 com apenas 1 GB de VRAM, o que é severamente defasado e insuficiente para aceleração e exportação em 4K, apesar de ser uma placa de vídeo.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00IDF5H98": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa gráfica antiga (Radeon HD 6350 de 512MB) que pertence ao mesmo tipo de produto buscado, mas é totalmente incapaz de atender ao requisito essencial do perfil de acelerar exportações em 4K. Recebe nota 1 por ser uma placa de vídeo de modelo muito diferente e defasado para o que foi pedido.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B06X9TNDFF": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo NVIDIA Quadro P4000 que atende perfeitamente à busca por aceleração para edição de vídeo e está dentro do orçamento estipulado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B000PBVS2S": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa de vídeo muito antiga e obsoleta (Radeon X1550 de 256MB), totalmente incapaz de atender à necessidade de aceleração para edição e exportação em 4K descrita no perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00539MHTA": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica ATI FirePro V7900 de 2GB voltada para estações de trabalho e edição, mas possui apenas 2GB de VRAM, o que é insuficiente para um bom desempenho na exportação em 4K necessária ao perfil. Por ser uma placa de vídeo dedicada mais antiga e com pouca memória para a demanda atual de 4K, recebe nota 1 por ser do tipo certo mas inadequada para o essencial.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00PB1FYU4": {
+          "nota": 1,
+          "justificativa": "Trata-se de uma placa gráfica muito antiga de baixo desempenho que não possui capacidade para aceleração de vídeo em 4K conforme necessário pelo perfil. Recebe nota 1 por ser uma placa gráfica, mas inadequada para a função exigida.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0001ILY92": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga (GeForce2 MX400 de 64 MB), totalmente incapaz de realizar aceleração para edição e exportação em 4K. Recebe nota 1 por ser uma placa de vídeo, mas extremamente defasada para o propósito da busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B01CZ1NCRO": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo AMD FirePro W5100 voltada para estações de trabalho e edição, custando abaixo do limite de 400 dólares, atendendo perfeitamente ao que foi buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001N0QBRM": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo antiga e de baixo desempenho (com apenas 256 MB de VRAM), totalmente inadequada para a necessidade do perfil de exportar em 4K. Recebe nota 1 por ser uma placa de vídeo, mas de um modelo muito obsoleto que não atende ao propósito.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B00H6LRSPQ": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo AMD FirePro V7900 antiga de 2GB que não atende às necessidades atuais para exportação em 4K e aceleração de vídeo moderna, recebendo nota 1 por ser apenas uma placa de vídeo genérica diferente do modelo ideal.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0C3ZKX6CX": {
+          "nota": 1,
+          "justificativa": "O produto é um suporte para placa de vídeo com cabo riser e LEDs, e não a placa de vídeo em si que é necessária para aceleração de edição.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B072LV8BCP": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo Nvidia P400, que é um modelo de entrada voltado para estações de trabalho e possui limitações severas para edição e exportação em 4K. Recebe nota 1 por ser do mesmo tipo de placa de vídeo, mas sem atender ao requisito essencial de desempenho para o perfil que busca edição em 4K.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B07NC22HSV": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa gráfica AMD FirePro W5100 voltada para estações de trabalho e edição. Recebe nota 1 porque é uma placa antiga de 4GB que hoje em dia possui limitações severas de hardware e desempenho, sendo inadequada para a aceleração e exportação fluida em 4K exigida pelo perfil.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0044V2AJ0": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo muito antiga e obsoleta com apenas 64MB de memória, incapaz de atender à necessidade de aceleração para 4K do perfil. Recebe nota 1 por ser tecnicamente uma placa de vídeo, mas totalmente inadequada para o uso buscado.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B001360230": {
+          "nota": 1,
+          "justificativa": "O produto é uma placa de vídeo muito antiga (GeForce 8800GTS), totalmente incapaz de atender à necessidade do usuário de aceleração para exportação em 4K. Por ser um modelo obsoleto de outra geração completamente diferente, recebe nota 1.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B0046TTC3W": {
+          "nota": 0,
+          "justificativa": "O produto é uma placa sintonizadora de TV (TV tuner card) para assistir televisão no PC, e não uma placa de vídeo ou aceleração para edição. Recebe nota 0 por ser um tipo de placa completamente diferente e sem utilidade para a busca.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        },
+        "B09ZFBPMR3": {
+          "nota": 3,
+          "justificativa": "O produto é uma placa de vídeo AMD Radeon RX 6650 XT de 8GB, perfeitamente adequada para aceleração em edição e exportação em 4K e dentro do orçamento limite de 400 dólares.",
+          "modelo": "gemini-3.5-flash-lite",
+          "rubrica": "f3e5dc5b5a5f"
+        }
+      },
+      "auditados": [
+        "B0046TTC3W",
+        "B01CZ27T18",
+        "B07NY3FGN3",
+        "B00PB1FYU4"
+      ]
+    }
+  ]
+}

@@ -426,6 +426,33 @@ rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
 
 ---
 
+## 2026-11-26 · Rubrica v2 do juiz, depois da primeira calibração
+
+**Primeira calibração (rubrica v1):** 100 pares sorteados ao acaso entre os julgados pela
+IA (12 consultas), mais 60 de auditoria estratificada. Kappa ponderado 0,67 (IC 95% de
+0,56 a 0,77) na calibração e 0,63 (0,51 a 0,75) na auditoria; acordo em "relevante ou
+não" de 79% e 80%. Não aprovado: o limite inferior ficou abaixo de 0,6. Viés médio de
+−0,48: a IA dava quase sempre uma nota abaixo da humana.
+
+**Diagnóstico pelas justificativas:**
+- *Fronteira entre 0 e 1* (24 dos 50 desacordos da calibração): "mesma família" foi lido
+  pelo humano como "mesmo tipo de produto" (uma boneca qualquer numa busca por boneca
+  gótica = 1) e pela IA como "acessório ou derivado" (a mesma boneca = 0).
+- *Requisitos deduzidos:* a IA rebaixava por restrições que ninguém escreveu: boneca de
+  noiva "grande demais para topo de bolo", Barbie de colecionador "inadequada para uma
+  menina de 6 anos", pelúcia da personagem "não é a boneca".
+
+**Decisão:** rubrica v2 com o 1 definido como "mesmo tipo de produto sem o essencial, ou
+item ligado de outro tipo", o 0 como "outro tipo de produto sem ligação", e uma regra com
+exemplos: requisitos só do que está escrito na busca e no perfil (tamanho, preço, edição
+e formato não rebaixam a nota quando ninguém os pediu).
+
+**Cuidado de método:** os exemplos da v2 saíram dos desacordos das mesmas consultas, então
+a concordância medida nelas depois do ajuste é otimista. A v2 é validada em 6 consultas
+novas (`avaliacao/consultas-validacao.yaml`), que não guiaram o ajuste.
+
+---
+
 ## 2026-11-26 · Catálogo completo e data de lançamento, para medir produtos novos sem vazamento
 
 **Problema encontrado:** ao testar vagas do top 10 reservadas para produtos novos, o acerto

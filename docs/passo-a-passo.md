@@ -163,6 +163,16 @@ mini-lcm concordancia --origem auditoria --min-pares 20     # auditoria: onde el
   rode `mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10` de novo.
   Mudar a rubrica faz a IA rejulgar sozinha; as suas notas continuam valendo.
 
+Depois de ajustar a rubrica, a concordância nas mesmas consultas fica otimista (a
+rubrica foi escrita olhando os desacordos delas). Valide em consultas que não guiaram o
+ajuste:
+```bash
+mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
+mini-lcm rotular --lote avaliacao/consultas-validacao.yaml --html avaliacao/rotular-validacao.html --amostra 60
+mini-lcm importar-notas /mnt/c/Users/<usuario>/Downloads/notas-rotulagem.json
+mini-lcm concordancia --lote avaliacao/consultas-validacao.yaml --min-pares 25
+```
+
 Sem `--amostra`, `rotular --lote` gera uma página com o pool inteiro de cada consulta
 (para rotular tudo à mão). Uma consulta avulsa também pode ser rotulada no terminal:
 `mini-lcm rotular "boneca de vampira" --categoria bonecas --perfil "colecionadora adulta"`.
