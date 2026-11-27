@@ -173,20 +173,31 @@ Na recomendação, que compara produto com produto, as variantes empatam. Nas pl
 parecem todas iguais na foto, a imagem atrapalha a fusão: o peso da imagem deve variar
 por categoria.
 
-**Busca** (notas combinadas: minhas onde existem, do juiz no resto)
+**Busca** (18 consultas, notas combinadas: humanas onde existem, do juiz de IA no resto;
+peso 0,5 na imagem. Detalhes em [docs/resultados-busca.md](docs/resultados-busca.md))
 
 | Métrica | texto | imagem | fusão |
 |---|---|---|---|
-| recall@10 | | | |
-| MRR | | | |
-| NDCG@10 | | | |
+| recall@10 | **0,653** | 0,210 | 0,510 |
+| MRR | **0,703** | 0,331 | 0,650 |
+| NDCG@10 | **0,692** | 0,390 | 0,627 |
 
-**Juiz de IA**
+O texto (multilingual-e5) é o melhor modo na média. A imagem ajuda nas buscas visuais de
+bonecas e quase não acerta nas placas, que parecem todas iguais na foto: o peso da imagem
+na fusão deve variar por categoria.
+
+**Juiz de IA** (Gemini, rubrica v2; notas humanas dadas sem ver as da IA)
 
 | | Pares | Acordo exato | Kappa ponderado (IC 95%) |
 |---|---|---|---|
-| Calibração | | | |
-| Auditoria às cegas | | | |
+| Calibração, consultas originais | 100 | 66% | 0,76 (0,64 a 0,85) |
+| Auditoria estratificada | 60 | 68% | 0,83 (0,73 a 0,91) |
+| Validação, consultas novas | 100 | 74% | 0,64 (0,46 a 0,78) |
+
+Na validação, o limite inferior do kappa ficou abaixo do critério (0,6), embora o acordo
+seja o maior dos três: 68% dos pares têm nota 1, e com uma nota dominante o kappa cai
+(paradoxo do kappa). A comparação entre os modos de busca é a mesma com as notas da IA e
+com as combinadas, e é para isso que o juiz é usado.
 
 **Recomendação** (cortes semestrais por data, k = 10, catálogo completo da categoria;
 parâmetros escolhidos na validação. Bonecas: 1.876 casos de 1.101 pessoas, 2019 a 2023;

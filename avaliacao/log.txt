@@ -58,3 +58,75 @@ Resultado: NÃO APROVADO (limite inferior do kappa (0.47) abaixo de 0.6)
 Discordâncias: 13 (revise com `mini-lcm revisar`)
 
 Atenção: 1 notas da IA são de uma versão antiga da rubrica. Rode `mini-lcm julgar`.
+Conjunto: rotulagem · só as consultas de avaliacao/consultas-validacao.yaml
+
+Pares com nota humana e da IA: 100
+Acordo exato (mesma nota): 74%
+Acordo em 'relevante ou não' (nota >= 2): 86%
+Kappa ponderado: 0.64 (intervalo de 95%: 0.46 a 0.78)
+Kappa em 'relevante ou não': 0.58
+Viés médio (IA - você): -0.01  (IA mais rigorosa)
+
+Matriz (linhas = sua nota, colunas = nota da IA):
+        IA0  IA1  IA2  IA3
+  você0    2    5    0    0
+  você1    2   63    0    3
+  você2    0    9    1    4
+  você3    0    2    1    8
+
+Resultado: NÃO APROVADO (limite inferior do kappa (0.46) abaixo de 0.6)
+Discordâncias: 26 (revise com `mini-lcm revisar`)
+
+Atenção: 1 notas da IA são de uma versão antiga da rubrica. Rode `mini-lcm julgar`.
+Consultas avaliadas: 14 · notas: ia
+
+| Modo | recall@10 | MRR | NDCG@10 | resultados sem nota |
+|---|---|---|---|---|
+| texto | 0.604 | 0.708 | 0.662 | 0 |
+| imagem | 0.249 | 0.262 | 0.367 | 0 |
+| fusao | 0.481 | 0.641 | 0.595 | 0 |
+
+| Consulta | Relevantes | NDCG@10 (texto) | NDCG@10 (imagem) | NDCG@10 (fusao) |
+|---|---|---|---|---|
+| monster high draculaura | 11 | 0.76 | 0.20 | 0.70 |
+| boneca gótica de cabelo rosa | 8 | 0.44 | 0.53 | 0.44 |
+| boneca com vestido de noiva | 15 | 0.54 | 0.83 | 0.93 |
+| boneca bebê que chora e faz xixi | 2 | 0.64 | 0.49 | 0.81 |
+| boneca negra de cabelo cacheado | 2 | 0.18 | 0.39 | 0.30 |
+| presente para menina de 6 anos | 25 | 0.92 | 0.81 | 0.89 |
+| rtx 3060 12gb | 13 | 1.00 | 0.12 | 0.61 |
+| placa de vídeo low profile para pc pequeno | 13 | 0.96 | 0.08 | 0.68 |
+| placa silenciosa sem ventoinha | 6 | 0.85 | 0.00 | 0.48 |
+| radeon com 16gb de memória | 3 | 0.64 | 0.15 | 0.32 |
+| placa barata para jogar em full hd | 2 | 0.65 | 0.29 | 0.39 |
+| boneca vampira com roupa preta | 17 | 0.41 | 0.75 | 0.65 |
+| gtx 1660 super | 8 | 0.98 | 0.14 | 0.59 |
+| placa para edição de vídeo até 400 dólares | 6 | 0.31 | 0.34 | 0.54 |
+Consultas avaliadas: 18 · notas: combinado
+
+| Modo | recall@10 | MRR | NDCG@10 | resultados sem nota |
+|---|---|---|---|---|
+| texto | 0.653 | 0.703 | 0.692 | 0 |
+| imagem | 0.210 | 0.331 | 0.390 | 0 |
+| fusao | 0.510 | 0.650 | 0.627 | 0 |
+
+| Consulta | Relevantes | NDCG@10 (texto) | NDCG@10 (imagem) | NDCG@10 (fusao) |
+|---|---|---|---|---|
+| monster high draculaura | 15 | 0.92 | 0.23 | 0.79 |
+| boneca gótica de cabelo rosa | 10 | 0.31 | 0.61 | 0.45 |
+| boneca com vestido de noiva | 18 | 0.59 | 0.95 | 0.94 |
+| boneca bebê que chora e faz xixi | 7 | 0.60 | 0.53 | 0.68 |
+| boneca negra de cabelo cacheado | 11 | 0.50 | 0.42 | 0.50 |
+| presente para menina de 6 anos | 26 | 0.93 | 1.00 | 0.94 |
+| rtx 3060 12gb | 13 | 1.00 | 0.13 | 0.61 |
+| placa de vídeo branca | 1 | 1.00 | 0.00 | 0.60 |
+| placa de vídeo low profile para pc pequeno | 13 | 1.00 | 0.10 | 0.64 |
+| placa silenciosa sem ventoinha | 7 | 0.89 | 0.00 | 0.52 |
+| radeon com 16gb de memória | 3 | 0.66 | 0.17 | 0.38 |
+| placa barata para jogar em full hd | 2 | 0.63 | 0.29 | 0.33 |
+| boneca vampira com roupa preta | 13 | 0.33 | 0.53 | 0.76 |
+| barbie sereia | 7 | 0.57 | 0.52 | 0.77 |
+| boneca que fala português | 1 | 0.40 | 0.69 | 0.44 |
+| gtx 1660 super | 10 | 0.94 | 0.23 | 0.72 |
+| placa de vídeo com rgb | 2 | 0.92 | 0.30 | 0.61 |
+| placa para edição de vídeo até 400 dólares | 9 | 0.28 | 0.31 | 0.61 |

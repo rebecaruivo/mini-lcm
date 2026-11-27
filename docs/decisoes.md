@@ -426,6 +426,32 @@ rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
 
 ---
 
+## 2026-11-27 · Juiz de IA usado para comparar modos, com o critério de kappa não atingido
+
+**Situação:** com mais 70 pares sorteados ao acaso, a validação nas consultas novas ficou
+com 100 pares: acordo exato de 74%, diferença de até 1 ponto em 95%, viés de −0,01 e
+kappa ponderado de 0,64 (IC 95% de 0,46 a 0,78). O critério definido antes (limite
+inferior ≥ 0,6) não foi atingido.
+
+**Por que o kappa ficou baixo com acordo alto:** 68% dos pares são nota 1. Com uma nota
+dominante, o acordo esperado por acaso é alto e os poucos desacordos nas notas raras
+pesam muito. A pessoa que rotulou relatou dificuldade em vários casos de fronteira, sinal
+de que nem entre pessoas a concordância seria perfeita.
+
+**Decisão:** em vez de afrouxar o limite do kappa depois de ver o resultado, a decisão foi
+tomada por um teste ligado ao uso do juiz: comparar os modos de busca com as notas da IA
+e com as notas combinadas (humanas onde existem, cerca de 40% dos pares). A ordem dos
+modos foi a mesma nas três métricas (texto > fusão > imagem), então o juiz é usado para
+comparar configurações de busca. Os números do kappa ficam publicados com o critério não
+atingido.
+
+**Ressalvas registradas:** a IA quase nunca dá nota 2 (2% contra 14% das notas humanas
+na validação), o que faz 4 consultas ficarem sem nenhum produto relevante só com as
+notas da IA. Conclusões que dependam da fronteira entre 1 e 2 devem usar as notas
+combinadas.
+
+---
+
 ## 2026-11-26 · Rubrica v2 do juiz, depois da primeira calibração
 
 **Primeira calibração (rubrica v1):** 100 pares sorteados ao acaso entre os julgados pela
@@ -464,6 +490,7 @@ intervalo largo demais para o critério (limite inferior ≥ 0,6). O critério n
 mudado depois de ver o resultado: o conjunto de validação é ampliado com mais 70 pares
 sorteados ao acaso. Metade dos desacordos que restaram são notas humanas fora da rubrica
 (ex.: 2 para Barbies que não são sereia na busca "barbie sereia", que pela v2 valem 1).
+Desfecho na decisão de 27/11.
 
 ---
 
