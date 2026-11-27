@@ -451,6 +451,20 @@ e formato não rebaixam a nota quando ninguém os pediu).
 a concordância medida nelas depois do ajuste é otimista. A v2 é validada em 6 consultas
 novas (`avaliacao/consultas-validacao.yaml`), que não guiaram o ajuste.
 
+**Resultados da v2:**
+
+| Conjunto | Pares | Kappa ponderado (IC 95%) | Viés (IA − humano) |
+|---|---|---|---|
+| Calibração, consultas originais (otimista) | 100 | 0,76 (0,64 a 0,85) | −0,29 |
+| Auditoria, consultas originais | 60 | 0,83 (0,73 a 0,91) | −0,22 |
+| Validação, consultas novas, sorteio ao acaso | 30 | 0,70 (0,47 a 0,83) | −0,17 |
+
+Na validação, o kappa pontual é parecido com o da calibração, mas 30 pares deixam o
+intervalo largo demais para o critério (limite inferior ≥ 0,6). O critério não foi
+mudado depois de ver o resultado: o conjunto de validação é ampliado com mais 70 pares
+sorteados ao acaso. Metade dos desacordos que restaram são notas humanas fora da rubrica
+(ex.: 2 para Barbies que não são sereia na busca "barbie sereia", que pela v2 valem 1).
+
 ---
 
 ## 2026-11-26 · Catálogo completo e data de lançamento, para medir produtos novos sem vazamento

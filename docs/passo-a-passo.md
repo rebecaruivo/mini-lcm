@@ -172,6 +172,12 @@ mini-lcm rotular --lote avaliacao/consultas-validacao.yaml --html avaliacao/rotu
 mini-lcm importar-notas /mnt/c/Users/<usuario>/Downloads/notas-rotulagem.json
 mini-lcm concordancia --lote avaliacao/consultas-validacao.yaml --min-pares 25
 ```
+Se o intervalo do kappa ficar largo demais para decidir (poucos pares), aumente o
+conjunto sorteado ao acaso, sem auditoria, em vez de mudar o critério:
+```bash
+mini-lcm rotular --lote avaliacao/consultas-validacao.yaml --html avaliacao/rotular-validacao.html --amostra 70 --sem-auditoria
+mini-lcm concordancia --lote avaliacao/consultas-validacao.yaml
+```
 
 Sem `--amostra`, `rotular --lote` gera uma página com o pool inteiro de cada consulta
 (para rotular tudo à mão). Uma consulta avulsa também pode ser rotulada no terminal:

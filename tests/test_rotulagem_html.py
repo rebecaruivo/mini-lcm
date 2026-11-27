@@ -140,6 +140,9 @@ def test_cli_julgar_lote_e_rotular_amostra(indexado, tmp_path, monkeypatch, caps
     assert "sorteados ao acaso" in capsys.readouterr().out
     produtos = _dados_da_pagina(pagina.read_text(encoding="utf-8"))[0]["produtos"]
     assert 0 < len(produtos) <= 4 and any(p["auditoria"] for p in produtos) and not all(p["auditoria"] for p in produtos)
+    cli.main(["rotular", "--lote", str(lote), "--html", str(pagina), "--amostra", "4", "--sem-auditoria"])
+    produtos = _dados_da_pagina(pagina.read_text(encoding="utf-8"))[0]["produtos"]
+    assert produtos and not any(p["auditoria"] for p in produtos)
 
 
 def test_cli_concordancia_so_do_lote(tmp_path, monkeypatch, capsys):

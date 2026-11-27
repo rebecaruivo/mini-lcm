@@ -215,7 +215,7 @@ def _rotular_amostra(cfg: Config, arm: Armazenamento, gabarito, args) -> None:
     if not julgadas:
         sys.exit("Nenhuma consulta do lote foi julgada pela IA ainda. Rode antes:\n"
                  f"  mini-lcm julgar --lote {args.lote} --profundidade {args.profundidade}")
-    metade = args.amostra // 2
+    metade = 0 if args.sem_auditoria else args.amostra // 2
     amostra = amostra_calibracao(julgadas, aleatoria=args.amostra - metade, estratificada=metade)
     itens = arm.obter_itens(sorted({i for _, i, _ in amostra}))
     lote = []
@@ -470,6 +470,8 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--html", help="grava uma página de rotulagem com fotos em vez de perguntar no terminal")
     s.add_argument("--amostra", type=int,
                    help="só N produtos já julgados pela IA: metade ao acaso (calibração), metade estratificada (auditoria)")
+    s.add_argument("--sem-auditoria", action="store_true",
+                   help="com --amostra: todos sorteados ao acaso (para aumentar o conjunto de calibração)")
     s.set_defaults(func=cmd_rotular)
 
     s = sub.add_parser("importar-notas", help="junta ao gabarito as notas baixadas da página de rotulagem")
