@@ -266,7 +266,17 @@ class EmbeddingGemma2(ClipLocal):
             raise RuntimeError('Instale os modelos locais com: pip install -e ".[clip]"') from e
         self.texto_item = texto_item
         self.nome = f"{self.NOME_G}@{texto_item}"
-        self._st = SentenceTransformer(self.MODELO, config_kwargs={"audio_config": None})
+        # bfloat16 acelera GPUs, mas na CPU costuma ser muito mais lento: lá, float32.
+        # (float16 não é suportado pelo modelo, segundo o cartão.)
+        try:
+            import torch
+
+            tipo = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float32
+            extras = {"model_kwargs": {"torch_dtype": tipo}}
+        except ImportError:  # sem torch não há como rodar o modelo; só acontece nos testes, com um modelo falso
+            extras = {}
+        self._st = SentenceTransformer(self.MODELO, config_kwargs={"audio_config": None}, **extras)
+        self.fotos_em_lote: bool | None = None  # descoberto na primeira chamada
         self.lote = lote
         self.timeout_foto_s = timeout_foto_s
         self.downloads_paralelos = downloads_paralelos
@@ -322,11 +332,17 @@ class EmbeddingGemma2(ClipLocal):
                 entradas.append({"text": "<|image|>", "image": [caminho]})
                 posicoes.append(i)
             if entradas:
-                try:
-                    m = self._st.encode(entradas, batch_size=self.lote, convert_to_numpy=True, show_progress_bar=False)
-                    linhas = list(normalizar_linhas(np.asarray(m)))
-                except Exception as e:  # lote multimodal não suportado nesta versão: uma foto por vez
-                    log.info("Codificando fotos uma a uma (%s)", e)
+                linhas = None
+                if self.fotos_em_lote is not False:
+                    try:
+                        m = self._st.encode(entradas, batch_size=self.lote, convert_to_numpy=True,
+                                            show_progress_bar=False)
+                        linhas = list(normalizar_linhas(np.asarray(m)))
+                        self.fotos_em_lote = True
+                    except Exception as e:  # lote multimodal não suportado nesta versão: uma foto por vez
+                        log.warning("Fotos em lote não funcionaram (%s); codificando uma a uma", e)
+                        self.fotos_em_lote = False
+                if linhas is None:
                     linhas = []
                     for entrada in entradas:
                         try:
@@ -340,6 +356,46 @@ class EmbeddingGemma2(ClipLocal):
             reg.falhas += sum(1 for v in saida if v is None)
         reg.itens += len(urls)
         return saida
+
+
+class ClipComGemma2(ClipComE5):
+    """Fotos com o CLIP; textos com o EmbeddingGemma 2, carregado só com a parte de texto.
+
+    Existe porque, sem GPU, o EmbeddingGemma 2 leva cerca de 20 s por foto (o CLIP, 0,2 s):
+    indexar as fotos do catálogo levaria dias. A parte de texto (270M de parâmetros) leva
+    cerca de 0,36 s por produto, e compete diretamente com o e5 no canal de texto.
+    """
+
+    NOME_TEXTO = "embeddinggemma-2"
+
+    def __init__(self, texto_item: str = "titulo", **kw):
+        ClipLocal.__init__(self, texto_item, **kw)
+        from sentence_transformers import SentenceTransformer
+
+        try:
+            import torch
+
+            extras = {"model_kwargs": {"torch_dtype": torch.float32}}
+        except ImportError:
+            extras = {}
+        self._st_gemma = SentenceTransformer(EmbeddingGemma2.MODELO,
+                                             config_kwargs={"vision_config": None, "audio_config": None}, **extras)
+        self.nome = f"{self.NOME_TEXTO}@{texto_item}+{self.NOME_CLIP}"
+
+    def _gemma(self, textos: list[str], registro: RegistroCusto | None, **kw) -> np.ndarray:
+        reg = registro or RegistroCusto(etapa="embeddings:texto", modelo=self.chave("texto"))
+        with cronometro(reg):
+            m = self._st_gemma.encode(textos, batch_size=self.lote, convert_to_numpy=True, show_progress_bar=False, **kw)
+        reg.itens += len(textos)
+        return normalizar_linhas(np.asarray(m))
+
+    def consulta(self, texto: str, canal: Canal) -> np.ndarray:
+        if canal == "imagem":
+            return ClipLocal.consulta(self, texto, canal)
+        return self._gemma([texto], RegistroCusto(etapa="_", modelo=self.nome), prompt_name="SearchQuery")[0]
+
+    def textos_itens(self, itens: list[Item], registro: RegistroCusto | None = None) -> np.ndarray:
+        return self._gemma([EmbeddingGemma2.texto_do_produto(self, i) for i in itens], registro)
 
 
 # ─────────────────────────── Falso (testes) ───────────────────────────
@@ -411,7 +467,7 @@ class EmbedderFalso:
         return saida
 
 
-EMBEDDERS = ("clip", "clip+e5", "gemma2", "fake")
+EMBEDDERS = ("clip", "clip+e5", "clip+gemma2", "gemma2", "fake")
 
 
 def criar_embedder(nome: str, texto_item: str = "completo") -> Embedder:
@@ -419,6 +475,8 @@ def criar_embedder(nome: str, texto_item: str = "completo") -> Embedder:
         return ClipLocal(texto_item)
     if nome == "clip+e5":
         return ClipComE5(texto_item)
+    if nome == "clip+gemma2":
+        return ClipComGemma2(texto_item)
     if nome == "gemma2":
         return EmbeddingGemma2(texto_item)
     if nome == "fake":

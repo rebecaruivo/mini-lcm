@@ -426,6 +426,31 @@ rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
 
 ---
 
+## 2026-11-27 · EmbeddingGemma 2: só no canal de texto, por custo
+
+**Contexto:** o EmbeddingGemma 2 (Google DeepMind, 740M de parâmetros, Apache 2.0) põe
+texto, imagem, vídeo e áudio num espaço só, e poderia substituir sozinho o par e5 + CLIP.
+
+**Teste rápido** (`scripts/testar_gemma.py`, 3 consultas e 6 produtos, CPU de notebook):
+a qualidade é a esperada nos dois canais (cada consulta fica mais parecida com os seus
+produtos, por título e por foto). O custo, não:
+
+| | EmbeddingGemma 2 | atual |
+|---|---|---|
+| texto, por produto | 358 ms | 30 ms (e5) |
+| foto, por produto | ~20.000 ms | 191 ms (CLIP, com download) |
+| indexar 13.984 produtos | ~78 h | ~50 min |
+
+Em `bfloat16`, o formato padrão do modelo, a CPU era ainda 4 a 5 vezes mais lenta; em
+`float32`, os números acima.
+
+**Decisão:** sem GPU, o canal de imagem do Gemma é impraticável para o catálogo inteiro. O
+teste segue com o Gemma só no texto, carregado sem os codificadores de visão e áudio
+(`EMBEDDER=clip+gemma2`), contra o e5, com o CLIP nas fotos. Com GPU, o teste multimodal
+completo seria o próximo passo.
+
+---
+
 ## 2026-11-27 · Peso da imagem por categoria
 
 **Decisão:** `peso_imagem` em `categorias.yaml`: 0,5 nas bonecas e 0 nas placas (só

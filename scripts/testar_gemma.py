@@ -47,7 +47,14 @@ def main() -> None:
     consultas = np.array([emb.consulta(c, "texto") for c in CONSULTAS])
 
     print(f"\ntempo por produto: texto {ms_texto:.0f} ms, foto {ms_foto:.0f} ms (com download)")
-    print(f"fotos codificadas: {sum(f is not None for f in fotos)} de {len(fotos)}\n")
+    print(f"fotos codificadas: {sum(f is not None for f in fotos)} de {len(fotos)} "
+          f"({'em lote' if emb.fotos_em_lote else 'uma a uma'}); tipo numérico: {emb._st.dtype if hasattr(emb._st, 'dtype') else '?'}")
+    t = time.time()
+    emb.imagens([i.foto_url for i in itens])
+    ms_foto2 = (time.time() - t) * 1000 / len(itens)
+    print(f"segunda rodada das fotos (modelo já aquecido): {ms_foto2:.0f} ms por foto")
+    total_h = (13984 * ms_texto + 13984 * min(ms_foto, ms_foto2)) / 3_600_000
+    print(f"estimativa para indexar 13.984 produtos: {total_h:.1f} h\n")
     print("Similaridade (linhas = consultas; colunas = produtos):")
     for n, i in enumerate(itens):
         print(f"  [{n}] {i.titulo[:70]}")

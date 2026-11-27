@@ -14,6 +14,8 @@ dependencies = [
 [project.optional-dependencies]
 # Modelos de embedding locais (CLIP). Baixa ~1 GB de modelos na primeira execução.
 clip = ["sentence-transformers>=3.0", "pillow>=10.0"]
+# EmbeddingGemma 2 (texto e imagem num espaço só). O processador do modelo exige o torchvision.
+gemma = ["sentence-transformers[image]", "transformers", "torchvision", "pillow>=10.0"]
 # Banco Postgres com pgvector (Supabase).
 postgres = ["psycopg[binary]>=3.2"]
 dev = ["pytest>=8.0"]

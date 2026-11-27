@@ -53,3 +53,21 @@ def test_embeddinggemma2_prefixos_chaves_e_fotos(monkeypatch):
     assert vetores[1] is None and vetores[0] is not None and vetores[2] is not None
     fotos = [c for c in STFalso.chamadas if c[0] == "encode" and isinstance(c[2][0], dict)]
     assert all(f[2][0]["text"] == "<|image|>" and f[2][0]["image"][0].endswith(".jpg") for f in fotos)
+
+
+def test_clip_com_gemma2_so_texto(monkeypatch):
+    modulo = types.ModuleType("sentence_transformers")
+    modulo.SentenceTransformer = STFalso
+    monkeypatch.setitem(sys.modules, "sentence_transformers", modulo)
+    from mini_lcm.embeddings import ClipComGemma2
+
+    STFalso.chamadas = []
+    emb = ClipComGemma2("titulo")
+    gemma = [c for c in STFalso.chamadas if c[0] == "init" and c[1] == "google/embeddinggemma-2"]
+    assert gemma and gemma[0][2] == {"vision_config": None, "audio_config": None}  # só a parte de texto
+    assert emb.chave("texto") == "embeddinggemma-2@titulo"
+    assert emb.chave("imagem") == "clip-vit-b-32-multilingual"  # fotos continuam com o CLIP
+    emb.consulta("rtx 3060", "texto")
+    assert STFalso.chamadas[-1][1] == "SearchQuery"
+    emb.textos_itens([produto("A", "Monster High Draculaura")])
+    assert STFalso.chamadas[-1][2] == ["title: Monster High Draculaura | text: none"]

@@ -201,19 +201,23 @@ mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.1,0.2,0.3
 O peso escolhido vai para `categorias.yaml` (`peso_imagem` de cada categoria) e passa a
 ser o padrão de `buscar` e `avaliar`.
 
-## 10c. Testar outro modelo de embedding (EmbeddingGemma 2)
-O EmbeddingGemma 2 faz texto e imagem num espaço só. Para comparar com o par e5 + CLIP
-com a mesma régua:
+## 10c. Testar outro modelo de texto (EmbeddingGemma 2)
+O EmbeddingGemma 2 faz texto e imagem num espaço só, mas sem GPU leva cerca de 20 s por
+foto (o CLIP leva 0,2 s): indexar as fotos levaria dias. O teste usa o Gemma só no canal
+de texto, contra o e5, com o CLIP nas fotos (`EMBEDDER=clip+gemma2`):
 ```bash
+pip install -e ".[gemma]"                           # inclui o torchvision, exigido pelo modelo
 python scripts/testar_gemma.py                      # carrega, testa 6 produtos, estima o tempo
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm indexar  # vetores de texto e imagem (demora)
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.25,0.5,0.75,1
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm indexar --canal texto        # ~1,4 h
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm sondar "rtx 4060" "rx 7600" "gtx 1650" asus msi --categoria placas-de-video
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.5
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.5
 ```
-O `julgar` só chama a IA para os produtos novos que o modelo trouxer ao topo; os que já
-têm nota não são julgados de novo.
+O `julgar` só chama a IA para os produtos que o Gemma trouxer ao topo e que ainda não
+têm nota.
 
 ## 11. Escalar com a IA
 Crie mais consultas e deixe só a IA julgar. Use `--limite` para controlar o custo:
