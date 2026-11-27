@@ -426,6 +426,26 @@ rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
 
 ---
 
+## 2026-11-27 · EmbeddingGemma 2 vira o modelo do canal de texto
+
+**Decisão:** `EMBEDDER=clip+gemma2` como padrão, com peso da imagem de 0,4 nas bonecas e
+0,2 nas placas (os melhores para o Gemma nas consultas originais).
+
+**Motivo:** com o melhor peso de cada modelo, só notas da IA, o NDCG@10 médio é 0,680
+(Gemma) contra 0,652 (e5) nas consultas originais e 0,580 contra 0,490 na validação. A
+regra, fixada antes de ver os números, era trocar se o Gemma ganhasse nas originais e não
+perdesse na validação.
+
+**Armadilha registrada (a quinta):** a comparação anterior, que deu empate, usava para o
+Gemma os pesos escolhidos para o e5. Comparar modelos exige ajustar os parâmetros de cada
+um com a mesma regra, no mesmo conjunto.
+
+**Ressalvas:** 6 consultas por categoria nas originais e 2 na validação; a vantagem é clara
+nas bonecas e pequena ou nula nas placas. Os resultados da recomendação foram medidos com
+o texto do CLIP, e na recomendação as variantes de texto empataram (`sondagem.md`).
+
+---
+
 ## 2026-11-27 · EmbeddingGemma 2: só no canal de texto, por custo
 
 **Contexto:** o EmbeddingGemma 2 (Google DeepMind, 740M de parâmetros, Apache 2.0) põe
@@ -449,12 +469,21 @@ teste segue com o Gemma só no texto, carregado sem os codificadores de visão e
 (`EMBEDDER=clip+gemma2`), contra o e5, com o CLIP nas fotos. Com GPU, o teste multimodal
 completo seria o próximo passo.
 
+**Primeiro resultado (só notas da IA):** com os pesos do e5, empate (0,657 contra 0,652).
+Desfecho, com os pesos de cada modelo, na decisão seguinte.
+
+**Armadilha registrada:** a primeira comparação, com as notas combinadas, mostrava o
+Gemma bem atrás (0,66 contra 0,79). Os produtos do e5 tinham notas humanas, mais
+generosas nos casos médios; os novos do Gemma, só notas da IA. Ao comparar sistemas, as
+notas precisam vir da mesma fonte para todos.
+
 ---
 
 ## 2026-11-27 · Peso da imagem por categoria
 
 **Decisão:** `peso_imagem` em `categorias.yaml`: 0,5 nas bonecas e 0 nas placas (só
-texto), escolhido pelo maior NDCG@10 nas 12 consultas originais. É o padrão de `buscar`
+texto), escolhido pelo maior NDCG@10 nas 12 consultas originais. *Substituída no mesmo
+dia: com o EmbeddingGemma 2 no texto, os pesos passaram a 0,4 e 0,2 (decisão seguinte).* É o padrão de `buscar`
 e `avaliar` quando a consulta tem categoria.
 
 **Motivo:** com peso 0,5 para todas, a fusão ficava abaixo do texto sozinho na média,

@@ -384,16 +384,15 @@ class ArmazenamentoPostgres:
         return sorted(((l[0], float(l[1])) for l in linhas), key=lambda x: -x[1])
 
     def salvar_avaliacoes(self, avaliacoes: list[Avaliacao]) -> int:
-        novas = 0
+        # executemany manda as linhas em lote (pipeline): uma ida e volta pela rede por lote,
+        # e não uma por avaliação, o que faria 30 mil avaliações levarem quase uma hora.
         with self.conn.transaction(), self.conn.cursor() as cur:
-            for a in avaliacoes:
-                cur.execute(
-                    """insert into avaliacoes (fonte, usuario_externo, item_id, nota, momento, compra_verificada)
-                       values (%s, %s, %s, %s, %s, %s) on conflict do nothing""",
-                    (a.fonte, a.usuario, a.item_id, a.nota, a.momento, a.compra_verificada),
-                )
-                novas += cur.rowcount
-        return novas
+            cur.executemany(
+                """insert into avaliacoes (fonte, usuario_externo, item_id, nota, momento, compra_verificada)
+                   values (%s, %s, %s, %s, %s, %s) on conflict do nothing""",
+                [(a.fonte, a.usuario, a.item_id, a.nota, a.momento, a.compra_verificada) for a in avaliacoes],
+            )
+            return max(cur.rowcount, 0)  # psycopg 3.1+: soma das linhas inseridas em todo o lote
 
     def avaliacoes_de(self, categoria: str | None = None, usuario: str | None = None) -> list[Avaliacao]:
         linhas = self.conn.execute(

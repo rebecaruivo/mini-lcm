@@ -16,19 +16,25 @@ O projeto tem três partes:
 ## Principais resultados
 
 - **Um modelo por canal na busca.** O codificador de texto do CLIP, feito para comparar
-  texto com imagem, acertava 30–40% dos nomes buscados nas bonecas; o multilingual-e5,
-  feito para busca, acerta 94–96%. Com o e5 no texto e o CLIP na foto, escolher o peso
-  da imagem por categoria leva o NDCG@10 médio de 0,62 (peso igual para todas) a 0,79.
-- **A foto ajuda nas bonecas e atrapalha nas placas.** Toda placa parece igual na foto:
-  o melhor peso da imagem é 0 nas placas e 0,5 nas bonecas.
+  texto com imagem, acertava 30–40% dos nomes buscados nas bonecas; modelos feitos para
+  busca de texto (multilingual-e5, EmbeddingGemma 2) acertam 94–96%. Escolher o peso da
+  imagem por categoria leva o NDCG@10 médio de 0,62 (peso igual para todas) a 0,79.
+- **Testando um modelo novo com a mesma régua.** O EmbeddingGemma 2 no canal de texto
+  superou o e5 (NDCG@10 de 0,680 contra 0,652, e 0,580 contra 0,490 na validação), mas só
+  depois de cada modelo receber o seu próprio peso da imagem.
+- **O peso da foto depende da categoria e do modelo de texto.** Toda placa parece igual na
+  foto: com o e5 no texto, a foto atrapalha nas placas (melhor peso 0) e ajuda nas bonecas
+  (0,5). Com o EmbeddingGemma 2, que entende melhor as buscas descritivas, a foto pesa
+  menos: 0,4 nas bonecas e 0,2 nas placas, onde quase não muda o resultado.
 - **O momento prevê mais que a pessoa.** Na recomendação, "o que está em alta nas últimas
   semanas" ganha de qualquer método personalizado isolado. Juntar o gosto da pessoa ao
   que está em alta é o melhor nas bonecas (hit@10 de 0,126) e não acrescenta nada nas placas.
 - **Produtos novos são o ponto cego.** 40% das próximas compras nas bonecas e 65% nas
   placas são de produtos sem nenhuma interação anterior. Só os métodos de conteúdo
   (texto e foto) alcançam algum deles.
-- **Três resultados bons demais eram vazamento.** A primeira avaliação da recomendação
-  dava 0,267; com a correção, 0,063 (ver "Como a avaliação evita se enganar").
+- **Três resultados bons demais eram vazamento, e um ruim demais era viés.** A primeira
+  avaliação da recomendação dava 0,267; com a correção, 0,063. Um modelo novo parecia bem
+  pior e, medido com a mesma régua, ganhou (ver "Como a avaliação evita se enganar").
 
 ## Como funciona
 
@@ -37,7 +43,7 @@ O projeto tem três partes:
 ```text
 consulta "boneca gótica de cabelo rosa"  +  filtros (categoria, preço, condição)
    │
-   ├─ multilingual-e5 ──► compara com os TÍTULOS ──► lista A
+   ├─ EmbeddingGemma 2 ─► compara com os TÍTULOS ──► lista A
    └─ CLIP (texto) ─────► compara com as FOTOS ────► lista B
                                                       │
           Reciprocal Rank Fusion, com o peso da imagem da categoria
@@ -47,7 +53,8 @@ consulta "boneca gótica de cabelo rosa"  +  filtros (categoria, preço, condiç
 ```
 
 - **Fusão por posição (RRF):** os canais têm escalas de similaridade diferentes;
-  combinar pelas posições evita que um domine o outro.
+  combinar pelas posições evita que um domine o outro. O peso da imagem é escolhido por
+  categoria (`categorias.yaml`).
 - **Filtros antes da ordenação:** "até US$ 30" nunca devolve um produto mais caro.
 - **Consultas em português** encontram produtos descritos em inglês (modelos multilíngues).
 - **Vetores** em pgvector (Postgres/Supabase) ou em arquivos locais, com a mesma interface.
@@ -84,6 +91,11 @@ um resultado bom demais era vazamento ou viés de medição:
    consultas; medir nelas daria um número otimista. A validação foi feita em **consultas
    novas**, que não guiaram o ajuste.
 
+E duas armadilhas no sentido contrário, ao comparar o EmbeddingGemma 2 com o e5: o Gemma
+parecia bem pior porque os produtos do e5 tinham notas humanas e os dele, só notas da IA,
+mais rigorosa; depois, parecia empatar porque usava o peso da imagem escolhido para o e5.
+Com a mesma fonte de notas e o peso de cada um, o Gemma ganhou.
+
 Outros cuidados: todo parâmetro é escolhido num conjunto de validação e o teste roda uma
 vez; intervalos de confiança por bootstrap (pareado, e por pessoa quando a mesma pessoa
 aparece várias vezes); critérios definidos antes de ver os resultados.
@@ -108,12 +120,26 @@ Cada decisão, com alternativas e motivos, está em [docs/decisoes.md](docs/deci
 | texto + imagem, peso 0,5 para todas | 0,616 | 0,650 |
 | **texto + imagem, peso por categoria (bonecas 0,5, placas 0)** | **0,790** | **0,681** |
 
+(Canal de texto com o multilingual-e5, notas combinadas. A troca para o EmbeddingGemma 2
+está na tabela do canal de texto, logo abaixo, medida só com notas da IA.)
+
 **Canal de texto** (acerto@10 em buscas por nome; [docs/sondagem.md](docs/sondagem.md))
 
 | Modelo de texto | bonecas | placas (máximo possível: 76%) |
 |---|---|---|
 | CLIP | 30–40% | 0–6% |
 | multilingual-e5 | **94–96%** | **66–68%** |
+| EmbeddingGemma 2 | 92–96% | 44–70% |
+
+Na avaliação com gabarito (só notas da IA, cada modelo com o seu melhor peso da imagem):
+
+| Canal de texto | NDCG@10, originais | NDCG@10, validação | ms por produto |
+|---|---|---|---|
+| multilingual-e5 (pesos 0,5 e 0) | 0,652 | 0,490 | 30 |
+| **EmbeddingGemma 2 (pesos 0,4 e 0,2)** | **0,680** | **0,580** | 358 |
+
+O EmbeddingGemma 2 é o padrão no texto; o canal de imagem dele leva cerca de 20 s por
+foto sem GPU, e o CLIP continua nas fotos.
 
 **Recomendação** (hit@10 no teste, cortes por data de 2018–2019 a 2023, catálogo completo;
 bonecas: 1.876 casos de 1.101 pessoas; placas: 228 casos de 144 pessoas;
@@ -132,6 +158,7 @@ bonecas: 1.876 casos de 1.101 pessoas; placas: 228 casos de 144 pessoas;
 
 | Etapa | Itens | ms por item | US$ |
 |---|---|---|---|
+| vetores de texto (EmbeddingGemma 2, só título) | 13.984 | 358 | 0 |
 | vetores de texto (multilingual-e5, só título) | 13.984 | 30 | 0 |
 | vetores de imagem (CLIP, com download da foto) | 18.339 | 191 | 0 |
 | julgamento de relevância (Gemini 3.5 Flash-Lite) | 629 | 7.067 | ~1,2 milhão de tokens no total |
@@ -142,7 +169,7 @@ Requer Python 3.11+.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[clip,dev]"            # + ".[postgres]" para usar o Supabase
+pip install -e ".[clip,gemma,dev]"      # + ".[postgres]" para usar o Supabase
 cp .env.example .env                     # EMBEDDER, TEXTO_ITEM e GEMINI_API_KEY
 
 bash scripts/baixar_amazon.sh            # dados (vários GB): Toys_and_Games e Electronics
@@ -162,8 +189,9 @@ mini-lcm custos
 Passo a passo completo, incluindo rotulagem, calibração do juiz e escolha de
 parâmetros: [docs/passo-a-passo.md](docs/passo-a-passo.md).
 
-**Postgres (Supabase):** preencha `DATABASE_URL` no `.env` e rode
-`psql "$DATABASE_URL" -f sql/001_schema.sql -f sql/002_lancamento.sql` uma vez.
+**Postgres (Supabase):** preencha `DATABASE_URL` no `.env`, rode
+`psql "$DATABASE_URL" -f sql/001_schema.sql -f sql/002_lancamento.sql` uma vez e, se os
+dados já estiverem em `dados/`, copie-os com `mini-lcm migrar-para-postgres`.
 
 **Testes:** `pytest` (sem rede e sem modelos, com um embedder falso e determinístico).
 O teste do Postgres usa um banco de teste, que ele apaga:
@@ -174,7 +202,7 @@ O teste do Postgres usa um banco de teste, que ele apaga:
 ```text
 mini_lcm/
   amazon.py                  importação (centrada em usuários, catálogo completo, datas)
-  embeddings.py, indexacao.py  vetores de texto (e5 ou CLIP) e de imagem (CLIP)
+  embeddings.py, indexacao.py  vetores de texto (EmbeddingGemma 2, e5 ou CLIP) e de imagem (CLIP)
   armazenamento.py           arquivos locais ou pgvector, mesma interface
   busca.py                   busca por canal, filtros e fusão RRF
   perfil.py, recomendacao.py perfis, oito métodos de recomendação, explicações
@@ -185,6 +213,8 @@ mini_lcm/
   rotulagem_html.py          página de rotulagem com fotos
   custo.py, cli.py, config.py  medição de custo, linha de comando, configuração
 avaliacao/                   rubrica, consultas e gabarito (notas humanas e da IA)
+notebooks/                   tarefas que precisam de GPU (Google Colab)
+scripts/                     download dos dados e análises avulsas
 docs/                        decisões, resultados e passo a passo
 categorias.yaml              categorias, filtros e parâmetros escolhidos na validação
 ```
@@ -203,8 +233,10 @@ categorias.yaml              categorias, filtros e parâmetros escolhidos na val
 
 ## Próximos passos
 
-- Testar o EmbeddingGemma 2 (texto e imagem num só espaço) contra o par e5 + CLIP, com a
-  mesma avaliação.
+- EmbeddingGemma 2 também nas fotos (um modelo só para texto e imagem), com os vetores das
+  fotos calculados numa GPU do Colab (`notebooks/gemma_fotos_colab.ipynb`).
+- Fine-tuning do EmbeddingGemma 2 com buscas sintéticas geradas a partir dos produtos,
+  medido nas mesmas consultas do gabarito.
 - Peso da imagem que depende da consulta (mais imagem em buscas visuais, mais texto em
   buscas por nome), com mais consultas julgadas pela IA para escolher e validar.
 - Personas sintéticas com preferências conhecidas, para medir se o perfil aprende o gosto.
@@ -218,6 +250,7 @@ Recommendation*. arXiv:2403.03952. Os dados não são redistribuídos aqui: o sc
 direto da fonte.
 
 Modelos: CLIP (OpenAI), clip-ViT-B-32-multilingual-v1 (sentence-transformers) e
-multilingual-e5-small (Wang et al., 2024, arXiv:2402.05672); juiz: Gemini (Google).
+multilingual-e5-small (Wang et al., 2024, arXiv:2402.05672), EmbeddingGemma 2 (Google
+DeepMind, Apache 2.0); juiz: Gemini (Google).
 Calibração do juiz inspirada em Thomas, Spielman, Craswell & Mitra (2024), *Large
 Language Models can Accurately Predict Searcher Preferences*, SIGIR.

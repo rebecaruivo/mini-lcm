@@ -452,6 +452,42 @@ def cmd_avaliar_recomendacao(cfg: Config, arm: Armazenamento, args) -> None:
         print(f"\nAcrescentado a {args.salvar}")
 
 
+def cmd_migrar_para_postgres(cfg: Config, arm: Armazenamento, args) -> None:
+    from .migracao import migrar
+
+    if not cfg.database_url:
+        sys.exit("Preencha DATABASE_URL no .env (a URL do Supabase) antes de migrar.")
+    origem = ArmazenamentoLocal(cfg.pasta_dados)
+    if not origem.itens:
+        sys.exit(f"Nada para migrar: {cfg.pasta_dados} não tem produtos.")
+    chaves = None
+    if not args.todos:
+        chaves = {(_chave_sem_carregar(cfg, canal), canal) for canal in ("texto", "imagem")}
+    print(f"Copiando de {cfg.pasta_dados} para o Postgres"
+          + ("" if chaves is None else f" (vetores: {', '.join(sorted(m for m, _ in chaves))})") + "...")
+    resumo = migrar(origem, arm, chaves)
+    print(f"\nPronto: {resumo['itens']} produtos, {resumo['avaliacoes']} avaliações, "
+          f"{sum(resumo['vetores'].values())} vetores e {resumo['custos']} registros de custo.")
+
+
+def _chave_sem_carregar(cfg: Config, canal: str) -> str:
+    """A chave de vetores do EMBEDDER atual, sem carregar os modelos (que levam minutos)."""
+    from .embeddings import ClipComE5, ClipComGemma2, ClipLocal, EmbeddingGemma2, EmbedderFalso
+
+    modo = cfg.texto_item
+    if cfg.embedder == "fake":
+        return EmbedderFalso(texto_item=modo).chave(canal)
+    if canal == "imagem":
+        return EmbeddingGemma2.NOME_G if cfg.embedder == "gemma2" else ClipLocal.NOME_CLIP
+    if cfg.embedder == "clip":
+        return ClipLocal.NOME_CLIP if modo == "completo" else f"{ClipLocal.NOME_CLIP}@{modo}"
+    if cfg.embedder == "clip+e5":
+        return f"{ClipComE5.NOME_TEXTO}@{modo}"
+    if cfg.embedder == "clip+gemma2":
+        return f"{ClipComGemma2.NOME_TEXTO}@{modo}"
+    return f"{EmbeddingGemma2.NOME_G}@{modo}"
+
+
 def cmd_custos(cfg: Config, arm: Armazenamento, args) -> None:
     linhas = resumir(arm.custos())
     if not linhas:
@@ -513,6 +549,10 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--sem-auditoria", action="store_true",
                    help="com --amostra: todos sorteados ao acaso (para aumentar o conjunto de calibração)")
     s.set_defaults(func=cmd_rotular)
+
+    s = sub.add_parser("migrar-para-postgres", help="copia dados/ (produtos, avaliações, vetores) para o Postgres")
+    s.add_argument("--todos", action="store_true", help="copia os vetores de todas as variantes, não só as em uso")
+    s.set_defaults(func=cmd_migrar_para_postgres)
 
     s = sub.add_parser("importar-notas", help="junta ao gabarito as notas baixadas da página de rotulagem")
     s.add_argument("arquivo")

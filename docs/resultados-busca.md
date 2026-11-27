@@ -3,8 +3,11 @@
 Avaliação com gabarito: 18 consultas (`avaliacao/consultas.yaml` e
 `avaliacao/consultas-validacao.yaml`), 9 de cada categoria, de quatro tipos (nome,
 visual, funcional, intenção com filtro de preço). Notas de 0 a 3 pela rubrica
-(`avaliacao/rubrica.md`): relevante = nota 2 ou 3. Embeddings: multilingual-e5 com só o
-título no canal de texto, CLIP na imagem (ver `sondagem.md`). Fusão com peso 0,5 na imagem.
+(`avaliacao/rubrica.md`): relevante = nota 2 ou 3.
+
+As seções até "Peso da imagem por categoria" usam o multilingual-e5 no canal de texto
+(só título) e o CLIP na imagem. A última seção compara o e5 com o EmbeddingGemma 2, que
+passou a ser o padrão no texto, com pesos da imagem de 0,4 (bonecas) e 0,2 (placas).
 
 ```bash
 mini-lcm avaliar --fonte ia
@@ -114,7 +117,8 @@ NDCG@10 da fusão (notas combinadas; 0 = só texto, 1 = só imagem):
 | 0,9 | 0,630 | 0,583 | 0,116 | 0,325 |
 | 1 | 0,622 | 0,583 | 0,116 | 0,279 |
 
-**Escolhidos (em `categorias.yaml`): 0,5 nas bonecas e 0 nas placas.** Na validação, os
+**Escolhidos para o e5: 0,5 nas bonecas e 0 nas placas** (depois substituídos pelos do
+EmbeddingGemma 2, 0,4 e 0,2; última seção). Na validação, os
 picos ficam vizinhos da escolha (0,6 nas bonecas, 0,4 nas placas), mas com 3 consultas
 por categoria essas diferenças cabem no ruído.
 
@@ -130,7 +134,7 @@ O peso por categoria é o melhor nos dois conjuntos, inclusive nas consultas que
 entraram na escolha.
 
 **Leitura:**
-- Nas placas, a imagem só atrapalha. Com peso acima de 0,5, o NDCG despenca (0,12 com só
+- Nas placas, com o e5, a imagem só atrapalha. Com peso acima de 0,5, o NDCG despenca (0,12 com só
   imagem): a foto não distingue uma RTX 3060 de uma RX 6600.
 - Nas bonecas, o melhor é metade texto e metade imagem. Só imagem também piora (0,62): a
   foto mostra o estilo, mas não lê o nome da personagem nem a função ("chora e faz xixi").
@@ -138,3 +142,75 @@ entraram na escolha.
   ("monster high draculaura": texto 0,92, imagem 0,23) e as visuais ("boneca com vestido
   de noiva": texto 0,59, imagem 0,95) pedem pesos opostos. O próximo nível seria um peso
   que depende da consulta (ver `decisoes.md`, 27/11).
+
+## EmbeddingGemma 2 contra o e5 no canal de texto
+
+O EmbeddingGemma 2 (Google DeepMind) foi testado no lugar do e5, só no canal de texto,
+com o CLIP nas fotos (o canal de imagem do Gemma leva cerca de 20 s por foto sem GPU; ver
+`decisoes.md`). Os produtos que ele trouxe ao topo e que ainda não tinham nota foram
+julgados pela IA (223 julgamentos).
+
+**A primeira comparação foi injusta.** Com as notas combinadas, o Gemma parecia perder
+(média de 0,66 contra 0,79 nas consultas originais). Mas os produtos que o e5 traz ao
+topo têm muitas notas humanas, mais generosas nos casos médios, e os novos que o Gemma
+trouxe só têm notas da IA, que quase nunca dá nota 2. Comparar os dois com notas de
+fontes diferentes favorecia o e5. A comparação justa usa só as notas da IA, para os dois,
+sobre o mesmo conjunto de produtos julgados.
+
+NDCG@10, só notas da IA:
+
+| | e5 | EmbeddingGemma 2 |
+|---|---|---|
+| bonecas, originais, peso 0,5 | 0,628 | 0,673 |
+| placas, originais, peso 0 | 0,675 | 0,641 |
+| **média, originais (pesos escolhidos)** | **0,652** | **0,657** |
+| média, validação (pesos escolhidos) | 0,490 | 0,524 |
+| bonecas, originais, só texto | 0,544 | 0,664 |
+| bonecas, validação, só texto | 0,289 | 0,504 |
+| placas, validação, só texto | 0,571 | 0,651 |
+
+Na validação, só 2 consultas por categoria têm algum produto relevante pelas notas da IA:
+as diferenças ali não são conclusivas.
+
+**Ainda injusta: os pesos eram do e5.** O peso da imagem (0,5 e 0) tinha sido escolhido
+com a grade inteira para o e5; o Gemma recebeu os mesmos valores. A comparação final dá a
+cada modelo o melhor peso dele nas consultas originais (regra fixada antes: se o Gemma
+ganhar nas originais e não perder na validação, vira o padrão).
+
+NDCG@10, só notas da IA, grade de 0 a 0,7:
+
+| Peso | e5 bonecas | Gemma bonecas | e5 placas | Gemma placas |
+|---|---|---|---|---|
+| 0 | 0,544 | 0,664 | **0,675** | 0,641 |
+| 0,1 | 0,561 | 0,667 | 0,669 | 0,639 |
+| 0,2 | 0,568 | 0,684 | 0,650 | **0,644** |
+| 0,3 | 0,592 | 0,699 | 0,642 | 0,632 |
+| 0,4 | 0,602 | **0,715** | 0,604 | 0,582 |
+| 0,5 | **0,628** | 0,673 | 0,419 | 0,405 |
+| 0,6 | 0,589 | 0,608 | 0,181 | 0,201 |
+| 0,7 | 0,564 | 0,558 | 0,136 | 0,142 |
+
+(consultas originais)
+
+| Com o melhor peso de cada um | e5 (0,5 e 0) | Gemma (0,4 e 0,2) |
+|---|---|---|
+| bonecas, originais | 0,628 | **0,715** |
+| placas, originais | **0,675** | 0,644 |
+| **média, originais** | 0,652 | **0,680** |
+| bonecas, validação | 0,408 | **0,518** |
+| placas, validação | 0,571 | **0,641** |
+| **média, validação** | 0,490 | **0,580** |
+
+**Leitura:**
+- Com o peso próprio, o Gemma ganha nas originais (+0,028) e na validação (+0,090). Pela
+  regra fixada, passa a ser o padrão (`EMBEDDER=clip+gemma2`, pesos 0,4 e 0,2).
+- A vantagem está nas bonecas, nos dois conjuntos (+0,09 e +0,11). Nas placas, os dois
+  ficam próximos (o e5 à frente nas originais, o Gemma na validação).
+- O Gemma pede menos foto nas bonecas (0,4 contra 0,5): o texto dele já entende parte do
+  que só a imagem trazia. Nas placas, um pouco de foto (0,2) praticamente não muda o Gemma (0,644 contra 0,641
+  sem foto; na validação, o melhor foi 0), enquanto atrapalhava o e5.
+- São 6 consultas por categoria nas originais e 2 na validação: a direção é a mesma nos
+  dois conjuntos, mas não há consultas suficientes para um intervalo de confiança firme.
+- Custo: o Gemma leva 358 ms por produto na indexação (uma vez, 1,4 h para o catálogo) e
+  cerca de 0,3 s a mais por consulta. Aceitável aqui; num catálogo de milhões de anúncios
+  novos por dia, o custo entraria na decisão.

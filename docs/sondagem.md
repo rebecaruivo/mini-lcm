@@ -107,18 +107,30 @@ títulos cada, o que limita o acerto a 40%.
 2. **Para recomendação, tanto faz.** Comparar produto com produto é mais fácil: títulos
    da mesma linha compartilham palavras, e a foto carrega boa parte da semelhança. A
    fraqueza do CLIP estava em entender a consulta, não em descrever o produto.
-3. **A foto ajuda nas bonecas e atrapalha nas placas.** Nas bonecas, a imagem acerta 74%
+3. **Com o e5, a foto ajuda nas bonecas e atrapalha nas placas.** Nas bonecas, a imagem acerta 74%
    sozinha e a fusão chega a 96%. Nas placas, todas parecem iguais na foto (um retângulo
    preto com ventoinhas), a imagem acerta 2%, e a fusão puxa o e5 de 66% para 38%. O peso
    da imagem na fusão deveria depender da categoria.
 4. **Título ou texto completo:** empate no canal de texto nas duas categorias; na fusão,
    o título ganha nas bonecas (96% contra 88%) e empata nas placas.
 
-**Escolha:** `EMBEDDER=clip+e5` e `TEXTO_ITEM=titulo` (o novo padrão em `.env.example`).
+**EmbeddingGemma 2 no canal de texto** (`EMBEDDER=clip+gemma2`, só título), testado depois:
+
+| | bonecas: só texto | bonecas: fusão | placas: só texto | placas: fusão |
+|---|---|---|---|---|
+| e5, título | 94% | 96% | 66% | 38% |
+| EmbeddingGemma 2, título | 96% | 92% | 70% | 44% |
+
+Empate, com leve vantagem do Gemma nas placas: foi o único a achar a "rtx 4060" (3 dos 4
+produtos possíveis). Comparação com gabarito em `resultados-busca.md`.
+
+**Escolha inicial:** `EMBEDDER=clip+e5` e `TEXTO_ITEM=titulo`. Depois, na avaliação com
+gabarito e com o peso da imagem ajustado para cada modelo, o EmbeddingGemma 2 superou o e5
+e passou a ser o padrão (`EMBEDDER=clip+gemma2`; ver `resultados-busca.md`).
 Os resultados de recomendação publicados em `resultados-recomendacao.md` foram medidos
 com o texto do CLIP; reproduzi-los exige `EMBEDDER=clip TEXTO_ITEM=completo`.
 
-**Próximo ajuste:** peso da imagem na fusão por categoria. A sondagem só mede buscas
+**Ajuste seguinte (feito, ver `resultados-busca.md`):** peso da imagem na fusão por categoria. A sondagem só mede buscas
 pelo nome, em que a foto naturalmente ajuda pouco; o peso deve ser escolhido com a
 avaliação com gabarito (passo 7), que inclui buscas descritivas ("placa branca", "boneca
 de cabelo rosa").

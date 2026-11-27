@@ -125,8 +125,8 @@ def carregar_config(raiz: Path = RAIZ) -> Config:
     load_dotenv(raiz / ".env")
     return Config(
         database_url=os.getenv("DATABASE_URL") or None,
-        embedder=os.getenv("EMBEDDER") or "clip",
-        texto_item=os.getenv("TEXTO_ITEM") or "completo",
+        embedder=os.getenv("EMBEDDER") or "clip+gemma2",  # escolhido: docs/resultados-busca.md
+        texto_item=os.getenv("TEXTO_ITEM") or "titulo",
         pasta_dados=raiz / "dados",
         pasta_brutos=raiz / "dados" / "brutos",
         categorias=carregar_categorias(raiz / "categorias.yaml"),

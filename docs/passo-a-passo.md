@@ -219,6 +219,37 @@ EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consult
 O `julgar` só chama a IA para os produtos que o Gemma trouxer ao topo e que ainda não
 têm nota.
 
+## 10c-2. EmbeddingGemma 2 também nas fotos (Colab)
+Sem GPU, o Gemma leva ~20 s por foto. O notebook `notebooks/gemma_fotos_colab.ipynb` faz
+essa parte numa GPU do Google Colab:
+1. Abra https://colab.research.google.com, Arquivo → Enviar notebook, escolha o notebook.
+2. Ambiente de execução → Alterar o tipo de ambiente de execução → GPU.
+3. Rode as células em ordem; na etapa 2, envie `dados/itens.jsonl`.
+4. Baixe `embeddinggemma-2__imagem.npz` e coloque em `dados/embeddings/`.
+
+Depois, compare o Gemma sozinho (texto e foto) com o CLIP + Gemma:
+```bash
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7 --fonte ia
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7 --fonte ia
+```
+
+## 10d. Levar os dados para o Postgres (Supabase)
+Tudo roda com arquivos locais em `dados/`. Para usar o Postgres com pgvector sem
+reimportar nem recalcular vetores:
+```bash
+pip install -e ".[postgres]"
+# no SQL Editor do Supabase, cole e rode sql/001_schema.sql e depois sql/002_lancamento.sql
+# (ou: psql "$DATABASE_URL" -f sql/001_schema.sql -f sql/002_lancamento.sql)
+# com DATABASE_URL preenchida no .env:
+mini-lcm migrar-para-postgres          # produtos, avaliações, custos e os vetores em uso
+mini-lcm status                        # contagens, agora lidas do Postgres
+mini-lcm buscar "boneca gótica de cabelo rosa" --categoria bonecas
+```
+Com `DATABASE_URL` preenchida, todos os comandos usam o Postgres; com ela vazia (ou
+comentada com `#`), voltam a usar os arquivos locais.
+
 ## 11. Escalar com a IA
 Crie mais consultas e deixe só a IA julgar. Use `--limite` para controlar o custo:
 ```bash
