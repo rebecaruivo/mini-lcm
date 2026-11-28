@@ -212,10 +212,11 @@ mini_lcm/
   juiz.py, calibracao.py     juiz de IA, kappa, amostras de calibração e auditoria
   rotulagem_html.py          página de rotulagem com fotos
   graficos.py                gráficos das grades de peso (terminal ou PNG)
+  manipulacao.py             teste de foto copiada: risco por peso da imagem
   custo.py, cli.py, config.py  medição de custo, linha de comando, configuração
 avaliacao/                   rubrica, consultas e gabarito (notas humanas e da IA)
 notebooks/                   tarefas que precisam de GPU (Google Colab)
-scripts/                     download dos dados e análises avulsas
+scripts/                     análises avulsas e gráficos genéricos (graficos.py)
 docs/                        decisões, resultados e passo a passo
 categorias.yaml              categorias, filtros e parâmetros escolhidos no conjunto de escolha
 ```

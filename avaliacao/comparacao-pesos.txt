@@ -1,0 +1,43 @@
+Loading weights:   0%|          | 0/624 [00:00<?, ?it/s]Loading weights:   0%|          | 2/624 [00:28<2:26:36, 14.14s/it]Loading weights:   4%|▍         | 24/624 [00:28<08:30,  1.18it/s] Loading weights:  16%|█▌        | 100/624 [00:28<01:19,  6.58it/s]Loading weights:  47%|████▋     | 291/624 [00:28<00:12, 25.77it/s]Loading weights:  67%|██████▋   | 417/624 [00:28<00:04, 43.29it/s]Loading weights:  86%|████████▌ | 537/624 [00:28<00:01, 65.93it/s]Loading weights: 100%|██████████| 624/624 [00:29<00:00, 21.11it/s]
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-escolha.yaml
+
+| Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
+|---|---|---|---|---|---|
+| bonecas | 6 | 0 | 0.594 | 0.203 | 0.736 |
+| bonecas | 6 | 0.5 | 0.700 | 0.288 | 0.917 |
+| bonecas | 6 | 0.7 | 0.721 | 0.335 | 0.889 |
+| bonecas | 6 | 1 ← maior NDCG | 0.809 | 0.393 | 0.917 |
+| placas-de-video | 6 | 0 ← maior NDCG | 0.631 | 0.363 | 0.667 |
+| placas-de-video | 6 | 0.5 | 0.440 | 0.266 | 0.521 |
+| placas-de-video | 6 | 0.7 | 0.389 | 0.202 | 0.500 |
+| placas-de-video | 6 | 1 | 0.364 | 0.190 | 0.500 |
+
+Comparação pareada · bonecas · peso 1 menos peso 0.7 (NDCG@10)
+
+| Consulta | peso 0.7 | peso 1 | diferença |
+|---|---|---|---|
+| boneca gótica de cabelo rosa | 0.503 | 0.773 | +0.270 |
+| boneca com vestido de noiva | 0.493 | 0.742 | +0.249 |
+| boneca bebê que chora e faz xixi | 0.555 | 0.771 | +0.216 |
+| boneca negra de cabelo cacheado | 0.962 | 1.000 | +0.038 |
+| monster high draculaura | 1.000 | 1.000 | +0.000 |
+| presente para menina de 6 anos | 0.813 | 0.567 | -0.246 |
+
+Diferença média: +0.088 · IC 95% (bootstrap pareado): -0.074 a +0.216 · 6 consultas: 4 melhores com 1, 1 com 0.7, 1 empates
+→ O intervalo inclui zero: com estas consultas, 0.7 e 1 não se distinguem.
+  Com 6 consultas o intervalo é grosseiro (poucos sorteios diferentes possíveis); trate como indicação, não como prova.
+
+Comparação pareada · placas-de-video · peso 1 menos peso 0.7 (NDCG@10)
+
+| Consulta | peso 0.7 | peso 1 | diferença |
+|---|---|---|---|
+| placa de vídeo low profile para pc pequeno | 0.437 | 0.593 | +0.156 |
+| placa silenciosa sem ventoinha | 0.000 | 0.016 | +0.016 |
+| radeon com 16gb de memória | 0.031 | 0.027 | -0.004 |
+| rtx 3060 12gb | 1.000 | 0.936 | -0.064 |
+| placa barata para jogar em full hd | 0.114 | 0.000 | -0.114 |
+| placa de vídeo branca | 0.754 | 0.610 | -0.144 |
+
+Diferença média: -0.026 · IC 95% (bootstrap pareado): -0.099 a +0.059 · 6 consultas: 2 melhores com 1, 4 com 0.7, 0 empates
+→ O intervalo inclui zero: com estas consultas, 0.7 e 1 não se distinguem.
+  Com 6 consultas o intervalo é grosseiro (poucos sorteios diferentes possíveis); trate como indicação, não como prova.

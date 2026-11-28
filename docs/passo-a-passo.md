@@ -255,6 +255,15 @@ EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-es
 ```
 Intervalo que inclui zero: com estas consultas, os dois pesos empatam.
 
+Risco de foto copiada por peso da imagem (anúncios de outro produto com o vetor de foto de um
+produto popular, só na memória; o catálogo não muda):
+```bash
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm manipulacao --alvos 30 --por-alvo 3 --salvar avaliacao/manipulacao.txt
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm manipulacao --alvos 30 --por-alvo 3 --salvar avaliacao/manipulacao.txt
+python scripts/graficos.py avaliacao/manipulacao.txt --x "Peso da imagem" --y "buscas com intruso" --serie EMBEDDER --painel Categoria --menor-melhor
+```
+(`scripts/graficos.py` é o script genérico da skill graficos-de-experimentos; `--menor-melhor` porque aqui menos é melhor.)
+
 ## 10d. Levar os dados para o Postgres (Supabase)
 Tudo roda com arquivos locais em `dados/`. Para usar o Postgres com pgvector sem
 reimportar nem recalcular vetores:

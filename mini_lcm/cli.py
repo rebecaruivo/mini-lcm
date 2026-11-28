@@ -27,6 +27,7 @@
     mini-lcm avaliar-recomendacao --categoria bonecas --curva        # avaliação temporal
     mini-lcm avaliar-recomendacao --categoria bonecas --escolha --janela-dias 90   # escolher parâmetro
     mini-lcm graficos avaliacao/comparacao-gemma.txt   # NDCG por peso da imagem, por modelo
+    mini-lcm manipulacao --alvos 30 --por-alvo 3   # risco de foto copiada por peso da imagem
     mini-lcm custos
     mini-lcm status
 
@@ -526,6 +527,30 @@ def _chave_sem_carregar(cfg: Config, canal: str) -> str:
     return f"{EmbeddingGemma2.NOME_G}@{modo}"
 
 
+def cmd_manipulacao(cfg: Config, arm: Armazenamento, args) -> None:
+    from .manipulacao import medir, relatorio
+
+    embedder = criar_embedder(cfg.embedder, cfg.texto_item)
+    pesos = [float(p) for p in args.pesos.split(",")]
+    categorias = [args.categoria] if args.categoria else [c.slug for c in cfg.categorias]
+    linhas = []
+    for categoria in categorias:
+        try:
+            linhas += medir(arm, embedder, categoria, pesos, alvos=args.alvos, por_alvo=args.por_alvo, k=args.k,
+                            semente=args.semente)
+        except ValueError as e:
+            print(f"Aviso: {e}")
+    if not linhas:
+        sys.exit("Nada medido.")
+    texto = relatorio(linhas, args.por_alvo, args.k)
+    print(f"Embedder: {embedder.nome}\n\n{texto}")
+    if args.salvar:
+        Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.salvar, "a", encoding="utf-8") as f:
+            f.write(f"\n### EMBEDDER={cfg.embedder}\n\n{texto}\n")
+        print(f"\nAcrescentado a {args.salvar}")
+
+
 def cmd_custos(cfg: Config, arm: Armazenamento, args) -> None:
     linhas = resumir(arm.custos())
     if not linhas:
@@ -695,6 +720,16 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--png", help="pasta para salvar um PNG por gráfico (exige o extra graficos)")
     s.add_argument("--sem-perguntas", action="store_true", help="não imprime as perguntas de leitura")
     s.set_defaults(func=cmd_graficos, sem_armazenamento=True)
+
+    s = sub.add_parser("manipulacao", help="teste de foto copiada: anúncios falsos no top 10 por peso da imagem")
+    s.add_argument("--categoria", help="uma categoria (padrão: todas de categorias.yaml)")
+    s.add_argument("--alvos", type=int, default=30, help="produtos mais avaliados usados como alvo, por categoria")
+    s.add_argument("--por-alvo", type=int, default=3, help="anúncios com a foto copiada para cada alvo")
+    s.add_argument("--pesos", default="0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1")
+    s.add_argument("-k", type=int, default=10)
+    s.add_argument("--semente", type=int, default=0, help="sorteio dos doadores; outra semente = outro sorteio")
+    s.add_argument("--salvar", help="acrescenta o relatório a um arquivo (ex.: avaliacao/manipulacao.txt)")
+    s.set_defaults(func=cmd_manipulacao)
 
     sub.add_parser("custos", help="tempo e custo por etapa").set_defaults(func=cmd_custos)
     sub.add_parser("status", help="quantos itens e vetores existem").set_defaults(func=cmd_status)
