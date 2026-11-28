@@ -25,6 +25,7 @@
     mini-lcm importar-notas ~/Downloads/notas-rotulagem.json
     mini-lcm avaliar-recomendacao --categoria bonecas --curva        # avaliação temporal
     mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90   # escolher parâmetro
+    mini-lcm graficos avaliacao/comparacao-gemma.txt   # NDCG por peso da imagem, por modelo
     mini-lcm custos
     mini-lcm status
 
@@ -504,6 +505,23 @@ def cmd_status(cfg: Config, arm: Armazenamento, args) -> None:
     print(json.dumps(arm.estatisticas(), indent=2, ensure_ascii=False))
 
 
+def cmd_graficos(cfg, arm, args) -> None:
+    from .graficos import PERGUNTAS, avisos, ler_grades, salvar_png, texto_terminal
+
+    texto = sys.stdin.read() if args.arquivo == "-" else Path(args.arquivo).read_text(encoding="utf-8")
+    blocos = ler_grades(texto)
+    if not blocos:
+        sys.exit("Nenhuma tabela de grade encontrada. Use a saída de: mini-lcm avaliar --pesos ...")
+    for aviso in avisos(blocos):
+        print(aviso)
+    print(texto_terminal(blocos, args.metrica))
+    if args.png:
+        for caminho in salvar_png(blocos, Path(args.png), args.metrica):
+            print(f"PNG: {caminho}")
+    if not args.sem_perguntas:
+        print("\n" + PERGUNTAS)
+
+
 # ─────────────────────────── Entrada ───────────────────────────
 
 
@@ -631,11 +649,21 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--salvar", help="acrescenta o relatório a um .md")
     s.set_defaults(func=cmd_avaliar_recomendacao)
 
+    s = sub.add_parser("graficos", help="gráficos das grades de peso (saída de avaliar --pesos)")
+    s.add_argument("arquivo", help="arquivo com a saída do avaliar, ou - para ler de um pipe")
+    s.add_argument("--metrica", choices=["ndcg", "recall", "mrr"], default="ndcg")
+    s.add_argument("--png", help="pasta para salvar um PNG por gráfico (exige o extra graficos)")
+    s.add_argument("--sem-perguntas", action="store_true", help="não imprime as perguntas de leitura")
+    s.set_defaults(func=cmd_graficos, sem_armazenamento=True)
+
     sub.add_parser("custos", help="tempo e custo por etapa").set_defaults(func=cmd_custos)
     sub.add_parser("status", help="quantos itens e vetores existem").set_defaults(func=cmd_status)
 
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.INFO if args.verboso else logging.WARNING, format="%(levelname)s %(message)s")
+    if getattr(args, "sem_armazenamento", False):  # não precisa de catálogo nem de banco
+        args.func(None, None, args)
+        return
     cfg = carregar_config()
     arm = abrir_armazenamento(cfg)
     try:

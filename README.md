@@ -211,6 +211,7 @@ mini_lcm/
   sondagem.py                teste rápido de variantes de embedding, sem rótulos
   juiz.py, calibracao.py     juiz de IA, kappa, amostras de calibração e auditoria
   rotulagem_html.py          página de rotulagem com fotos
+  graficos.py                gráficos das grades de peso (terminal ou PNG)
   custo.py, cli.py, config.py  medição de custo, linha de comando, configuração
 avaliacao/                   rubrica, consultas e gabarito (notas humanas e da IA)
 notebooks/                   tarefas que precisam de GPU (Google Colab)

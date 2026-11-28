@@ -231,9 +231,21 @@ Depois, compare o Gemma sozinho (texto e foto) com o CLIP + Gemma:
 ```bash
 EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
 EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7 --fonte ia
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7 --fonte ia
+# os dois sistemas contra o MESMO gabarito (o julgar acima acrescenta produtos e muda a régua)
+for e in gemma2 clip+gemma2; do for l in consultas consultas-validacao; do
+  echo "### EMBEDDER=$e · consultas=$l"
+  EMBEDDER=$e TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/$l.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,1 --fonte ia
+done; done 2>&1 | tee avaliacao/comparacao-gemma.txt
 ```
+
+Gráficos da comparação (NDCG@10 por peso da imagem, um por categoria e conjunto de consultas):
+```bash
+mini-lcm graficos avaliacao/comparacao-gemma.txt                  # barras no terminal + perguntas de leitura
+mini-lcm graficos avaliacao/comparacao-gemma.txt --metrica recall
+pip install -e ".[graficos]"                                      # uma vez, para os PNGs
+mini-lcm graficos avaliacao/comparacao-gemma.txt --png docs/graficos
+```
+Sem arquivo, direto de um comando: `... | mini-lcm graficos -`.
 
 ## 10d. Levar os dados para o Postgres (Supabase)
 Tudo roda com arquivos locais em `dados/`. Para usar o Postgres com pgvector sem

@@ -18,6 +18,8 @@ clip = ["sentence-transformers>=3.0", "pillow>=10.0"]
 gemma = ["sentence-transformers[image]", "transformers", "torchvision", "pillow>=10.0"]
 # Banco Postgres com pgvector (Supabase).
 postgres = ["psycopg[binary]>=3.2"]
+# Gráficos em PNG (mini-lcm graficos --png).
+graficos = ["matplotlib>=3.8"]
 dev = ["pytest>=8.0"]
 
 [project.scripts]
