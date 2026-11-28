@@ -3,7 +3,7 @@ import pytest
 from mini_lcm import cli
 import math
 
-from mini_lcm.avaliacao import (ConsultaRotulada, avaliar, carregar_gabarito, ndcg_em_k, obter_ou_criar,
+from mini_lcm.avaliacao import (ConsultaRotulada, avaliar, carregar_gabarito, comparacao_pareada, ndcg_em_k, obter_ou_criar,
                                 pool_para_rotular, recall_em_k, reciproco_do_rank, relatorio_markdown, rotular,
                                 salvar_gabarito)
 from mini_lcm.config import Config
@@ -179,3 +179,34 @@ def test_cli_fluxo_de_calibracao(catalogo, tmp_path, monkeypatch, capsys):
     cli.main(["avaliar", "--pesos", "0,0.5,1"])
     grade = capsys.readouterr().out
     assert grade.count("| bonecas |") == 3 and "← maior NDCG" in grade
+    cli.main(["avaliar", "--pesos", "0,0.5,1", "--comparar", "0,1"])
+    saida = capsys.readouterr().out
+    assert "Comparação pareada · bonecas · peso 1 menos peso 0" in saida and "IC 95%" in saida
+    with pytest.raises(SystemExit):
+        cli.main(["avaliar", "--pesos", "0,0.5", "--comparar", "0,1"])  # 1 não está na grade
+
+
+def test_comparacao_pareada_anula_a_dificuldade_de_cada_consulta():
+    # consultas de dificuldades bem diferentes, mas b ganha de a por 0,1 em todas
+    a = {"facil": 0.9, "media": 0.5, "dificil": 0.1, "x": 0.7, "y": 0.3}
+    b = {k: v + 0.1 for k, v in a.items()}
+    cmp = comparacao_pareada(a, b)
+    assert cmp["diferenca"] == pytest.approx(0.1)
+    assert cmp["ic95"] == pytest.approx((0.1, 0.1))  # diferença igual em todas: nenhuma incerteza
+    assert not cmp["inclui_zero"] and cmp["b_melhor"] == 5
+
+
+def test_comparacao_pareada_com_ganho_concentrado_inclui_zero():
+    a = {str(i): 0.5 for i in range(6)}
+    b = dict(a, **{"0": 0.95, "1": 0.45})  # uma consulta muito melhor, uma pior, quatro iguais
+    cmp = comparacao_pareada(a, b)
+    assert cmp["inclui_zero"]
+    assert (cmp["b_melhor"], cmp["a_melhor"], cmp["empates"]) == (1, 1, 4)
+    assert set(cmp["por_consulta"]) == set(a)
+
+
+def test_comparacao_pareada_usa_so_consultas_em_comum():
+    cmp = comparacao_pareada({"a": 0.2, "b": 0.4}, {"b": 0.6, "c": 0.9})
+    assert cmp["consultas"] == 1 and cmp["diferenca"] == pytest.approx(0.2)
+    with pytest.raises(ValueError):
+        comparacao_pareada({"a": 1.0}, {"b": 1.0})

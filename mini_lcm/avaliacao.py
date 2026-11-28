@@ -39,6 +39,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Callable, Literal
 
+import numpy as np
+
 from .armazenamento import Armazenamento
 from .busca import MODOS, ConfigBusca, Modo, buscar
 from .embeddings import Embedder
@@ -183,6 +185,37 @@ def avaliar(
             "por_consulta": por_consulta,
         }
     return relatorio
+
+
+def comparacao_pareada(a: dict[str, float], b: dict[str, float], reamostras: int = 10000,
+                       semente: int = 0) -> dict:
+    """Diferença b − a, consulta a consulta, com intervalo de 95% por bootstrap pareado.
+
+    a, b: {id da consulta: métrica} das duas configurações, nas MESMAS consultas.
+    Pareado: a diferença é calculada dentro de cada consulta antes do sorteio. Assim a
+    dificuldade de cada consulta (fácil ou difícil para qualquer configuração) se anula, e
+    o sorteio só mede o quanto a diferença varia de uma consulta para outra.
+    Bootstrap: sorteia as consultas com reposição muitas vezes e recalcula a média das
+    diferenças; o intervalo são os percentis 2,5 e 97,5 dessas médias. Se ele inclui zero,
+    as duas configurações não se distinguem com estas consultas.
+    """
+    from .avaliacao_recomendacao import intervalo_bootstrap  # evita import circular no topo
+
+    ids = sorted(set(a) & set(b))
+    if not ids:
+        raise ValueError("Nenhuma consulta em comum entre as duas configurações.")
+    dif = np.array([b[i] - a[i] for i in ids])
+    baixo, alto = intervalo_bootstrap(dif, reamostras=reamostras, semente=semente)
+    return {
+        "consultas": len(ids),
+        "diferenca": float(dif.mean()),
+        "ic95": (baixo, alto),
+        "inclui_zero": baixo <= 0 <= alto,
+        "b_melhor": int((dif > 0).sum()),
+        "a_melhor": int((dif < 0).sum()),
+        "empates": int((dif == 0).sum()),
+        "por_consulta": dict(zip(ids, dif.tolist())),
+    }
 
 
 def relatorio_markdown(rel: dict) -> str:

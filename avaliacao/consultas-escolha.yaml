@@ -1,4 +1,6 @@
-# Consultas do gabarito da busca.
+# CONJUNTO DE ESCOLHA: consultas do gabarito da busca em que as configurações são escolhidas
+# (peso da imagem, modelo, rubrica do juiz). Nos termos usuais, o conjunto de validação. A
+# conferência, uma vez, é feita em `consultas-conferencia.yaml`.
 #
 # Cada consulta tem o texto, os filtros (os mesmos da linha de comando) e o perfil de quem
 # busca, que explica a intenção e ajuda a decidir entre notas vizinhas (avaliacao/rubrica.md).

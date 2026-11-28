@@ -61,12 +61,12 @@ de `categorias.yaml`; hit@10, com o acerto nos alvos novos entre parênteses):
 
 | Variante | bonecas: último produto | bonecas: híbrido + em alta | placas: último produto | placas: híbrido + em alta |
 |---|---|---|---|---|
-| validação, CLIP completo | 0,046 (0,021) | 0,075 | 0,060 (0,063) | 0,121 |
-| validação, CLIP título | 0,044 (0,021) | 0,073 | 0,056 (0,063) | 0,121 |
-| validação, e5 completo | 0,050 (0,023) | 0,071 | 0,047 (0,051) | 0,121 |
-| validação, e5 título | 0,052 (0,023) | 0,074 | 0,052 (0,057) | 0,116 |
-| teste, CLIP completo | 0,048 (0,031) | 0,126 | 0,031 (0,034) | 0,070 |
-| teste, e5 título | 0,051 (0,029) | 0,118 | 0,031 (0,034) | 0,079 |
+| escolha, CLIP completo | 0,046 (0,021) | 0,075 | 0,060 (0,063) | 0,121 |
+| escolha, CLIP título | 0,044 (0,021) | 0,073 | 0,056 (0,063) | 0,121 |
+| escolha, e5 completo | 0,050 (0,023) | 0,071 | 0,047 (0,051) | 0,121 |
+| escolha, e5 título | 0,052 (0,023) | 0,074 | 0,052 (0,057) | 0,116 |
+| conferência, CLIP completo | 0,048 (0,031) | 0,126 | 0,031 (0,034) | 0,070 |
+| conferência, e5 título | 0,051 (0,029) | 0,118 | 0,031 (0,034) | 0,079 |
 
 As diferenças ficam todas dentro da incerteza da medida (cerca de ±0,015 nas bonecas e
 ±0,03 nas placas), inclusive nos produtos novos.

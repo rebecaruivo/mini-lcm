@@ -1,23 +1,23 @@
 from mini_lcm.graficos import agrupar, avisos, ler_grades, texto_terminal
 
-SAIDA = """### EMBEDDER=gemma2 · consultas
+SAIDA = """### EMBEDDER=gemma2 · consultas=consultas-escolha
 Loading weights: 100%|████| 624/624
-Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas.yaml
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-escolha.yaml
 
 | Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
 |---|---|---|---|---|---|
 | bonecas | 6 | 0 | 0.594 | 0.203 | 0.736 |
 | bonecas | 6 | 1 ← maior NDCG | 0.809 | 0.393 | 0.917 |
 Atenção: o juiz não passou no critério de kappa.
-### EMBEDDER=clip+gemma2 · consultas
-Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas.yaml
+### EMBEDDER=clip+gemma2 · consultas=consultas-escolha
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-escolha.yaml
 
 | Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
 |---|---|---|---|---|---|
 | bonecas | 6 | 0 | 0.594 | 0.203 | 0.736 |
 | bonecas | 6 | 1 | 0.434 | 0.156 | 0.400 |
-### EMBEDDER=gemma2 · consultas-validacao
-Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-validacao.yaml
+### EMBEDDER=gemma2 · consultas=consultas-conferencia
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-conferencia.yaml
 
 | Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
 |---|---|---|---|---|---|
@@ -28,15 +28,15 @@ Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consult
 def test_le_blocos_com_modelo_consultas_e_fonte():
     blocos = ler_grades(SAIDA)
     assert [(b.modelo, b.consultas, b.fonte) for b in blocos] == [
-        ("gemma2", "originais", "ia"), ("clip+gemma2", "originais", "ia"), ("gemma2", "validação", "ia")]
+        ("gemma2", "escolha", "ia"), ("clip+gemma2", "escolha", "ia"), ("gemma2", "conferência", "ia")]
     assert blocos[0].linhas[1] == ("bonecas", 6, 1.0, 0.809, 0.393, 0.917)  # tira a marca "← maior NDCG"
 
 
-def test_agrupa_por_categoria_e_consultas_com_originais_primeiro():
+def test_agrupa_por_categoria_e_consultas_com_escolha_primeiro():
     grupos = agrupar(ler_grades(SAIDA))
-    assert list(grupos) == [("bonecas", "originais"), ("bonecas", "validação")]
-    assert grupos[("bonecas", "originais")]["clip+gemma2"] == {0.0: 0.594, 1.0: 0.434}
-    assert agrupar(ler_grades(SAIDA), "mrr")[("bonecas", "originais")]["gemma2"][1.0] == 0.917
+    assert list(grupos) == [("bonecas", "escolha"), ("bonecas", "conferência")]
+    assert grupos[("bonecas", "escolha")]["clip+gemma2"] == {0.0: 0.594, 1.0: 0.434}
+    assert agrupar(ler_grades(SAIDA), "mrr")[("bonecas", "escolha")]["gemma2"][1.0] == 0.917
 
 
 def test_terminal_marca_o_melhor_de_cada_modelo():
@@ -47,10 +47,10 @@ def test_terminal_marca_o_melhor_de_cada_modelo():
 
 
 def test_avisa_fontes_diferentes_e_peso_zero_divergente():
-    misturado = SAIDA.replace("notas: ia · consultas de avaliacao/consultas.yaml\n\n| Categoria | Consultas | Peso da imagem"
+    misturado = SAIDA.replace("notas: ia · consultas de avaliacao/consultas-escolha.yaml\n\n| Categoria | Consultas | Peso da imagem"
                               " | NDCG@10 | recall@10 | MRR |\n|---|---|---|---|---|---|\n| bonecas | 6 | 0 | 0.594 | 0.203"
                               " | 0.736 |\n| bonecas | 6 | 1 | 0.434",
-                              "notas: combinado · consultas de avaliacao/consultas.yaml\n\n| Categoria | Consultas | Peso da"
+                              "notas: combinado · consultas de avaliacao/consultas-escolha.yaml\n\n| Categoria | Consultas | Peso da"
                               " imagem | NDCG@10 | recall@10 | MRR |\n|---|---|---|---|---|---|\n| bonecas | 6 | 0 | 0.690 |"
                               " 0.203 | 0.736 |\n| bonecas | 6 | 1 | 0.434")
     texto = " ".join(avisos(ler_grades(misturado)))

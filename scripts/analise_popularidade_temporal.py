@@ -7,12 +7,12 @@ de docs/resultados-recomendacao.md:
 
 Para cada pessoa testada (mesma divisão leave-last-out de `avaliar-recomendacao`):
 - popularidade global: contada com todo o treino, como no relatório (inclui avaliações
-  de outras pessoas posteriores ao teste);
-- popularidade do passado: só interações de treino ANTERIORES ao momento do teste;
-- popularidade recente: só interações numa janela de dias antes do momento do teste.
+  de outras pessoas posteriores ao alvo);
+- popularidade do passado: só interações de treino ANTERIORES ao momento do alvo;
+- popularidade recente: só interações numa janela de dias antes do momento do alvo.
 
-É uma análise exploratória: olha o conjunto de teste diretamente. Para virar método do
-sistema, a janela precisa ser escolhida na validação.
+É uma análise exploratória: olha o conjunto de conferência diretamente. Para virar método do
+sistema, a janela precisa ser escolhida no conjunto de escolha.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ def acertou(pontos: np.ndarray, indice: dict[str, int], caso, k: int = 10) -> bo
     pontos = pontos.copy()
     for a in caso.treino:
         pontos[indice[a.item_id]] = -np.inf
-    return int(np.sum(pontos > pontos[indice[caso.teste.item_id]])) + 1 <= k
+    return int(np.sum(pontos > pontos[indice[caso.alvo.item_id]])) + 1 <= k
 
 
 def contar(interacoes, n: int, indice: dict[str, int]) -> np.ndarray:
@@ -64,19 +64,19 @@ def main() -> None:
     janelas = [int(j) for j in args.janelas.split(",")]
     h_janela: dict[int, list[bool]] = {j: [] for j in janelas}
     for caso in casos:
-        fim = bisect.bisect_left(tempos, caso.teste.momento)
+        fim = bisect.bisect_left(tempos, caso.alvo.momento)
         fracao_futuro.append(1 - fim / len(tempos))
         h_global.append(_posicao(global_, "popularidade", caso, caso.treino)[0] <= 10)
         h_passado.append(acertou(contar(treino[:fim], n, indice), indice, caso))
         for j in janelas:
-            inicio_t = (datetime.fromisoformat(caso.teste.momento) - timedelta(days=j)).isoformat()
+            inicio_t = (datetime.fromisoformat(caso.alvo.momento) - timedelta(days=j)).isoformat()
             inicio = bisect.bisect_left(tempos, inicio_t)
             h_janela[j].append(acertou(contar(treino[inicio:fim], n, indice), indice, caso))
 
     g, ps = np.array(h_global, float), np.array(h_passado, float)
     lo, hi = intervalo_bootstrap(g - ps)
     print(f"{args.categoria}: {len(casos)} usuários testados")
-    print(f"fração média do treino posterior ao teste de cada pessoa: {np.mean(fracao_futuro):.3f}")
+    print(f"fração média do treino posterior ao alvo de cada pessoa: {np.mean(fracao_futuro):.3f}")
     print(f"popularidade global:     {g.mean():.3f}")
     print(f"popularidade do passado: {ps.mean():.3f}  (diferença {g.mean() - ps.mean():+.3f}, IC 95% {lo:+.3f} a {hi:+.3f})")
     for j in janelas:

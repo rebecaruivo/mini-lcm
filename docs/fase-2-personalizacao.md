@@ -130,7 +130,7 @@ dias, porque o ritmo de compra varia muito entre pessoas: "duas compras atrás" 
 melhor o interesse atual de quem compra pouco e de quem compra muito.
 
 O mesmo peso vale para a coocorrência. O valor padrão (meia-vida 1) foi escolhido num
-conjunto de validação, sem olhar o teste (seção 5).
+conjunto de escolha, sem olhar a conferência (seção 5).
 
 Casos especiais: se a pessoa avaliou o mesmo produto duas vezes, vale a mais
 recente. Se a soma dos pesos não é positiva (só notas 1 e 2), não há direção de
@@ -157,7 +157,7 @@ um método só se justifica se ganhar delas.
 O `em_alta` entrou depois que a avaliação mostrou que, em categorias guiadas por
 lançamentos, o que vende agora prevê melhor a próxima compra do que o gosto acumulado
 de cada pessoa. A janela e o peso no `hibrido_alta` são parâmetros de cada categoria
-(`categorias.yaml`), escolhidos na validação.
+(`categorias.yaml`), escolhidos no conjunto de escolha.
 
 ### Por que linhas de base importam
 
@@ -246,7 +246,7 @@ o primeiro se mostrou otimista nestes dados.
 Para cada usuário com pelo menos 3 produtos distintos:
 
     histórico em ordem de data:  A  →  B  →  C  →  D
-                                 └── treino ──┘    └ teste (escondido)
+                                 └── treino ──┘    └ alvo (escondido)
 
 O sistema recebe só A, B e C, ordena o catálogo inteiro, e verificamos em que
 posição ficou o D.
@@ -270,7 +270,7 @@ aprender, e a avaliação fica boa demais para ser verdade.
 
 O corte por usuário tem dois problemas, medidos nos dados (seção 10):
 
-- **Vazamento entre pessoas:** o treino de todos inclui avaliações posteriores ao teste
+- **Vazamento entre pessoas:** o treino de todos inclui avaliações posteriores ao alvo
   de cada um. Popularidade e coocorrência aprendem com esse futuro.
 - **Compras em lote:** metade dos produtos escondidos das bonecas foi avaliada no mesmo
   dia que o anterior (comprados juntos). Prever o segundo item de um pedido é muito mais
@@ -294,9 +294,9 @@ No corte por data, há uma data única para todos:
 - Uma data só deixa poucos casos (460 nas bonecas, 66 nas placas). Por isso, há um corte
   a cada seis meses, cada um com o seu modelo ("rolling origin"), e os casos de todos os
   cortes são somados.
-- **Validação e teste no tempo:** os cortes mais antigos, até somar metade dos casos, são
-  a validação; os mais recentes, o teste. Os parâmetros são escolhidos olhando só a
-  validação.
+- **Escolha e conferência no tempo:** os cortes mais antigos, até somar metade dos casos,
+  são o conjunto de escolha; os mais recentes, o de conferência. Os parâmetros são
+  escolhidos olhando só o conjunto de escolha.
 - A mesma pessoa aparece em vários cortes. O bootstrap sorteia **pessoas**, levando todos
   os casos de cada uma, para o intervalo não ficar estreito demais.
 
@@ -309,8 +309,8 @@ conseguem. Nos dados, 40% dos alvos das bonecas e 65% dos das placas são novos.
 classificados, quase todo anúncio é novo.
 
 O `hibrido_alta` aceita reservar as últimas posições do top 10 para produtos novos,
-escolhidos pelo perfil de conteúdo (`vagas_novos`). O número de vagas é escolhido na
-validação como os outros parâmetros.
+escolhidos pelo perfil de conteúdo (`vagas_novos`). O número de vagas é escolhido no
+conjunto de escolha, como os outros parâmetros.
 
 ### Métricas (k = 10, um único produto certo por caso)
 
@@ -327,7 +327,7 @@ problema central em catálogos de cauda longa, como os de marketplaces de usados
 
 ### Curva de histórico: o problema do usuário novo (*cold start*)
 
-`--curva` repete o teste usando só as últimas N avaliações de treino (N = 1, 2, 3, 5,
+`--curva` repete a avaliação usando só as últimas N avaliações de treino (N = 1, 2, 3, 5,
 todas). A pergunta é: quanto histórico cada método precisa para valer a pena? Na
 prática: a partir de quantas interações vale trocar a lista de populares por
 recomendações personalizadas para um usuário novo?
@@ -346,17 +346,17 @@ produz um intervalo bem mais estreito do que comparar os dois intervalos separad
 Se o intervalo da diferença não contém zero, a vantagem não é explicada só pela
 amostra de usuários.
 
-### Validação: escolher parâmetros sem olhar o teste
+### Escolha e conferência: escolher parâmetros sem olhar a conferência
 
 Parâmetros como a meia-vida da recência precisam ser escolhidos por algum número.
-Escolher pelo resultado do teste é ajustar o modelo à prova: com vários valores
+Escolher pelo resultado da conferência é ajustar o modelo à prova: com vários valores
 experimentados, algum vai parecer bom por acaso, e o número reportado sai otimista.
 
-`--validacao` resolve isso sem precisar de mais dados. Nos cortes por data, avalia nos
-cortes mais antigos (validação) em vez dos mais recentes (teste). No corte por usuário,
+`--escolha` resolve isso sem precisar de mais dados. Nos cortes por data, avalia nos
+cortes mais antigos (conjunto de escolha) em vez dos mais recentes (conferência). No corte por usuário,
 retira a última avaliação de cada pessoa e repete a divisão no que sobra, com a
-penúltima como alvo. Os parâmetros são escolhidos na validação, e o teste é rodado uma
-única vez no final, com os valores escolhidos.
+penúltima como alvo. Os parâmetros são escolhidos no conjunto de escolha, e a conferência é
+rodada uma única vez no final, com os valores escolhidos.
 
 ---
 
@@ -387,7 +387,7 @@ junto com a causa encontrada, em vez de omitidos.
   placas). Produto novo sem data não concorre; se for o alvo, conta como erro para todos.
 - **Filtro com informação futura:** `min_avaliacoes` usa o total de avaliações do produto
   na Amazon até 2023. Não depende da amostra, mas também é posterior aos cortes.
-- **Poucos casos nas placas:** 228 no teste, com intervalos de confiança largos
+- **Poucos casos nas placas:** 228 na conferência, com intervalos de confiança largos
   (cerca de ±0,035 no hit@10). Diferenças pequenas entre métodos não são conclusivas.
 - **Avaliação (review) não é compra nem clique:** só uma fração de quem compra
   escreve avaliação. O sinal é mais esparso e mais enviesado (para experiências muito
@@ -454,7 +454,8 @@ interações em escala muito maior.
 - **Leave-last-out:** esconder a interação mais recente de cada pessoa e tentar adivinhá-la.
 - **Rolling origin:** avaliar em várias datas de corte, cada uma com um modelo que só vê o passado.
 - **Em alta:** popularidade contada só numa janela recente antes do momento da recomendação.
-- **Validação:** dados separados do teste, usados para escolher parâmetros.
+- **Conjunto de escolha / de conferência:** o primeiro serve para escolher parâmetros; o
+  segundo, separado, mede o resultado uma vez. Nos termos usuais, validação e teste.
 - **Vazamento (data leakage):** a resposta escapando para os dados de aprendizado.
 - **Cold start:** recomendar sem histórico (usuário novo) ou sem interações (produto novo).
 - **Cobertura:** quanto do catálogo aparece nas recomendações.
@@ -463,7 +464,7 @@ interações em escala muito maior.
 
 ## 10. Resultados
 
-Tabelas completas, grades de validação e comparações pareadas em
+Tabelas completas, grades do conjunto de escolha e comparações pareadas em
 [resultados-recomendacao.md](resultados-recomendacao.md).
 
 ### Protocolo principal (cortes por data, catálogo completo)
@@ -479,7 +480,7 @@ Tabelas completas, grades de validação e comparações pareadas em
 | híbrido | 0,063 | 0,031 |
 | híbrido + em alta | **0,126** | 0,070 |
 
-(hit@10; parâmetros escolhidos na validação: bonecas com meia-vida 2, janela de 30 dias e
+(hit@10 na conferência; parâmetros escolhidos no conjunto de escolha: bonecas com meia-vida 2, janela de 30 dias e
 peso 2; placas com meia-vida 1, janela de 90 dias e peso 2; nenhuma vaga reservada.)
 
 Confronto com as expectativas da seção 6:

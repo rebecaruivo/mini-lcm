@@ -51,7 +51,7 @@ def test_importar_notas_recusa_versao_desconhecida(tmp_path):
 def test_lote_de_consultas_do_repositorio():
     from mini_lcm.config import RAIZ
 
-    consultas = carregar_lote(RAIZ / "avaliacao" / "consultas.yaml")
+    consultas = carregar_lote(RAIZ / "avaliacao" / "consultas-escolha.yaml")
     assert len(consultas) >= 10
     assert {c["filtros"]["categoria"] for c in consultas} == {"bonecas", "placas-de-video"}
     assert all(c["perfil"] and c["tipo"] for c in consultas)

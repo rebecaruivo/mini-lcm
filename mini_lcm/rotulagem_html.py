@@ -1,6 +1,6 @@
 """Página de rotulagem: uma alternativa ao `rotular` no terminal para muitas consultas.
 
-`mini-lcm rotular --lote avaliacao/consultas.yaml --html avaliacao/rotular.html` monta o
+`mini-lcm rotular --lote avaliacao/consultas-escolha.yaml --html avaliacao/rotular-escolha.html` monta o
 pool de cada consulta (os primeiros de cada modo, juntos e embaralhados, como no
 terminal) e grava UMA página HTML autocontida. No navegador, cada produto aparece com a
 foto, o título e o preço; as notas são dadas com o teclado (0 a 3) ou com o mouse. O

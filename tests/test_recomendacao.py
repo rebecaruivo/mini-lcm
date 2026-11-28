@@ -118,9 +118,9 @@ def test_explicar_aponta_o_item_parecido_do_historico(mundo):
 def test_divisao_temporal_esconde_a_ultima_e_nao_vaza():
     avs = [av("u", "a", dia=1), av("u", "b", dia=3), av("u", "c", dia=2), av("curto", "a", dia=1)]
     casos, treino = dividir(avs, {"a", "b", "c"}, min_historico=3)
-    assert len(casos) == 1 and casos[0].teste.item_id == "b"  # a mais recente, não a última da lista
+    assert len(casos) == 1 and casos[0].alvo.item_id == "b"  # a mais recente, não a última da lista
     assert {a.item_id for a in casos[0].treino} == {"a", "c"}
-    assert all(not (a.usuario == "u" and a.item_id == "b") for a in treino)  # o teste não entra no treino
+    assert all(not (a.usuario == "u" and a.item_id == "b") for a in treino)  # o alvo não entra no treino
     assert any(a.usuario == "curto" for a in treino)  # histórico curto: inteiro no treino
 
 
@@ -315,15 +315,15 @@ def test_sem_a_ultima_esconde_o_teste():
     assert {(a.usuario, a.item_id) for a in sobra} == {("u", "a"), ("u", "b")}
 
 
-def test_avaliacao_de_validacao_nao_usa_o_teste(mundo):
+def test_conjunto_de_escolha_nao_usa_a_conferencia(mundo):
     arm, emb = mundo
     cat = Catalogo.carregar(arm, emb, "bonecas")
     avs = arm.avaliacoes_de(categoria="bonecas")
-    rel = avaliar_recomendacao(cat, avs, metodos=("conteudo",), meia_vida=1, validacao=True)
-    assert rel["conjunto"] == "validacao" and rel["meia_vida"] == 1
-    teste = {(c.usuario, c.teste.item_id) for c in dividir(avs, set(cat.ids))[0]}
-    validacao = {(c.usuario, c.teste.item_id) for c in dividir(sem_a_ultima(avs, set(cat.ids)), set(cat.ids))[0]}
-    assert not teste & validacao  # o alvo da validação nunca é o do teste
+    rel = avaliar_recomendacao(cat, avs, metodos=("conteudo",), meia_vida=1, escolha=True)
+    assert rel["conjunto"] == "escolha" and rel["meia_vida"] == 1
+    conferencia = {(c.usuario, c.alvo.item_id) for c in dividir(avs, set(cat.ids))[0]}
+    escolha = {(c.usuario, c.alvo.item_id) for c in dividir(sem_a_ultima(avs, set(cat.ids)), set(cat.ids))[0]}
+    assert not conferencia & escolha  # o alvo do conjunto de escolha nunca é o da conferência
 
 
 # ───── corte por data, em alta ─────
@@ -343,7 +343,7 @@ def test_dividir_por_data_nao_ve_o_futuro():
            avd("v", "a", "2019-07-20"), avd("v", "d", "2020-02-01")]
     casos, treino = dividir_por_data(avs, {"a", "b", "c", "d", "e"}, "2019-07-01T00:00:00+00:00",
                                      "2020-01-01T00:00:00+00:00")
-    assert [(c.usuario, c.teste.item_id, [a.item_id for a in c.treino]) for c in casos] == [("u", "d", ["a", "b", "c"])]
+    assert [(c.usuario, c.alvo.item_id, [a.item_id for a in c.treino]) for c in casos] == [("u", "d", ["a", "b", "c"])]
     assert all(a.momento < "2019-07-01" for a in treino)  # nada posterior ao corte
     assert {a.item_id for a in treino} == {"a", "b", "c"}  # v só aparece depois do corte
 
@@ -392,8 +392,8 @@ def test_avaliacao_por_data(mundo_no_tempo):
     r = rel["resultados"]["todas"]
     assert rel["corte"] == "data" and rel["casos"] > 0 and "hibrido_alta" in r and "em_alta" in r
     assert r["conteudo"]["hit@3"] > r["aleatorio"]["hit@3"]
-    val = avaliar_recomendacao(cat, avs, corte="data", validacao=True, k=3)
-    assert val["periodo"] < rel["periodo"]  # a validação vem antes do teste no tempo
+    val = avaliar_recomendacao(cat, avs, corte="data", escolha=True, k=3)
+    assert val["periodo"] < rel["periodo"]  # o conjunto de escolha vem antes da conferência no tempo
     md = relatorio_recomendacao_markdown(rel, "bonecas", emb.nome)
     assert "cortes semestrais" in md and "alvos novos" in md
 
@@ -431,9 +431,9 @@ def test_catalogo_do_periodo_nao_usa_avaliacoes_futuras(mundo):
     avs = [avd(f"u{n}", g, f"2019-0{1 + n}-10") for n in range(3) for g in ("G1", "G2", "G3")]
     avs += [avd("u0", "G4", "2019-09-01")]  # G4: primeira avaliação só na janela, sem data de lançamento
     cat = Catalogo.carregar(arm, emb, "bonecas")
-    conjuntos, _ = _conjuntos_por_data(cat, avs, 3, validacao=True)  # um corte só (jul/2019): cai na validação
+    conjuntos, _ = _conjuntos_por_data(cat, avs, 3, escolha=True)  # um corte só (jul/2019): cai no conjunto de escolha
     rec, casos, disponiveis = conjuntos[-1]
-    assert [c.teste.item_id for c in casos] == ["G4"]
+    assert [c.alvo.item_id for c in casos] == ["G4"]
     i = cat.indice
     assert disponiveis[i["G1"]] and disponiveis[i["G5"]]
     assert not disponiveis[i["G4"]] and not disponiveis[i["B1"]]

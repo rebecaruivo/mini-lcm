@@ -1,5 +1,5 @@
-### EMBEDDER=gemma2 · consultas=consultas
-Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas.yaml
+### EMBEDDER=gemma2 · consultas=consultas-escolha
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-escolha.yaml
 
 | Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
 |---|---|---|---|---|---|
@@ -24,8 +24,8 @@ Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consult
 Loading weights: 100%|██████████████████████████████████████████████████| 624/624 [00:00<00:00, 720.57it/s]
 Atenção: o juiz não passou no critério de kappa (limite inferior do kappa (0.46) abaixo de 0.6). Ele é usado para comparar configurações de busca, com as ressalvas de docs/decisoes.md (27/11).
 
-### EMBEDDER=gemma2 · consultas=consultas-validacao
-Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-validacao.yaml
+### EMBEDDER=gemma2 · consultas=consultas-conferencia
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-conferencia.yaml
 
 | Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
 |---|---|---|---|---|---|
@@ -52,8 +52,8 @@ WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please 
 Loading weights: 100%|█████████████████████████████████████████████████| 398/398 [00:00<00:00, 1269.68it/s]
 Loading weights: 100%|██████████████████████████████████████████████████| 100/100 [00:00<00:00, 291.51it/s]
 Loading weights: 100%|█████████████████████████████████████████████████| 413/413 [00:00<00:00, 1249.08it/s]
-### EMBEDDER=clip+gemma2 · consultas=consultas
-Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas.yaml
+### EMBEDDER=clip+gemma2 · consultas=consultas-escolha
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-escolha.yaml
 
 | Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
 |---|---|---|---|---|---|
@@ -82,8 +82,8 @@ Loading weights: 100%|███████████████████�
 Loading weights: 100%|██████████████████████████████████████████████████| 413/413 [00:00<00:00, 706.10it/s]
 Atenção: o juiz não passou no critério de kappa (limite inferior do kappa (0.46) abaixo de 0.6). Ele é usado para comparar configurações de busca, com as ressalvas de docs/decisoes.md (27/11).
 
-### EMBEDDER=clip+gemma2 · consultas=consultas-validacao
-Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-validacao.yaml
+### EMBEDDER=clip+gemma2 · consultas=consultas-conferencia
+Grade do peso da imagem na fusão · notas: ia · consultas de avaliacao/consultas-conferencia.yaml
 
 | Categoria | Consultas | Peso da imagem | NDCG@10 | recall@10 | MRR |
 |---|---|---|---|---|---|

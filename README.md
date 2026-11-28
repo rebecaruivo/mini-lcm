@@ -20,7 +20,7 @@ O projeto tem três partes:
   busca de texto (multilingual-e5, EmbeddingGemma 2) acertam 94–96%. Escolher o peso da
   imagem por categoria leva o NDCG@10 médio de 0,62 (peso igual para todas) a 0,79.
 - **Testando um modelo novo com a mesma régua.** O EmbeddingGemma 2 no canal de texto
-  superou o e5 (NDCG@10 de 0,680 contra 0,652, e 0,580 contra 0,490 na validação), mas só
+  superou o e5 (NDCG@10 de 0,680 contra 0,652, e 0,580 contra 0,490 na conferência), mas só
   depois de cada modelo receber o seu próprio peso da imagem.
 - **O peso da foto depende da categoria e do modelo de texto.** Toda placa parece igual na
   foto: com o e5 no texto, a foto atrapalha nas placas (melhor peso 0) e ajuda nas bonecas
@@ -88,7 +88,7 @@ um resultado bom demais era vazamento ou viés de medição:
    catálogo só tinha produtos que alguém da amostra ia comprar. Com o **catálogo
    completo** e a data de lançamento dos metadados, as vagas deixaram de compensar.
 3. **A rubrica do juiz de IA** foi ajustada olhando os desacordos de um conjunto de
-   consultas; medir nelas daria um número otimista. A validação foi feita em **consultas
+   consultas; medir nelas daria um número otimista. A conferência foi feita em **consultas
    novas**, que não guiaram o ajuste.
 
 E duas armadilhas no sentido contrário, ao comparar o EmbeddingGemma 2 com o e5: o Gemma
@@ -96,8 +96,8 @@ parecia bem pior porque os produtos do e5 tinham notas humanas e os dele, só no
 mais rigorosa; depois, parecia empatar porque usava o peso da imagem escolhido para o e5.
 Com a mesma fonte de notas e o peso de cada um, o Gemma ganhou.
 
-Outros cuidados: todo parâmetro é escolhido num conjunto de validação e o teste roda uma
-vez; intervalos de confiança por bootstrap (pareado, e por pessoa quando a mesma pessoa
+Outros cuidados: todo parâmetro é escolhido num **conjunto de escolha** e medido uma vez
+num **conjunto de conferência** separado (nos termos usuais, validação e teste); intervalos de confiança por bootstrap (pareado, e por pessoa quando a mesma pessoa
 aparece várias vezes); critérios definidos antes de ver os resultados.
 
 **Juiz de IA.** As notas de relevância (0 a 3, [avaliacao/rubrica.md](avaliacao/rubrica.md))
@@ -114,7 +114,7 @@ Cada decisão, com alternativas e motivos, está em [docs/decisoes.md](docs/deci
 **Busca** (18 consultas de quatro tipos: nome, visual, funcional e intenção com preço;
 [docs/resultados-busca.md](docs/resultados-busca.md))
 
-| Estratégia | NDCG@10, consultas da escolha | NDCG@10, consultas de validação |
+| Estratégia | NDCG@10, escolha (12 consultas) | NDCG@10, conferência (6 consultas) |
 |---|---|---|
 | só texto | 0,753 | 0,570 |
 | texto + imagem, peso 0,5 para todas | 0,616 | 0,650 |
@@ -133,7 +133,7 @@ está na tabela do canal de texto, logo abaixo, medida só com notas da IA.)
 
 Na avaliação com gabarito (só notas da IA, cada modelo com o seu melhor peso da imagem):
 
-| Canal de texto | NDCG@10, originais | NDCG@10, validação | ms por produto |
+| Canal de texto | NDCG@10, escolha | NDCG@10, conferência | ms por produto |
 |---|---|---|---|
 | multilingual-e5 (pesos 0,5 e 0) | 0,652 | 0,490 | 30 |
 | **EmbeddingGemma 2 (pesos 0,4 e 0,2)** | **0,680** | **0,580** | 358 |
@@ -141,7 +141,7 @@ Na avaliação com gabarito (só notas da IA, cada modelo com o seu melhor peso 
 O EmbeddingGemma 2 é o padrão no texto; o canal de imagem dele leva cerca de 20 s por
 foto sem GPU, e o CLIP continua nas fotos.
 
-**Recomendação** (hit@10 no teste, cortes por data de 2018–2019 a 2023, catálogo completo;
+**Recomendação** (hit@10 na conferência, cortes por data de 2018–2019 a 2023, catálogo completo;
 bonecas: 1.876 casos de 1.101 pessoas; placas: 228 casos de 144 pessoas;
 [docs/resultados-recomendacao.md](docs/resultados-recomendacao.md))
 
@@ -207,7 +207,7 @@ mini_lcm/
   busca.py                   busca por canal, filtros e fusão RRF
   perfil.py, recomendacao.py perfis, oito métodos de recomendação, explicações
   avaliacao.py               métricas de busca (recall, MRR, NDCG) e pooling
-  avaliacao_recomendacao.py  cortes por data, validação, bootstrap
+  avaliacao_recomendacao.py  cortes por data, escolha e conferência, bootstrap
   sondagem.py                teste rápido de variantes de embedding, sem rótulos
   juiz.py, calibracao.py     juiz de IA, kappa, amostras de calibração e auditoria
   rotulagem_html.py          página de rotulagem com fotos
@@ -217,7 +217,7 @@ avaliacao/                   rubrica, consultas e gabarito (notas humanas e da I
 notebooks/                   tarefas que precisam de GPU (Google Colab)
 scripts/                     download dos dados e análises avulsas
 docs/                        decisões, resultados e passo a passo
-categorias.yaml              categorias, filtros e parâmetros escolhidos na validação
+categorias.yaml              categorias, filtros e parâmetros escolhidos no conjunto de escolha
 ```
 
 ## Limitações
@@ -229,7 +229,7 @@ categorias.yaml              categorias, filtros e parâmetros escolhidos na val
   relevante que nenhum modo encontrou nunca é avaliado, e o recall é otimista.
 - Avaliação escrita não é clique nem compra: o sinal de comportamento é mais esparso
   que o de um marketplace real.
-- Só 30% das bonecas têm data de lançamento nos metadados; nas placas, o teste da
+- Só 30% das bonecas têm data de lançamento nos metadados; nas placas, a conferência da
   recomendação tem 228 casos, com intervalos largos.
 
 ## Próximos passos
@@ -239,7 +239,7 @@ categorias.yaml              categorias, filtros e parâmetros escolhidos na val
 - Fine-tuning do EmbeddingGemma 2 com buscas sintéticas geradas a partir dos produtos,
   medido nas mesmas consultas do gabarito.
 - Peso da imagem que depende da consulta (mais imagem em buscas visuais, mais texto em
-  buscas por nome), com mais consultas julgadas pela IA para escolher e validar.
+  buscas por nome), com mais consultas julgadas pela IA para escolher e conferir.
 - Personas sintéticas com preferências conhecidas, para medir se o perfil aprende o gosto.
 - Treinar um modelo próprio com as interações (two-tower).
 

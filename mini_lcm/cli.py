@@ -14,6 +14,7 @@
     mini-lcm julgar "outra busca" --categoria bonecas   # escala: só a IA
     mini-lcm auditar --amostra 30         # confere uma amostra do que só a IA julgou
     mini-lcm avaliar --fonte combinado    # recall@10, MRR e NDCG@10 de cada modo
+    mini-lcm avaliar --pesos 0.7,1 --comparar 0.7,1   # a diferença entre dois pesos é acaso?
 
     mini-lcm sondar "monster high" barbie --categoria bonecas   # teste rápido sem rótulos
 
@@ -21,10 +22,10 @@
     mini-lcm usuarios --categoria bonecas               # quem tem mais histórico
     mini-lcm perfil USUARIO --categoria bonecas         # histórico + recomendações com o motivo
     mini-lcm buscar "boneca" --categoria bonecas --usuario USUARIO   # busca reordenada pelo gosto
-    mini-lcm rotular --lote avaliacao/consultas.yaml --html avaliacao/rotular.html   # página com fotos
+    mini-lcm rotular --lote avaliacao/consultas-escolha.yaml --html avaliacao/rotular-escolha.html   # página com fotos
     mini-lcm importar-notas ~/Downloads/notas-rotulagem.json
     mini-lcm avaliar-recomendacao --categoria bonecas --curva        # avaliação temporal
-    mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90   # escolher parâmetro
+    mini-lcm avaliar-recomendacao --categoria bonecas --escolha --janela-dias 90   # escolher parâmetro
     mini-lcm graficos avaliacao/comparacao-gemma.txt   # NDCG por peso da imagem, por modelo
     mini-lcm custos
     mini-lcm status
@@ -44,7 +45,8 @@ import sys
 from pathlib import Path
 
 from .armazenamento import Armazenamento, ArmazenamentoLocal, ArmazenamentoPostgres
-from .avaliacao import (ConsultaRotulada, avaliar, carregar_gabarito, obter_ou_criar, pool_para_rotular,
+from .avaliacao import (ConsultaRotulada, avaliar, carregar_gabarito, comparacao_pareada, obter_ou_criar,
+                        pool_para_rotular,
                         relatorio_markdown, rotular, salvar_gabarito)
 from .calibracao import (amostra_auditoria, amostra_calibracao, auditar, concordancia, julgar_pendentes,
                          relatorio_concordancia_texto, revisar)
@@ -176,7 +178,7 @@ def cmd_rotular(cfg: Config, arm: Armazenamento, args) -> None:
     gabarito = carregar_gabarito(cfg.gabarito)
     if args.lote or args.html:
         if not (args.lote and args.html):
-            sys.exit("Use --lote e --html juntos: --lote avaliacao/consultas.yaml --html avaliacao/rotular.html")
+            sys.exit("Use --lote e --html juntos: --lote avaliacao/consultas-escolha.yaml --html avaliacao/rotular-escolha.html")
         return _rotular_em_pagina(cfg, arm, embedder, gabarito, args)
     if not args.consulta:
         sys.exit("Passe uma consulta, ou --lote e --html para rotular várias numa página.")
@@ -341,7 +343,11 @@ def cmd_avaliar(cfg: Config, arm: Armazenamento, args) -> None:
 def _grade_de_pesos(arm: Armazenamento, embedder, gabarito: list[ConsultaRotulada], args) -> None:
     """NDCG@k, recall@k e MRR da fusão para cada peso da imagem, separado por categoria."""
     pesos = [float(p) for p in args.pesos.split(",")]
+    comparar = [float(p) for p in args.comparar.split(",")] if getattr(args, "comparar", None) else None
+    if comparar and (len(comparar) != 2 or any(p not in pesos for p in comparar)):
+        sys.exit("--comparar recebe dois pesos que também estejam em --pesos, ex.: --pesos 0,0.7,1 --comparar 0.7,1")
     k = args.k
+    secoes_comparacao = []
     categorias = sorted({c.filtros.get("categoria", "") for c in gabarito})
     linhas = [f"Grade do peso da imagem na fusão · notas: {args.fonte}" + (f" · consultas de {args.lote}" if args.lote else ""),
               "", f"| Categoria | Consultas | Peso da imagem | NDCG@{k} | recall@{k} | MRR |", "|---|---|---|---|---|---|"]
@@ -357,12 +363,43 @@ def _grade_de_pesos(arm: Armazenamento, embedder, gabarito: list[ConsultaRotulad
             resultados.append((peso, r["consultas"], m))
         if not resultados:
             continue
+        if comparar:
+            secoes_comparacao.append(_secao_comparacao(categoria, resultados, comparar, k))
         melhor = max(resultados, key=lambda x: x[2][f"ndcg@{k}"])[0]
         for peso, n, m in resultados:
             marca = " ← maior NDCG" if peso == melhor else ""
             linhas.append(f"| {categoria} | {n} | {peso:g}{marca} | {m[f'ndcg@{k}']:.3f} | {m[f'recall@{k}']:.3f} | "
                           f"{m['mrr']:.3f} |")
-    print("\n".join(linhas))
+    print("\n".join(linhas + [l for s in secoes_comparacao for l in s]))
+
+
+def _secao_comparacao(categoria: str, resultados: list, comparar: list[float], k: int) -> list[str]:
+    """NDCG de cada consulta nos dois pesos e o intervalo da diferença (bootstrap pareado)."""
+    por_peso = {peso: m["por_consulta"] for peso, _, m in resultados}
+    a, b = comparar
+    if a not in por_peso or b not in por_peso:
+        return ["", f"{categoria}: sem consultas com produto relevante para comparar {a:g} e {b:g}."]
+    na = {c["id"]: c[f"ndcg@{k}"] for c in por_peso[a]}
+    nb = {c["id"]: c[f"ndcg@{k}"] for c in por_peso[b]}
+    textos = {c["id"]: c["texto"] for c in por_peso[a]}
+    cmp = comparacao_pareada(na, nb)
+    linhas = ["", f"Comparação pareada · {categoria} · peso {b:g} menos peso {a:g} (NDCG@{k})", "",
+              f"| Consulta | peso {a:g} | peso {b:g} | diferença |", "|---|---|---|---|"]
+    for i in sorted(cmp["por_consulta"], key=lambda i: -cmp["por_consulta"][i]):
+        linhas.append(f"| {textos[i]} | {na[i]:.3f} | {nb[i]:.3f} | {cmp['por_consulta'][i]:+.3f} |")
+    baixo, alto = cmp["ic95"]
+    linhas += ["", f"Diferença média: {cmp['diferenca']:+.3f} · IC 95% (bootstrap pareado): {baixo:+.3f} a {alto:+.3f} · "
+               f"{cmp['consultas']} consultas: {cmp['b_melhor']} melhores com {b:g}, {cmp['a_melhor']} com {a:g}, "
+               f"{cmp['empates']} empates"]
+    if cmp["inclui_zero"]:
+        linhas.append(f"→ O intervalo inclui zero: com estas consultas, {a:g} e {b:g} não se distinguem.")
+    else:
+        lado = b if cmp["diferenca"] > 0 else a
+        linhas.append(f"→ O intervalo não inclui zero: {lado:g} é melhor nestas consultas.")
+    if cmp["consultas"] < 10:
+        linhas.append(f"  Com {cmp['consultas']} consultas o intervalo é grosseiro (poucos sorteios diferentes possíveis); "
+                      "trate como indicação, não como prova.")
+    return linhas
 
 
 def cmd_sondar(cfg: Config, arm: Armazenamento, args) -> None:
@@ -435,11 +472,11 @@ def cmd_avaliar_recomendacao(cfg: Config, arm: Armazenamento, args) -> None:
     catalogo = Catalogo.carregar(arm, embedder, args.categoria)
     metodos = tuple(m.strip() for m in args.metodos.split(","))
     historicos = (1, 2, 3, 5, None) if args.curva else (None,)
-    par = _parametros(cfg, args.categoria)  # valores escolhidos na validação; as opções sobrepõem
+    par = _parametros(cfg, args.categoria)  # valores escolhidos no conjunto de escolha; as opções sobrepõem
     meia_vida = None if args.sem_recencia else (args.meia_vida if args.meia_vida is not None else par.meia_vida)
     rel = avaliar_recomendacao(catalogo, arm.avaliacoes_de(categoria=args.categoria), metodos, k=args.k,
                                min_historico=args.min_historico, historicos=historicos,
-                               meia_vida=meia_vida, validacao=args.validacao, corte=args.corte,
+                               meia_vida=meia_vida, escolha=args.escolha, corte=args.corte,
                                janela_dias=args.janela_dias or par.janela_dias,
                                peso_em_alta=args.peso_em_alta if args.peso_em_alta is not None else par.peso_em_alta,
                                vagas_novos=args.vagas_novos if args.vagas_novos is not None else par.vagas_novos)
@@ -448,7 +485,7 @@ def cmd_avaliar_recomendacao(cfg: Config, arm: Armazenamento, args) -> None:
     if args.salvar:
         Path(args.salvar).parent.mkdir(parents=True, exist_ok=True)
         with open(args.salvar, "a", encoding="utf-8") as f:
-            conjunto = f" · corte por {args.corte}" + (" · validação" if args.validacao else "")
+            conjunto = f" · corte por {args.corte}" + (" · conjunto de escolha" if args.escolha else " · conferência")
             f.write(f"## Recomendação · {args.categoria}{conjunto}\n\n{texto}\n\n")
         print(f"\nAcrescentado a {args.salvar}")
 
@@ -560,7 +597,7 @@ def main(argv: list[str] | None = None) -> None:
     _args_filtros(s)
     s.add_argument("--perfil", help='quem busca e com que intenção, ex.: "colecionadora adulta"')
     s.add_argument("--profundidade", type=int, default=20, help="quantos resultados de cada modo entram no pool")
-    s.add_argument("--lote", help="YAML com várias consultas (ex.: avaliacao/consultas.yaml); exige --html")
+    s.add_argument("--lote", help="YAML com várias consultas (ex.: avaliacao/consultas-escolha.yaml); exige --html")
     s.add_argument("--html", help="grava uma página de rotulagem com fotos em vez de perguntar no terminal")
     s.add_argument("--amostra", type=int,
                    help="só N produtos já julgados pela IA: metade ao acaso (calibração), metade estratificada (auditoria)")
@@ -578,7 +615,7 @@ def main(argv: list[str] | None = None) -> None:
 
     s = sub.add_parser("julgar", help="passo 2 e escala: a IA dá notas de 0 a 3")
     s.add_argument("consulta", nargs="?", help="sem consulta: julga todas as do gabarito")
-    s.add_argument("--lote", help="YAML de consultas (ex.: avaliacao/consultas.yaml): cria e julga todas")
+    s.add_argument("--lote", help="YAML de consultas (ex.: avaliacao/consultas-escolha.yaml): cria e julga todas")
     _args_filtros(s)
     s.add_argument("--perfil")
     s.add_argument("--apenas-rotulados", action="store_true", help="só os pares que você já rotulou (calibração)")
@@ -590,7 +627,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--origem", choices=["rotulagem", "auditoria", "todos"], default="rotulagem")
     s.add_argument("--kappa-minimo", type=float, default=0.6)
     s.add_argument("--min-pares", type=int, default=50)
-    s.add_argument("--lote", help="mede só as consultas deste YAML (ex.: as de validação, que não guiaram a rubrica)")
+    s.add_argument("--lote", help="mede só as consultas deste YAML (ex.: as de conferência, que não guiaram nenhuma escolha)")
     s.set_defaults(func=cmd_concordancia)
 
     s = sub.add_parser("revisar", help="passo 4: você arbitra as discordâncias, vendo a justificativa da IA")
@@ -606,8 +643,10 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--fonte", choices=["humano", "ia", "combinado"], default="combinado")
     s.add_argument("-k", type=int, default=10)
     s.add_argument("--peso-imagem", type=float, help="um peso para todas (padrão: o de cada categoria em categorias.yaml)")
-    s.add_argument("--lote", help="só as consultas deste YAML (ex.: avaliacao/consultas.yaml)")
+    s.add_argument("--lote", help="só as consultas deste YAML (ex.: avaliacao/consultas-escolha.yaml)")
     s.add_argument("--pesos", help='grade de pesos da imagem na fusão, por categoria, ex.: "0,0.1,0.2,0.3,0.5"')
+    s.add_argument("--comparar", help='dois pesos da grade, ex.: "0.7,1": NDCG por consulta e intervalo de 95%% '
+                                      'da diferença (bootstrap pareado), por categoria')
     s.add_argument("--salvar", help="caminho de um .md para guardar o relatório")
     s.set_defaults(func=cmd_avaliar)
 
@@ -644,8 +683,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--vagas-novos", type=int,
                    help="posições do top 10 do hibrido_alta reservadas para produtos novos (padrão: categorias.yaml)")
     s.add_argument("--sem-recencia", action="store_true", help="média simples, sem decaimento (linha de base)")
-    s.add_argument("--validacao", action="store_true",
-                   help="avalia na penúltima avaliação de cada pessoa, para escolher parâmetros sem tocar no teste")
+    s.add_argument("--escolha", "--validacao", dest="escolha", action="store_true",
+                   help="avalia no conjunto de escolha (cortes mais antigos; no corte por usuário, a penúltima "
+                        "avaliação), para escolher parâmetros sem tocar na conferência")
     s.add_argument("--salvar", help="acrescenta o relatório a um .md")
     s.set_defaults(func=cmd_avaliar_recomendacao)
 

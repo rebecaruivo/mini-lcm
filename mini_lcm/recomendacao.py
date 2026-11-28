@@ -107,7 +107,7 @@ class Catalogo:
                 for canal, m in self.matrizes.items()}
 
 
-# Meia-vida padrão (em avaliações), escolhida na validação das bonecas: ver docs/resultados-recomendacao.md.
+# Meia-vida padrão (em avaliações), escolhida no conjunto de escolha das bonecas: ver docs/resultados-recomendacao.md.
 MEIA_VIDA_PADRAO = ParametrosRecomendacao().meia_vida
 
 

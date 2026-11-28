@@ -3,7 +3,7 @@
 A pergunta é: olhando o passado de uma pessoa, o sistema adivinha o que ela fez depois?
 
 Corte por usuário (`corte="usuario"`, "leave-last-out"): para cada usuário com histórico suficiente, as
-avaliações são ordenadas no tempo; a ÚLTIMA vira o teste (o produto escondido) e as
+avaliações são ordenadas no tempo; a ÚLTIMA vira o alvo (o produto escondido) e as
 anteriores, o treino. O sistema recebe só o treino e ordena o catálogo. Se o produto
 escondido aparece entre os 10 primeiros, acertou.
 
@@ -20,7 +20,7 @@ Cuidados contra vazamento:
 
 Corte por data (`corte="data"`, o padrão do comando): o corte por usuário acima tem dois
 problemas, medidos nos dados reais. (1) Vazamento: o treino de OUTRAS pessoas inclui
-avaliações posteriores ao teste de cada um, e popularidade e coocorrência aproveitam esse
+avaliações posteriores ao alvo de cada um, e popularidade e coocorrência aproveitam esse
 futuro. (2) Compras em lote: metade dos alvos das bonecas foi avaliada no mesmo dia da
 avaliação anterior (produtos comprados juntos), casos muito mais fáceis que "a próxima
 compra". No corte por data, há uma data única para todos: o modelo aprende só com o que
@@ -38,7 +38,7 @@ Métricas (k = 10), com um único produto certo por caso:
 - cobertura: fração do catálogo que aparece em algum top k. Popularidade recomenda os
   mesmos 10 produtos para todos (cobertura mínima); a personalização distribui.
 
-Curva de histórico (cold start): o mesmo teste usando só as últimas N avaliações de
+Curva de histórico (cold start): a mesma avaliação usando só as últimas N avaliações de
 treino de cada pessoa (N = 1, 2, 3, 5, todas). Mostra quanto histórico cada método
 precisa para valer a pena, que é o problema do "usuário novo".
 
@@ -71,13 +71,13 @@ from .recomendacao import METODOS, Catalogo, Recomendador
 class Caso:
     usuario: str
     treino: list[Avaliacao]
-    teste: Avaliacao
+    alvo: Avaliacao
 
 
 def dividir(avaliacoes: list[Avaliacao], ids_catalogo: set[str], min_historico: int = 3) -> tuple[list[Caso], list[Avaliacao]]:
-    """-> (casos de teste, interações de treino de todos os usuários).
+    """-> (casos de avaliação, interações de treino de todos os usuários).
 
-    Usuários com menos de `min_historico` produtos distintos não viram caso de teste, mas
+    Usuários com menos de `min_historico` produtos distintos não viram caso de avaliação, mas
     as interações deles entram inteiras no treino (não há nada deles sendo escondido).
     """
     por_usuario: dict[str, list[Avaliacao]] = defaultdict(list)
@@ -87,10 +87,10 @@ def dividir(avaliacoes: list[Avaliacao], ids_catalogo: set[str], min_historico: 
     casos, treino_global = [], []
     for usuario in sorted(por_usuario):
         hist = sorted(por_usuario[usuario], key=lambda a: (a.momento, a.item_id))
-        teste, treino = hist[-1], hist[:-1]
+        alvo, treino = hist[-1], hist[:-1]
         distintos = {a.item_id for a in hist}
-        if len(distintos) >= min_historico and teste.item_id not in {a.item_id for a in treino}:
-            casos.append(Caso(usuario, treino, teste))
+        if len(distintos) >= min_historico and alvo.item_id not in {a.item_id for a in treino}:
+            casos.append(Caso(usuario, treino, alvo))
             treino_global.extend(treino)
         else:
             treino_global.extend(hist)
@@ -98,12 +98,12 @@ def dividir(avaliacoes: list[Avaliacao], ids_catalogo: set[str], min_historico: 
 
 
 def sem_a_ultima(avaliacoes: list[Avaliacao], ids_catalogo: set[str]) -> list[Avaliacao]:
-    """Tira a última avaliação de cada pessoa: o que sobra serve de base para a VALIDAÇÃO.
+    """Tira a última avaliação de cada pessoa: o que sobra serve de base para o CONJUNTO DE ESCOLHA.
 
-    Escolher um parâmetro (como a meia-vida da recência) olhando o resultado no teste é
+    Escolher um parâmetro (como a meia-vida da recência) olhando o resultado da conferência é
     ajustar o modelo à prova: o número reportado sai otimista. O caminho correto é
-    esconder o teste, repetir a mesma divisão no que sobrou (a penúltima avaliação vira o
-    alvo) e escolher o parâmetro aí. O teste só é usado uma vez, com o valor escolhido.
+    esconder a conferência, repetir a mesma divisão no que sobrou (a penúltima avaliação vira o
+    alvo) e escolher o parâmetro aí. A conferência só é usada uma vez, com o valor escolhido.
     """
     por_usuario: dict[str, list[Avaliacao]] = defaultdict(list)
     for a in avaliacoes:
@@ -127,7 +127,7 @@ def _posicao(recomendador: Recomendador, metodo: str, caso: Caso, historico: lis
     idx = recomendador.catalogo.indice
     for a in caso.treino:  # o que a pessoa já tem não concorre, mesmo quando o histórico usado é parcial
         pontos[idx[a.item_id]] = -np.inf
-    alvo = pontos[idx[caso.teste.item_id]]
+    alvo = pontos[idx[caso.alvo.item_id]]
     posicao = int(np.sum(pontos > alvo)) + 1  # quantos ficaram estritamente na frente, + 1
     top = np.argsort(-pontos, kind="stable")[:10]
     return posicao, top.tolist()
@@ -183,9 +183,9 @@ def _proximo_semestre(corte: str) -> str:
 
 def dividir_por_data(avaliacoes: list[Avaliacao], ids_catalogo: set[str], corte: str,
                      fim: str, min_historico: int = 3) -> tuple[list[Caso], list[Avaliacao]]:
-    """Um corte global: -> (casos de teste, interações de treino).
+    """Um corte global: -> (casos de avaliação, interações de treino).
 
-    Treino: tudo antes de `corte`, de todas as pessoas. Caso de teste: cada pessoa com pelo
+    Treino: tudo antes de `corte`, de todas as pessoas. Caso de avaliação: cada pessoa com pelo
     menos `min_historico` produtos distintos antes do corte e alguma avaliação entre
     `corte` e `fim`; o alvo é a PRIMEIRA delas (a próxima compra depois do corte). Nada
     posterior ao corte entra no treino: nem a popularidade nem a coocorrência veem o futuro.
@@ -208,7 +208,7 @@ def dividir_por_data(avaliacoes: list[Avaliacao], ids_catalogo: set[str], corte:
     return casos, treino
 
 
-def _conjuntos_por_data(catalogo: Catalogo, avaliacoes: list[Avaliacao], min_historico: int, validacao: bool,
+def _conjuntos_por_data(catalogo: Catalogo, avaliacoes: list[Avaliacao], min_historico: int, escolha: bool,
                         **parametros) -> tuple[list[tuple[Recomendador, list[Caso]]], dict]:
     """Um recomendador por corte, ajustado só com o passado daquele corte.
 
@@ -221,10 +221,11 @@ def _conjuntos_por_data(catalogo: Catalogo, avaliacoes: list[Avaliacao], min_his
     concorre (é um erro para todos os métodos se for o alvo).
 
     Os cortes são divididos no tempo pela quantidade de casos: os primeiros, até somar
-    metade dos casos, formam a VALIDAÇÃO (onde os parâmetros são escolhidos); os demais,
-    o TESTE. Dividir pela quantidade de cortes daria uma validação minúscula, porque os
-    primeiros anos do dataset têm poucas avaliações. Os alvos da validação são todos
-    anteriores ao primeiro corte do teste.
+    metade dos casos, formam o CONJUNTO DE ESCOLHA (onde os parâmetros são escolhidos); os demais,
+    o DE CONFERÊNCIA (validação e teste, nos termos usuais). Dividir pela quantidade de cortes
+    daria um conjunto de escolha minúsculo, porque os primeiros anos do dataset têm poucas
+    avaliações. Os alvos do conjunto de escolha são todos anteriores ao primeiro corte da
+    conferência.
     """
     ids = set(catalogo.ids)
     primeira: dict[str, str] = {}
@@ -242,7 +243,7 @@ def _conjuntos_por_data(catalogo: Catalogo, avaliacoes: list[Avaliacao], min_his
         if acumulado >= total / 2:
             meio = i + 1
             break
-    escolhidos = por_corte[:meio] if validacao else por_corte[meio:]
+    escolhidos = por_corte[:meio] if escolha else por_corte[meio:]
     lancamentos = catalogo.lancamentos or [None] * len(catalogo.ids)
     conjuntos = []
     for corte, casos, treino in escolhidos:
@@ -265,7 +266,7 @@ def avaliar_recomendacao(
     min_historico: int = 3,
     historicos: tuple[int | None, ...] = (None,),
     meia_vida: float | None = None,
-    validacao: bool = False,
+    escolha: bool = False,
     corte: str = "usuario",
     janela_dias: int = 365,
     peso_em_alta: float = 1.0,
@@ -273,7 +274,7 @@ def avaliar_recomendacao(
 ) -> dict:
     """historicos: quantas avaliações de treino usar por pessoa (None = todas).
     meia_vida, janela_dias, peso_em_alta: parâmetros do Recomendador.
-    validacao: avalia no conjunto de validação, sem tocar no teste.
+    escolha: avalia no conjunto de escolha, sem tocar no de conferência.
     corte: "usuario" (deixa a última de cada pessoa de fora) ou "data" (cortes semestrais globais)."""
     parametros = {"meia_vida": meia_vida, "janela_dias": janela_dias, "peso_em_alta": peso_em_alta,
                   "vagas_novos": vagas_novos}
@@ -281,13 +282,13 @@ def avaliar_recomendacao(
     if corte == "usuario":
         omitidos = [m for m in metodos if m in METODOS_NO_TEMPO]
         metodos = tuple(m for m in metodos if m not in METODOS_NO_TEMPO)
-        if validacao:
+        if escolha:
             avaliacoes = sem_a_ultima(avaliacoes, set(catalogo.ids))
         casos, treino_global = dividir(avaliacoes, set(catalogo.ids), min_historico)
         conjuntos = [(Recomendador(catalogo, **parametros).ajustar(treino_global), casos, None)] if casos else []
         info = {"cortes": 1, "periodo": "", "interacoes_treino": len(treino_global)}
     elif corte == "data":
-        conjuntos, info = _conjuntos_por_data(catalogo, avaliacoes, min_historico, validacao, **parametros)
+        conjuntos, info = _conjuntos_por_data(catalogo, avaliacoes, min_historico, escolha, **parametros)
     else:
         raise ValueError(f"corte deve ser 'usuario' ou 'data', não {corte!r}")
     todos = [c for _, cs, _ in conjuntos for c in cs]
@@ -296,13 +297,13 @@ def avaliar_recomendacao(
                          "A importação foi feita com selecao: usuarios?")
     grupos = [c.usuario for c in todos]
     # alvo "novo": produto sem nenhuma interação no treino daquele corte (só o conteúdo pode acertá-lo)
-    novo = np.array([rec.popularidade[rec.catalogo.indice[c.teste.item_id]] == 0
+    novo = np.array([rec.popularidade[rec.catalogo.indice[c.alvo.item_id]] == 0
                      for rec, cs, _ in conjuntos for c in cs])
     relatorio: dict = {"k": k, "usuarios_testados": len(set(grupos)), "casos": len(todos), "itens": len(catalogo.ids),
                        "interacoes_treino": info["interacoes_treino"],
                        "historico_medio": round(sum(len(c.treino) for c in todos) / len(todos), 1),
                        "meia_vida": meia_vida, "janela_dias": janela_dias, "peso_em_alta": peso_em_alta,
-                       "vagas_novos": vagas_novos, "conjunto": "validacao" if validacao else "teste", "corte": corte,
+                       "vagas_novos": vagas_novos, "conjunto": "escolha" if escolha else "conferencia", "corte": corte,
                        "cortes": info["cortes"], "periodo": info["periodo"], "metodos_omitidos": omitidos,
                        "fracao_alvos_novos": round(float(novo.mean()), 4),
                        "resultados": {}}
@@ -359,7 +360,7 @@ def relatorio_recomendacao_markdown(rel: dict, categoria: str, modelo: str) -> s
     else:
         corte = "por usuário (última avaliação de cada pessoa)"
     linhas = [f"Categoria: {categoria} · vetores: {modelo}",
-              f"Corte: {corte} · conjunto: {rel.get('conjunto', 'teste')}",
+              f"Corte: {corte} · conjunto: {rel.get('conjunto', 'conferencia')}",
               f"Casos: {rel.get('casos', rel['usuarios_testados'])} ({rel['usuarios_testados']} usuários) · "
               f"produtos: {rel['itens']} · histórico médio: {rel['historico_medio']}",
               "Parâmetros: recência "

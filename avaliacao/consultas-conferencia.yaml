@@ -1,13 +1,17 @@
-# Consultas de VALIDAÇÃO do juiz.
+# CONJUNTO DE CONFERÊNCIA: consultas que não guiaram nenhuma escolha.
 #
-# A rubrica foi ajustada olhando as discordâncias das consultas de `consultas.yaml`, então
+# Servem para conferir, uma vez, o que foi escolhido no conjunto de escolha
+# (`consultas-escolha.yaml`): o peso da imagem na busca e a rubrica do juiz. Nos termos
+# usuais de aprendizado de máquina, este é o conjunto de teste.
+#
+# A rubrica foi ajustada olhando as discordâncias das consultas de `consultas-escolha.yaml`, então
 # a concordância medida nelas sai otimista (a rubrica foi escrita para elas). Estas
 # consultas ficaram de fora desse ajuste: a concordância medida aqui diz se o juiz
 # generaliza para buscas que não guiaram a rubrica.
 #
-#   mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
-#   mini-lcm rotular --lote avaliacao/consultas-validacao.yaml --html avaliacao/rotular-validacao.html --amostra 60
-#   mini-lcm concordancia --lote avaliacao/consultas-validacao.yaml --min-pares 25
+#   mini-lcm julgar --lote avaliacao/consultas-conferencia.yaml --profundidade 10
+#   mini-lcm rotular --lote avaliacao/consultas-conferencia.yaml --html avaliacao/rotular-conferencia.html --amostra 60
+#   mini-lcm concordancia --lote avaliacao/consultas-conferencia.yaml --min-pares 25
 
 consultas:
   - texto: boneca vampira com roupa preta

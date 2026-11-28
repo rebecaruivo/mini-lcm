@@ -102,15 +102,15 @@ mini-lcm perfil USUARIO --categoria bonecas --metodo coocorrencia
 mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO_1
 mini-lcm buscar "boneca colecionável" --categoria bonecas --usuario USUARIO_2
 
-# escolha de parâmetros na validação (cortes mais antigos; o teste não é usado)
-for j in 30 90 180 365 730; do mini-lcm avaliar-recomendacao --categoria bonecas --validacao --metodos em_alta --janela-dias $j; done
+# escolha de parâmetros no conjunto de escolha (cortes mais antigos; a conferência não é usada)
+for j in 30 90 180 365 730; do mini-lcm avaliar-recomendacao --categoria bonecas --escolha --metodos em_alta --janela-dias $j; done
 for mv in 1 2 3; do for p in 0.25 0.5 1 2 4; do
-  mini-lcm avaliar-recomendacao --categoria bonecas --validacao --metodos hibrido_alta --meia-vida $mv --peso-em-alta $p
+  mini-lcm avaliar-recomendacao --categoria bonecas --escolha --metodos hibrido_alta --meia-vida $mv --peso-em-alta $p
 done; done
-for v in 0 1 2 3 4 5; do mini-lcm avaliar-recomendacao --categoria bonecas --validacao --metodos hibrido_alta --vagas-novos $v; done
+for v in 0 1 2 3 4 5; do mini-lcm avaliar-recomendacao --categoria bonecas --escolha --metodos hibrido_alta --vagas-novos $v; done
 # os valores escolhidos vão para categorias.yaml (bloco recomendacao)
 
-# teste, uma vez, com os parâmetros de categorias.yaml (cortes semestrais por data)
+# conferência, uma vez, com os parâmetros de categorias.yaml (cortes semestrais por data)
 mini-lcm avaliar-recomendacao --categoria bonecas --curva --salvar docs/resultados-recomendacao.md
 mini-lcm avaliar-recomendacao --categoria placas-de-video --curva --salvar docs/resultados-recomendacao.md
 
@@ -123,14 +123,14 @@ curva e 1 ou 2 exemplos de `perfil` que mostrem a personalização funcionando (
 Commit: `git add -A && git commit -m "Resultados da fase 2: avaliação temporal da recomendação" && git push`
 
 ## 7. A IA julga todos os produtos das consultas
-As consultas ficam em `avaliacao/consultas.yaml`: 12 (6 de cada categoria), de quatro
+As consultas ficam em `avaliacao/consultas-escolha.yaml`: 12 (6 de cada categoria), de quatro
 tipos (nome, visual, funcional, intenção com filtro de preço), cada uma com o perfil de
 quem busca. Use as variantes de embedding escolhidas (`.env` com `EMBEDDER=clip+e5` e
 `TEXTO_ITEM=titulo`) e a `GEMINI_API_KEY` preenchida.
 
 ```bash
 # cria as consultas no gabarito e julga o pool de cada uma (os 10 primeiros de cada modo)
-mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
+mini-lcm julgar --lote avaliacao/consultas-escolha.yaml --profundidade 10
 mini-lcm custos
 ```
 O julgamento é salvo a cada 20 produtos; se for interrompido, rodar de novo continua de
@@ -138,13 +138,13 @@ onde parou e não paga de novo pelo que já foi julgado.
 
 ## 8. Você rotula uma amostra de 100 (sem ver a nota da IA)
 ```bash
-mini-lcm rotular --lote avaliacao/consultas.yaml --html avaliacao/rotular.html --amostra 100
+mini-lcm rotular --lote avaliacao/consultas-escolha.yaml --html avaliacao/rotular-escolha.html --amostra 100
 ```
 A página mostra 100 produtos, agrupados por consulta: 50 sorteados ao acaso (o conjunto
 de **calibração**) e 50 sorteados com a mesma quantidade de cada nota da IA (a
 **auditoria**). Os dois grupos aparecem misturados, e a nota da IA não aparece.
 
-Abra `avaliacao/rotular.html` no navegador, leia a rubrica no topo e dê as notas com o
+Abra `avaliacao/rotular-escolha.html` no navegador, leia a rubrica no topo e dê as notas com o
 teclado (0 a 3 dá a nota e pula para o próximo; N vai ao próximo sem nota). O progresso
 fica salvo no navegador. Ao terminar, clique em **Baixar notas** e importe:
 ```bash
@@ -160,23 +160,23 @@ mini-lcm concordancia --origem auditoria --min-pares 20     # auditoria: onde el
 - **NÃO APROVADO:** olhe a matriz e o viés. A IA é generosa demais? Confunde
   1 com 2? Faça o passo 10 e, se o problema for de critério, ajuste
   `avaliacao/rubrica.md` (ex.: deixe mais claro o que é "relacionado") e
-  rode `mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10` de novo.
+  rode `mini-lcm julgar --lote avaliacao/consultas-escolha.yaml --profundidade 10` de novo.
   Mudar a rubrica faz a IA rejulgar sozinha; as suas notas continuam valendo.
 
 Depois de ajustar a rubrica, a concordância nas mesmas consultas fica otimista (a
-rubrica foi escrita olhando os desacordos delas). Valide em consultas que não guiaram o
-ajuste:
+rubrica foi escrita olhando os desacordos delas). Confira no conjunto de conferência,
+cujas consultas não guiaram o ajuste:
 ```bash
-mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
-mini-lcm rotular --lote avaliacao/consultas-validacao.yaml --html avaliacao/rotular-validacao.html --amostra 60
+mini-lcm julgar --lote avaliacao/consultas-conferencia.yaml --profundidade 10
+mini-lcm rotular --lote avaliacao/consultas-conferencia.yaml --html avaliacao/rotular-conferencia.html --amostra 60
 mini-lcm importar-notas /mnt/c/Users/<usuario>/Downloads/notas-rotulagem.json
-mini-lcm concordancia --lote avaliacao/consultas-validacao.yaml --min-pares 25
+mini-lcm concordancia --lote avaliacao/consultas-conferencia.yaml --min-pares 25
 ```
 Se o intervalo do kappa ficar largo demais para decidir (poucos pares), aumente o
 conjunto sorteado ao acaso, sem auditoria, em vez de mudar o critério:
 ```bash
-mini-lcm rotular --lote avaliacao/consultas-validacao.yaml --html avaliacao/rotular-validacao.html --amostra 70 --sem-auditoria
-mini-lcm concordancia --lote avaliacao/consultas-validacao.yaml
+mini-lcm rotular --lote avaliacao/consultas-conferencia.yaml --html avaliacao/rotular-conferencia.html --amostra 70 --sem-auditoria
+mini-lcm concordancia --lote avaliacao/consultas-conferencia.yaml
 ```
 
 Sem `--amostra`, `rotular --lote` gera uma página com o pool inteiro de cada consulta
@@ -193,10 +193,10 @@ Depois rode `mini-lcm concordancia` de novo.
 
 ## 10b. Escolher o peso da imagem por categoria
 ```bash
-# escolha: o peso de maior NDCG@10 nas consultas originais
-mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5
-# conferência: as consultas de validação (não entram na escolha)
-mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5
+# conjunto de escolha: o peso de maior NDCG@10
+mini-lcm avaliar --lote avaliacao/consultas-escolha.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5
+# conjunto de conferência: confere uma vez (não entra na escolha)
+mini-lcm avaliar --lote avaliacao/consultas-conferencia.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5
 ```
 O peso escolhido vai para `categorias.yaml` (`peso_imagem` de cada categoria) e passa a
 ser o padrão de `buscar` e `avaliar`.
@@ -211,10 +211,10 @@ python scripts/testar_gemma.py                      # carrega, testa 6 produtos,
 EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm indexar --canal texto        # ~1,4 h
 EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm sondar "monster high" barbie troll "baby doll" "american girl" --categoria bonecas
 EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm sondar "rtx 4060" "rx 7600" "gtx 1650" asus msi --categoria placas-de-video
-EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
-EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
-EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.5
-EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.5
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-escolha.yaml --profundidade 10
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-conferencia.yaml --profundidade 10
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-escolha.yaml --pesos 0,0.5
+EMBEDDER=clip+gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-conferencia.yaml --pesos 0,0.5
 ```
 O `julgar` só chama a IA para os produtos que o Gemma trouxer ao topo e que ainda não
 têm nota.
@@ -229,10 +229,10 @@ essa parte numa GPU do Google Colab:
 
 Depois, compare o Gemma sozinho (texto e foto) com o CLIP + Gemma:
 ```bash
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas.yaml --profundidade 10
-EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-validacao.yaml --profundidade 10
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-escolha.yaml --profundidade 10
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm julgar --lote avaliacao/consultas-conferencia.yaml --profundidade 10
 # os dois sistemas contra o MESMO gabarito (o julgar acima acrescenta produtos e muda a régua)
-for e in gemma2 clip+gemma2; do for l in consultas consultas-validacao; do
+for e in gemma2 clip+gemma2; do for l in consultas-escolha consultas-conferencia; do
   echo "### EMBEDDER=$e · consultas=$l"
   EMBEDDER=$e TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/$l.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,1 --fonte ia
 done; done 2>&1 | tee avaliacao/comparacao-gemma.txt
@@ -246,6 +246,14 @@ pip install -e ".[graficos]"                                      # uma vez, par
 mini-lcm graficos avaliacao/comparacao-gemma.txt --png docs/graficos
 ```
 Sem arquivo, direto de um comando: `... | mini-lcm graficos -`.
+
+Dois pesos se distinguem, ou a diferença pode ser acaso das consultas? NDCG de cada consulta
+nos dois pesos e intervalo de 95% da diferença (bootstrap pareado), por categoria:
+```bash
+EMBEDDER=gemma2 TEXTO_ITEM=titulo mini-lcm avaliar --lote avaliacao/consultas-escolha.yaml --fonte ia \
+  --pesos 0.7,1 --comparar 0.7,1
+```
+Intervalo que inclui zero: com estas consultas, os dois pesos empatam.
 
 ## 10d. Levar os dados para o Postgres (Supabase)
 Tudo roda com arquivos locais em `dados/`. Para usar o Postgres com pgvector sem

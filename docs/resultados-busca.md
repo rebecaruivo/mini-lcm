@@ -1,9 +1,13 @@
 # Resultados da busca
 
-Avaliação com gabarito: 18 consultas (`avaliacao/consultas.yaml` e
-`avaliacao/consultas-validacao.yaml`), 9 de cada categoria, de quatro tipos (nome,
+Avaliação com gabarito: 18 consultas (`avaliacao/consultas-escolha.yaml` e
+`avaliacao/consultas-conferencia.yaml`), 9 de cada categoria, de quatro tipos (nome,
 visual, funcional, intenção com filtro de preço). Notas de 0 a 3 pela rubrica
 (`avaliacao/rubrica.md`): relevante = nota 2 ou 3.
+
+As 12 consultas do **conjunto de escolha** servem para escolher configurações (peso da
+imagem, modelo, rubrica do juiz); as 6 do **conjunto de conferência** conferem a escolha uma
+vez, sem influenciá-la. Nos termos usuais de aprendizado de máquina, validação e teste.
 
 As seções até "Peso da imagem por categoria" usam o multilingual-e5 no canal de texto
 (só título) e o CLIP na imagem. A última seção compara o e5 com o EmbeddingGemma 2, que
@@ -22,13 +26,13 @@ Histórico completo na decisão "Rubrica v2 do juiz" em `decisoes.md`.
 
 | Conjunto | Pares | Acordo exato | Diferença ≤ 1 | Kappa ponderado (IC 95%) | Viés (IA − humano) |
 |---|---|---|---|---|---|
-| Rubrica v1, consultas originais | 100 | 50% | — | 0,67 (0,56 a 0,77) | −0,48 |
-| Rubrica v2, consultas originais (otimista) | 100 | 66% | 94% | 0,76 (0,64 a 0,85) | −0,29 |
+| Rubrica v1, consultas de escolha | 100 | 50% | — | 0,67 (0,56 a 0,77) | −0,48 |
+| Rubrica v2, consultas de escolha (otimista) | 100 | 66% | 94% | 0,76 (0,64 a 0,85) | −0,29 |
 | Rubrica v2, auditoria estratificada | 60 | 68% | — | 0,83 (0,73 a 0,91) | −0,22 |
-| Rubrica v2, consultas novas (validação) | 100 | 74% | 95% | 0,64 (0,46 a 0,78) | −0,01 |
+| Rubrica v2, consultas novas (conferência) | 100 | 74% | 95% | 0,64 (0,46 a 0,78) | −0,01 |
 
 **O critério definido antes (limite inferior do kappa ≥ 0,6) não foi atingido na
-validação.** Nas consultas novas, o acordo é o maior de todos (74% de notas iguais,
+conferência.** Nas consultas novas, o acordo é o maior de todos (74% de notas iguais,
 95% com diferença de até 1 ponto, viés nulo), mas 68% dos pares são nota 1. Com quase
 tudo numa nota só, o acordo esperado por acaso é alto, e os poucos desacordos nas notas
 raras derrubam o kappa (o "paradoxo do kappa"). A pessoa que rotulou também relatou
@@ -38,8 +42,8 @@ de 1 mesmo entre pessoas.
 **Teste de decisão:** o juiz serve para comparar modos de busca. A pergunta que importa
 é se a comparação muda quando as notas humanas substituem as da IA onde existem
 (cerca de 40% dos pares). Não muda: a ordem entre os modos é a mesma nas três métricas
-(tabela abaixo). O juiz é usado com duas ressalvas: o kappa da validação ficou abaixo do
-critério, e a IA quase nunca dá nota 2 (2% das notas na validação, contra 14% das
+(tabela abaixo). O juiz é usado com duas ressalvas: o kappa da conferência ficou abaixo do
+critério, e a IA quase nunca dá nota 2 (2% das notas na conferência, contra 14% das
 humanas), empurrando os casos médios para 1 ou 3.
 
 ## Resultado por modo
@@ -93,17 +97,17 @@ diferenças por consulta são indicativas, não conclusivas.
 
 ## Peso da imagem por categoria
 
-Regra fixada antes de ver os números: o peso de maior NDCG@10 nas 12 consultas originais
-(`avaliacao/consultas.yaml`); as 6 de validação só conferem.
+Regra fixada antes de ver os números: o peso de maior NDCG@10 nas 12 consultas de escolha
+(`avaliacao/consultas-escolha.yaml`); as 6 de conferência só conferem.
 
 ```bash
-mini-lcm avaliar --lote avaliacao/consultas.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1
-mini-lcm avaliar --lote avaliacao/consultas-validacao.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1
+mini-lcm avaliar --lote avaliacao/consultas-escolha.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1
+mini-lcm avaliar --lote avaliacao/consultas-conferencia.yaml --pesos 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1
 ```
 
 NDCG@10 da fusão (notas combinadas; 0 = só texto, 1 = só imagem):
 
-| Peso | bonecas, originais (6) | bonecas, validação (3) | placas, originais (6) | placas, validação (3) |
+| Peso | bonecas, escolha (6) | bonecas, conferência (3) | placas, escolha (6) | placas, conferência (3) |
 |---|---|---|---|---|
 | 0 | 0,643 | 0,430 | **0,863** | 0,709 |
 | 0,1 | 0,656 | 0,430 | 0,837 | 0,716 |
@@ -118,13 +122,13 @@ NDCG@10 da fusão (notas combinadas; 0 = só texto, 1 = só imagem):
 | 1 | 0,622 | 0,583 | 0,116 | 0,279 |
 
 **Escolhidos para o e5: 0,5 nas bonecas e 0 nas placas** (depois substituídos pelos do
-EmbeddingGemma 2, 0,4 e 0,2; última seção). Na validação, os
+EmbeddingGemma 2, 0,4 e 0,2; última seção). Na conferência, os
 picos ficam vizinhos da escolha (0,6 nas bonecas, 0,4 nas placas), mas com 3 consultas
 por categoria essas diferenças cabem no ruído.
 
 Comparação das três estratégias (média das duas categorias):
 
-| Estratégia | NDCG@10, originais | NDCG@10, validação |
+| Estratégia | NDCG@10, escolha | NDCG@10, conferência |
 |---|---|---|
 | só texto | 0,753 | 0,570 |
 | peso 0,5 para todas (antes) | 0,616 | 0,650 |
@@ -151,7 +155,7 @@ com o CLIP nas fotos (o canal de imagem do Gemma leva cerca de 20 s por foto sem
 julgados pela IA (223 julgamentos).
 
 **A primeira comparação foi injusta.** Com as notas combinadas, o Gemma parecia perder
-(média de 0,66 contra 0,79 nas consultas originais). Mas os produtos que o e5 traz ao
+(média de 0,66 contra 0,79 nas consultas de escolha). Mas os produtos que o e5 traz ao
 topo têm muitas notas humanas, mais generosas nos casos médios, e os novos que o Gemma
 trouxe só têm notas da IA, que quase nunca dá nota 2. Comparar os dois com notas de
 fontes diferentes favorecia o e5. A comparação justa usa só as notas da IA, para os dois,
@@ -161,21 +165,21 @@ NDCG@10, só notas da IA:
 
 | | e5 | EmbeddingGemma 2 |
 |---|---|---|
-| bonecas, originais, peso 0,5 | 0,628 | 0,673 |
-| placas, originais, peso 0 | 0,675 | 0,641 |
-| **média, originais (pesos escolhidos)** | **0,652** | **0,657** |
-| média, validação (pesos escolhidos) | 0,490 | 0,524 |
-| bonecas, originais, só texto | 0,544 | 0,664 |
-| bonecas, validação, só texto | 0,289 | 0,504 |
-| placas, validação, só texto | 0,571 | 0,651 |
+| bonecas, escolha, peso 0,5 | 0,628 | 0,673 |
+| placas, escolha, peso 0 | 0,675 | 0,641 |
+| **média, escolha (pesos escolhidos)** | **0,652** | **0,657** |
+| média, conferência (pesos escolhidos) | 0,490 | 0,524 |
+| bonecas, escolha, só texto | 0,544 | 0,664 |
+| bonecas, conferência, só texto | 0,289 | 0,504 |
+| placas, conferência, só texto | 0,571 | 0,651 |
 
-Na validação, só 2 consultas por categoria têm algum produto relevante pelas notas da IA:
+Na conferência, só 2 consultas por categoria têm algum produto relevante pelas notas da IA:
 as diferenças ali não são conclusivas.
 
 **Ainda injusta: os pesos eram do e5.** O peso da imagem (0,5 e 0) tinha sido escolhido
 com a grade inteira para o e5; o Gemma recebeu os mesmos valores. A comparação final dá a
-cada modelo o melhor peso dele nas consultas originais (regra fixada antes: se o Gemma
-ganhar nas originais e não perder na validação, vira o padrão).
+cada modelo o melhor peso dele nas consultas de escolha (regra fixada antes: se o Gemma
+ganhar na escolha e não perder na conferência, vira o padrão).
 
 NDCG@10, só notas da IA, grade de 0 a 0,7:
 
@@ -190,26 +194,26 @@ NDCG@10, só notas da IA, grade de 0 a 0,7:
 | 0,6 | 0,589 | 0,608 | 0,181 | 0,201 |
 | 0,7 | 0,564 | 0,558 | 0,136 | 0,142 |
 
-(consultas originais)
+(consultas de escolha)
 
 | Com o melhor peso de cada um | e5 (0,5 e 0) | Gemma (0,4 e 0,2) |
 |---|---|---|
-| bonecas, originais | 0,628 | **0,715** |
-| placas, originais | **0,675** | 0,644 |
-| **média, originais** | 0,652 | **0,680** |
-| bonecas, validação | 0,408 | **0,518** |
-| placas, validação | 0,571 | **0,641** |
-| **média, validação** | 0,490 | **0,580** |
+| bonecas, escolha | 0,628 | **0,715** |
+| placas, escolha | **0,675** | 0,644 |
+| **média, escolha** | 0,652 | **0,680** |
+| bonecas, conferência | 0,408 | **0,518** |
+| placas, conferência | 0,571 | **0,641** |
+| **média, conferência** | 0,490 | **0,580** |
 
 **Leitura:**
-- Com o peso próprio, o Gemma ganha nas originais (+0,028) e na validação (+0,090). Pela
+- Com o peso próprio, o Gemma ganha na escolha (+0,028) e na conferência (+0,090). Pela
   regra fixada, passa a ser o padrão (`EMBEDDER=clip+gemma2`, pesos 0,4 e 0,2).
 - A vantagem está nas bonecas, nos dois conjuntos (+0,09 e +0,11). Nas placas, os dois
-  ficam próximos (o e5 à frente nas originais, o Gemma na validação).
+  ficam próximos (o e5 à frente na escolha, o Gemma na conferência).
 - O Gemma pede menos foto nas bonecas (0,4 contra 0,5): o texto dele já entende parte do
   que só a imagem trazia. Nas placas, um pouco de foto (0,2) praticamente não muda o Gemma (0,644 contra 0,641
-  sem foto; na validação, o melhor foi 0), enquanto atrapalhava o e5.
-- São 6 consultas por categoria nas originais e 2 na validação: a direção é a mesma nos
+  sem foto; na conferência, o melhor foi 0), enquanto atrapalhava o e5.
+- São 6 consultas por categoria na escolha e 2 na conferência: a direção é a mesma nos
   dois conjuntos, mas não há consultas suficientes para um intervalo de confiança firme.
 - Custo: o Gemma leva 358 ms por produto na indexação (uma vez, 1,4 h para o catálogo) e
   cerca de 0,3 s a mais por consulta. Aceitável aqui; num catálogo de milhões de anúncios

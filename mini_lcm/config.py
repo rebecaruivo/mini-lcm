@@ -31,7 +31,7 @@ class FiltroCategoria:
 
 @dataclass
 class ParametrosRecomendacao:
-    """Parâmetros escolhidos na validação de cada categoria (categorias.yaml).
+    """Parâmetros escolhidos no conjunto de escolha de cada categoria (categorias.yaml).
 
     meia_vida: decaimento pela recência no perfil e na coocorrência, em avaliações (None = desligado).
     janela_dias: tamanho da janela do método em_alta.

@@ -23,11 +23,11 @@
 #                     deixa de valer). Necessário para medir o acerto em produtos novos sem
 #                     vazamento: ver amazon.importar_por_usuarios.
 # peso_imagem:        peso da imagem na fusão da busca (0 = só texto, 1 = só imagem), escolhido
-#                     nas consultas de avaliacao/consultas.yaml PARA O EMBEDDER PADRÃO
+#                     nas consultas de avaliacao/consultas-escolha.yaml PARA O EMBEDDER PADRÃO
 #                     (clip+gemma2). Com clip+e5, os melhores foram 0,5 e 0 (ver
 #                     docs/resultados-busca.md)
-# recomendacao:       parâmetros escolhidos na VALIDAÇÃO de cada categoria (cortes por data
-#                     mais antigos; o teste não foi usado). Ver docs/resultados-recomendacao.md.
+# recomendacao:       parâmetros escolhidos no CONJUNTO DE ESCOLHA de cada categoria (cortes por
+#                     data mais antigos; a conferência não foi usada). Ver docs/resultados-recomendacao.md.
 #   meia_vida:          decaimento pela recência no perfil e na coocorrência, em avaliações
 #   janela_dias:        janela do método em_alta ("o que está em alta")
 #   peso_em_alta:       peso da lista em_alta no hibrido_alta (conteúdo e coocorrência pesam 1)

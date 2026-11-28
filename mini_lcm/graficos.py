@@ -27,7 +27,7 @@ PERGUNTAS = """Perguntas para ler os gráficos (responda antes de olhar os núme
   1. As linhas começam no mesmo ponto no peso 0? O que é igual entre os sistemas para isso acontecer?
   2. Em cada gráfico, a linha sobe, cai ou fica parada quando a foto ganha peso? Onde está o máximo?
   3. O que isso diz sobre a foto de cada modelo nesta categoria? O que nos produtos explica isso?
-  4. Escolha o peso de cada modelo SÓ nas consultas originais; depois leia a validação nesse mesmo
+  4. Escolha o peso de cada modelo SÓ no conjunto de escolha; depois leia a conferência nesse mesmo
      peso, sem procurar o melhor ponto. Por que essa ordem importa?
   5. Com esses pesos, quem ganha em cada categoria, e por quanto? A diferença é maior que o ruído
      de poucas consultas?
@@ -38,7 +38,7 @@ PERGUNTAS = """Perguntas para ler os gráficos (responda antes de olhar os núme
 @dataclass
 class Bloco:
     modelo: str
-    consultas: str  # "originais", "validação" ou o nome do arquivo
+    consultas: str  # "escolha", "conferência" ou o nome do arquivo
     fonte: str  # notas: ia, humano, combinado ("?" se o bloco não disse)
     linhas: list[tuple[str, int, float, float, float, float]] = field(default_factory=list)
     # (categoria, n_consultas, peso, ndcg, recall, mrr)
@@ -46,10 +46,10 @@ class Bloco:
 
 def _nome_consultas(texto: str) -> str:
     base = Path(texto.strip().split("=")[-1].strip()).name  # aceita "consultas" e "consultas=consultas"
-    if base.startswith("consultas-validacao"):
-        return "validação"
-    if base.startswith("consultas"):
-        return "originais"
+    if base.startswith(("consultas-conferencia", "consultas-validacao")):  # aceita o nome antigo
+        return "conferência"
+    if base.startswith("consultas"):  # consultas-escolha (ou o nome antigo, consultas.yaml)
+        return "escolha"
     return base or "?"
 
 
@@ -109,8 +109,8 @@ def agrupar(blocos: list[Bloco], metrica: str = "ndcg") -> dict[tuple[str, str],
         for linha in b.linhas:
             chave = (linha[0], b.consultas)
             grupos.setdefault(chave, {}).setdefault(b.modelo, {})[linha[2]] = linha[col]
-    # originais antes da validação, mantendo a ordem das categorias
-    ordem = {"originais": 0, "validação": 1}
+    # escolha antes da conferência, mantendo a ordem das categorias
+    ordem = {"escolha": 0, "conferência": 1}
     return dict(sorted(grupos.items(), key=lambda kv: ordem.get(kv[0][1], 2)))
 
 

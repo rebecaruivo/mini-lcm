@@ -397,13 +397,13 @@ recente de cada pessoa é escondida e o sistema tenta adivinhá-la. Métricas: h
 NDCG@10, MRR e cobertura, além da curva por tamanho de histórico (cold start).
 Popularidade e coocorrência aprendem só com o treino, para não vazar a resposta.
 *Limitação declarada:* o corte é por usuário, e não por uma data única, então as
-interações de outras pessoas podem ser posteriores ao teste.
+interações de outras pessoas podem ser posteriores ao alvo.
 
 **Explicabilidade:** cada recomendação mostra o produto do histórico mais parecido com ela.
 
 ---
 
-## 2026-11-26 · Recência no perfil e na coocorrência, com a meia-vida escolhida na validação
+## 2026-11-26 · Recência no perfil e na coocorrência, com a meia-vida escolhida no conjunto de escolha
 
 **Decisão:** o peso de cada avaliação passa a ser `peso_da_nota × 0,5 ^ (idade /
 meia_vida)`, com a idade contada em avaliações (0 = a mais recente) e meia-vida padrão
@@ -411,7 +411,7 @@ de 1. Vale para o perfil e para a coocorrência; `--sem-recencia` mantém a linh
 
 **Motivo:** na avaliação temporal das bonecas, todos os métodos rendiam mais com as 2 ou
 3 últimas avaliações do que com o histórico completo (o perfil-média caía de 0,169 para
-0,113). Com o decaimento, o híbrido foi de 0,216 para 0,267 no teste (+0,051, IC 95% de
+0,113). Com o decaimento, o híbrido foi de 0,216 para 0,267 na conferência (+0,051, IC 95% de
 +0,040 a +0,062).
 
 **Alternativas consideradas:**
@@ -420,27 +420,50 @@ de 1. Vale para o perfil e para a coocorrência; `--sem-recencia` mantém a linh
 - *Idade em dias:* depende do ritmo de compra de cada pessoa; quem compra pouco teria
   quase todo o histórico descartado.
 
-**Como o valor foi escolhido:** num conjunto de validação (a última avaliação de cada
-pessoa é retirada e a penúltima vira o alvo), testando 0,5; 1; 2; 3; 5 e 8. O teste foi
-rodado uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
+**Como o valor foi escolhido:** num conjunto de escolha (a última avaliação de cada
+pessoa é retirada e a penúltima vira o alvo), testando 0,5; 1; 2; 3; 5 e 8. A conferência foi
+rodada uma vez, com o valor escolhido. Tabelas em `resultados-recomendacao.md`.
+
+---
+
+## 2026-11-28 · Nomes dos conjuntos: escolha e conferência
+
+**Decisão:** os conjuntos de avaliação passam a ter o nome do papel que cumprem, em todo o
+projeto:
+- **conjunto de escolha:** onde configurações e parâmetros são escolhidos (peso da imagem,
+  modelo, rubrica do juiz, meia-vida, janela). Na busca, as 12 consultas de
+  `avaliacao/consultas-escolha.yaml`; na recomendação, os cortes de data mais antigos;
+- **conjunto de conferência:** mede uma vez o que foi escolhido, sem influenciar a escolha.
+  Na busca, as 6 consultas de `avaliacao/consultas-conferencia.yaml`; na recomendação, os
+  cortes mais recentes.
+
+Nos termos usuais de aprendizado de máquina, são os conjuntos de validação e de teste. A
+opção `--validacao` do `avaliar-recomendacao` vira `--escolha` (o nome antigo continua
+aceito).
+
+**Motivo:** na busca, os nomes antigos estavam trocados: o arquivo chamado "validação"
+fazia o papel de teste, e as consultas "originais" faziam o de validação. Com o fine-tuning,
+entra também um conjunto de treino, e os três papéis precisam de nomes sem ambiguidade.
+Na recomendação, "teste" também nomeava o produto escondido de cada pessoa, que passa a se
+chamar **alvo**.
 
 ---
 
 ## 2026-11-27 · EmbeddingGemma 2 vira o modelo do canal de texto
 
 **Decisão:** `EMBEDDER=clip+gemma2` como padrão, com peso da imagem de 0,4 nas bonecas e
-0,2 nas placas (os melhores para o Gemma nas consultas originais).
+0,2 nas placas (os melhores para o Gemma nas consultas de escolha).
 
 **Motivo:** com o melhor peso de cada modelo, só notas da IA, o NDCG@10 médio é 0,680
-(Gemma) contra 0,652 (e5) nas consultas originais e 0,580 contra 0,490 na validação. A
-regra, fixada antes de ver os números, era trocar se o Gemma ganhasse nas originais e não
-perdesse na validação.
+(Gemma) contra 0,652 (e5) nas consultas de escolha e 0,580 contra 0,490 na conferência. A
+regra, fixada antes de ver os números, era trocar se o Gemma ganhasse na escolha e não
+perdesse na conferência.
 
 **Armadilha registrada (a quinta):** a comparação anterior, que deu empate, usava para o
 Gemma os pesos escolhidos para o e5. Comparar modelos exige ajustar os parâmetros de cada
 um com a mesma regra, no mesmo conjunto.
 
-**Ressalvas:** 6 consultas por categoria nas originais e 2 na validação; a vantagem é clara
+**Ressalvas:** 6 consultas por categoria na escolha e 2 na conferência; a vantagem é clara
 nas bonecas e pequena ou nula nas placas. Os resultados da recomendação foram medidos com
 o texto do CLIP, e na recomendação as variantes de texto empataram (`sondagem.md`).
 
@@ -482,20 +505,20 @@ notas precisam vir da mesma fonte para todos.
 ## 2026-11-27 · Peso da imagem por categoria
 
 **Decisão:** `peso_imagem` em `categorias.yaml`: 0,5 nas bonecas e 0 nas placas (só
-texto), escolhido pelo maior NDCG@10 nas 12 consultas originais. *Substituída no mesmo
+texto), escolhido pelo maior NDCG@10 nas 12 consultas de escolha. *Substituída no mesmo
 dia: com o EmbeddingGemma 2 no texto, os pesos passaram a 0,4 e 0,2 (decisão seguinte).* É o padrão de `buscar`
 e `avaliar` quando a consulta tem categoria.
 
 **Motivo:** com peso 0,5 para todas, a fusão ficava abaixo do texto sozinho na média,
 porque nas placas a imagem quase não acerta. Com o peso por categoria, o NDCG@10 médio
-vai de 0,616 para 0,790 nas consultas originais e de 0,650 para 0,681 nas de validação,
+vai de 0,616 para 0,790 nas consultas de escolha e de 0,650 para 0,681 nas de conferência,
 que não entraram na escolha.
 
 **Alternativas consideradas:**
 - *Só texto em tudo:* 0,753 e 0,570; perde nas buscas visuais de bonecas.
 - *Peso que depende da consulta* (mais imagem em "boneca com vestido de noiva", mais
   texto em "monster high draculaura"): é o próximo nível, mas 18 consultas não bastam
-  para escolher e validar um peso por tipo de busca. Caminhos possíveis, do mais simples
+  para escolher e conferir um peso por tipo de busca. Caminhos possíveis, do mais simples
   ao mais complexo: classificar a consulta (regras ou um LLM) em "nome", "visual" ou
   "funcional" com um peso por tipo; ajustar o peso pela confiança de cada canal
   (diferença de similaridade entre o 1º e o 10º resultado); ou aprender o peso a partir
@@ -508,7 +531,7 @@ que não entraram na escolha.
 
 ## 2026-11-27 · Juiz de IA usado para comparar modos, com o critério de kappa não atingido
 
-**Situação:** com mais 70 pares sorteados ao acaso, a validação nas consultas novas ficou
+**Situação:** com mais 70 pares sorteados ao acaso, a conferência nas consultas novas ficou
 com 100 pares: acordo exato de 74%, diferença de até 1 ponto em 95%, viés de −0,01 e
 kappa ponderado de 0,64 (IC 95% de 0,46 a 0,78). O critério definido antes (limite
 inferior ≥ 0,6) não foi atingido.
@@ -526,7 +549,7 @@ comparar configurações de busca. Os números do kappa ficam publicados com o c
 atingido.
 
 **Ressalvas registradas:** a IA quase nunca dá nota 2 (2% contra 14% das notas humanas
-na validação), o que faz 4 consultas ficarem sem nenhum produto relevante só com as
+na conferência), o que faz 4 consultas ficarem sem nenhum produto relevante só com as
 notas da IA. Conclusões que dependam da fronteira entre 1 e 2 devem usar as notas
 combinadas.
 
@@ -554,20 +577,20 @@ exemplos: requisitos só do que está escrito na busca e no perfil (tamanho, pre
 e formato não rebaixam a nota quando ninguém os pediu).
 
 **Cuidado de método:** os exemplos da v2 saíram dos desacordos das mesmas consultas, então
-a concordância medida nelas depois do ajuste é otimista. A v2 é validada em 6 consultas
-novas (`avaliacao/consultas-validacao.yaml`), que não guiaram o ajuste.
+a concordância medida nelas depois do ajuste é otimista. A v2 é conferida em 6 consultas
+novas (`avaliacao/consultas-conferencia.yaml`), que não guiaram o ajuste.
 
 **Resultados da v2:**
 
 | Conjunto | Pares | Kappa ponderado (IC 95%) | Viés (IA − humano) |
 |---|---|---|---|
-| Calibração, consultas originais (otimista) | 100 | 0,76 (0,64 a 0,85) | −0,29 |
-| Auditoria, consultas originais | 60 | 0,83 (0,73 a 0,91) | −0,22 |
-| Validação, consultas novas, sorteio ao acaso | 30 | 0,70 (0,47 a 0,83) | −0,17 |
+| Calibração, consultas de escolha (otimista) | 100 | 0,76 (0,64 a 0,85) | −0,29 |
+| Auditoria, consultas de escolha | 60 | 0,83 (0,73 a 0,91) | −0,22 |
+| Conferência, consultas novas, sorteio ao acaso | 30 | 0,70 (0,47 a 0,83) | −0,17 |
 
-Na validação, o kappa pontual é parecido com o da calibração, mas 30 pares deixam o
+Na conferência, o kappa pontual é parecido com o da calibração, mas 30 pares deixam o
 intervalo largo demais para o critério (limite inferior ≥ 0,6). O critério não foi
-mudado depois de ver o resultado: o conjunto de validação é ampliado com mais 70 pares
+mudado depois de ver o resultado: o conjunto de conferência é ampliado com mais 70 pares
 sorteados ao acaso. Metade dos desacordos que restaram são notas humanas fora da rubrica
 (ex.: 2 para Barbies que não são sereia na busca "barbie sereia", que pela v2 valem 1).
 Desfecho na decisão de 27/11.
@@ -577,7 +600,7 @@ Desfecho na decisão de 27/11.
 ## 2026-11-26 · Catálogo completo e data de lançamento, para medir produtos novos sem vazamento
 
 **Problema encontrado:** ao testar vagas do top 10 reservadas para produtos novos, o acerto
-das placas subiu de 0,13 para 0,33 na validação, bom demais. A causa estava no catálogo.
+das placas subiu de 0,13 para 0,33 no conjunto de escolha, bom demais. A causa estava no catálogo.
 Ele era montado com os produtos que os usuários da amostra avaliaram, e a disponibilidade
 de cada produto num corte vinha da primeira avaliação antes do fim da janela. Com isso, os
 produtos novos candidatos de cada semestre (cerca de 74 nas bonecas e 41 nas placas) eram
@@ -596,8 +619,8 @@ pessoa testada. Sortear 5 entre 41 já acertaria cerca de 12%.
 **Efeito nos resultados:** com o catálogo completo e a regra nova, os métodos baseados em
 interações mudam pouco (bonecas: em alta de 0,117 para 0,104, híbrido + em alta de 0,133
 para 0,126). O acerto do conteúdo em produtos novos cai de cerca de 5% para cerca de 3%,
-e as vagas reservadas deixam de compensar: na validação, 0 vagas é o melhor nas duas
-categorias. Os parâmetros foram escolhidos de novo na validação com os dados novos.
+e as vagas reservadas deixam de compensar: no conjunto de escolha, 0 vagas é o melhor nas duas
+categorias. Os parâmetros foram escolhidos de novo no conjunto de escolha com os dados novos.
 
 **Limitação que fica:** o filtro `min_avaliacoes` usa o total de avaliações do produto na
 Amazon até 2023, que também é informação do futuro, embora não ligada à amostra.
@@ -610,7 +633,7 @@ Amazon até 2023, que também é informação do futuro, embora não ligada à a
 semestrais iguais para todos ("rolling origin"): em cada data, o modelo aprende só com o
 passado, o alvo de cada pessoa é a primeira avaliação nos seis meses seguintes e só
 concorrem os produtos que já existiam no semestre. Os cortes mais antigos (metade dos
-casos) são a validação; os mais recentes, o teste. O intervalo de confiança sorteia
+casos) são o conjunto de escolha; os mais recentes, o de conferência. O intervalo de confiança sorteia
 pessoas, porque a mesma pessoa aparece em vários cortes. Dois métodos novos: `em_alta`
 (popularidade numa janela recente) e `hibrido_alta` (conteúdo + coocorrência + em alta).
 Os parâmetros de cada categoria ficam em `categorias.yaml`.

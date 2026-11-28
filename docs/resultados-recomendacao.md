@@ -15,8 +15,8 @@ Comandos:
 ```bash
 # protocolo principal; parâmetros de categorias.yaml
 mini-lcm avaliar-recomendacao --categoria bonecas --curva
-# escolha de parâmetros (validação: os cortes mais antigos; o teste não é usado)
-mini-lcm avaliar-recomendacao --categoria bonecas --validacao --janela-dias 90
+# escolha de parâmetros (conjunto de escolha: os cortes mais antigos; a conferência não é usada)
+mini-lcm avaliar-recomendacao --categoria bonecas --escolha --janela-dias 90
 # protocolo anterior
 mini-lcm avaliar-recomendacao --categoria bonecas --curva --corte usuario
 # análise do vazamento da popularidade no protocolo anterior
@@ -25,7 +25,7 @@ python scripts/analise_popularidade_temporal.py --categoria bonecas
 
 ## Resumo
 
-hit@10 no teste, com os parâmetros escolhidos na validação:
+hit@10 na conferência, com os parâmetros escolhidos no conjunto de escolha:
 
 | Método | bonecas, por data | placas, por data | bonecas, por usuário (anterior) | placas, por usuário (anterior) |
 |---|---|---|---|---|
@@ -71,7 +71,7 @@ Nas placas, 24% dos alvos estão nessa situação. No corte por data, nenhum: a 
 compra depois da data de corte não pode estar no mesmo pedido que o histórico.
 
 **Vazamento entre pessoas.** O treino incluía avaliações de outras pessoas posteriores ao
-teste de cada um (em média, 39% do treino nas bonecas e 30% nas placas). A popularidade e
+alvo de cada um (em média, 39% do treino nas bonecas e 30% nas placas). A popularidade e
 a coocorrência aproveitavam esse futuro (seção "a popularidade se aproveita do futuro",
 no protocolo anterior).
 
@@ -83,7 +83,7 @@ que é a situação de um sistema de recomendação em produção.
 
 - **Cortes:** 1º de janeiro e 1º de julho de cada ano. Em cada corte, o modelo
   (popularidade, em alta, coocorrência) aprende só com as avaliações anteriores à data.
-  Caso de teste: cada pessoa com pelo menos 3 produtos antes do corte e alguma avaliação
+  Caso de avaliação: cada pessoa com pelo menos 3 produtos antes do corte e alguma avaliação
   nos seis meses seguintes; o alvo é a primeira delas.
 - **Catálogo completo:** todos os produtos que passam no filtro da categoria (8.407
   bonecas e 5.577 placas), avaliados ou não pelos usuários da amostra.
@@ -91,21 +91,22 @@ que é a situação de um sistema de recomendação em produção.
   antes da data ou cuja data de lançamento (metadados da Amazon) é anterior ao fim da
   janela. Nenhuma avaliação posterior ao corte entra na regra. Produto novo sem data de
   lançamento não concorre; se for o alvo, conta como erro para todos os métodos.
-- **Validação e teste:** os cortes mais antigos, até somar metade dos casos, formam a
-  validação; os demais, o teste. Todos os parâmetros foram escolhidos na validação, e o
-  teste foi rodado uma vez.
+- **Escolha e conferência:** os cortes mais antigos, até somar metade dos casos, formam o
+  conjunto de escolha; os demais, o de conferência. Todos os parâmetros foram escolhidos no
+  conjunto de escolha, e a conferência foi rodada uma vez. (Nos termos usuais de aprendizado
+  de máquina, validação e teste.)
 - **Incerteza:** a mesma pessoa aparece em vários cortes, e seus casos não são
   independentes. O bootstrap sorteia pessoas, levando todos os casos de cada uma.
 
 | | Bonecas | Placas |
 |---|---|---|
-| Validação | 2.166 casos, cortes de jul/2001 a jul/2018 | 232 casos, cortes de jul/2002 a jan/2018 |
-| Teste | 1.876 casos de 1.101 pessoas, cortes de jan/2019 a jul/2023 | 228 casos de 144 pessoas, cortes de jul/2018 a jan/2023 |
+| Escolha | 2.166 casos, cortes de jul/2001 a jul/2018 | 232 casos, cortes de jul/2002 a jan/2018 |
+| Conferência | 1.876 casos de 1.101 pessoas, cortes de jan/2019 a jul/2023 | 228 casos de 144 pessoas, cortes de jul/2018 a jan/2023 |
 | Produtos com data de lançamento | 2.550 de 8.407 (30%) | 5.367 de 5.577 (96%) |
-| Produtos novos candidatos por corte (teste) | 922 em média | 3.759 em média |
-| Alvos novos no teste | 39,8% (73% deles com data, portanto candidatos) | 64,9% (93% com data) |
+| Produtos novos candidatos por corte (conferência) | 922 em média | 3.759 em média |
+| Alvos novos na conferência | 39,8% (73% deles com data, portanto candidatos) | 64,9% (93% com data) |
 
-### Escolha dos parâmetros na validação
+### Escolha dos parâmetros
 
 **Janela do em alta** (hit@10 do em alta sozinho):
 
@@ -147,12 +148,12 @@ alta vão para os produtos novos de maior pontuação de conteúdo):
 
 Escolhidos (em `categorias.yaml`): bonecas com meia-vida 2, janela de 30 dias, peso 2 e
 nenhuma vaga reservada; placas com meia-vida 1, janela de 90 dias, peso 2 e nenhuma vaga.
-As diferenças vizinhas na grade são menores que a incerteza da validação (cerca de
+As diferenças vizinhas na grade são menores que a incerteza do conjunto de escolha (cerca de
 ±0,012 nas bonecas e ±0,04 nas placas): os valores exatos importam pouco. O que os dados
 sustentam é a ordem de grandeza da janela (semanas nas bonecas, meses nas placas), um
 peso alto para o em alta e alguma recência no perfil.
 
-### Resultado no teste: bonecas
+### Resultado na conferência: bonecas
 
 1.876 casos, 1.101 pessoas, 10 cortes (jan/2019 a jul/2023); 39,8% dos alvos são novos.
 
@@ -170,7 +171,7 @@ peso alto para o em alta e alguma recência no perfil.
 Curva de histórico (hit@10): o híbrido + em alta vai de 0,110 (só a última avaliação) a
 0,128 (as duas últimas) e fica estável daí em diante (0,126 com todas).
 
-### Resultado no teste: placas de vídeo
+### Resultado na conferência: placas de vídeo
 
 228 casos, 144 pessoas, 10 cortes (jul/2018 a jan/2023); 64,9% dos alvos são novos.
 
@@ -185,7 +186,7 @@ Curva de histórico (hit@10): o híbrido + em alta vai de 0,110 (só a última a
 | híbrido | 0,031 | 0,012–0,054 | 0,018 | 15,1% | 0,013 | 0,062 |
 | híbrido + em alta | 0,070 | 0,040–0,105 | 0,041 | 3,5% | 0,000 | 0,200 |
 
-### Comparações pareadas no teste
+### Comparações pareadas na conferência
 
 Bootstrap pareado por pessoa, IC 95%.
 
@@ -198,7 +199,7 @@ Bootstrap pareado por pessoa, IC 95%.
 | conteúdo | último produto | −0,003 (−0,012 a +0,006) | −0,009 (−0,023 a +0,000) |
 | último produto | aleatório | +0,047 (+0,037 a +0,057) | +0,026 (+0,004 a +0,051) |
 
-Como referência (não escolhido na validação): com 3 vagas reservadas, o híbrido + em alta
+Como referência (não escolhido no conjunto de escolha): com 3 vagas reservadas, o híbrido + em alta
 fica em 0,118 nas bonecas (novos 0,035; já vistos 0,173) e 0,075 nas placas (novos 0,014;
 já vistos 0,188).
 
@@ -229,7 +230,7 @@ A primeira rodada deste protocolo usou o catálogo montado só com os produtos a
 pela amostra (3.000 bonecas, 1.118 placas) e a data da primeira avaliação como data de
 lançamento. Com isso, os produtos novos candidatos de cada semestre eram justamente os
 que alguém da amostra ia avaliar, e as vagas reservadas pareciam levar as placas de 0,13
-a 0,33 na validação. Os métodos baseados em interações deram números parecidos nas duas
+a 0,33 no conjunto de escolha. Os métodos baseados em interações deram números parecidos nas duas
 versões (bonecas: em alta 0,117, híbrido + em alta 0,133); o acerto do conteúdo em
 produtos novos caiu de cerca de 5% para cerca de 3% com o catálogo completo. Detalhes na
 decisão de 26/11 em `decisoes.md`.
@@ -257,7 +258,7 @@ otimistas pelos motivos da seção anterior.
 A importação lê 29.496 avaliações; 653 repetem usuário, produto e momento de outra
 e ficam de fora pela chave da tabela.
 Usuários sem pelo menos 3 produtos distintos, ou cujo último produto já aparece no
-histórico, não viram caso de teste, mas as interações deles entram no treino.
+histórico, não viram caso de avaliação, mas as interações deles entram no treino.
 
 ### Bonecas: linha de base (média simples)
 
@@ -358,12 +359,12 @@ diante. Com meia-vida 1, as quatro mais recentes valem 1; 0,5; 0,25 e 0,125. O m
 vale para o perfil (conteúdo) e para a soma da coocorrência. Contar avaliações em vez de
 dias evita depender do ritmo de compra, que varia muito entre pessoas.
 
-#### Escolha da meia-vida sem olhar o teste
+#### Escolha da meia-vida sem olhar a conferência
 
-Escolher o parâmetro pelo resultado do teste seria ajustar o modelo à prova, e o
-número reportado sairia otimista. A escolha foi feita num conjunto de **validação**: a
-última avaliação de cada pessoa (o teste) é retirada e a mesma divisão é repetida no
-que sobra, com a penúltima avaliação como alvo (3.336 usuários). O teste só foi rodado
+Escolher o parâmetro pelo resultado da conferência seria ajustar o modelo à prova, e o
+número reportado sairia otimista. A escolha foi feita num **conjunto de escolha**: a
+última avaliação de cada pessoa (a conferência) é retirada e a mesma divisão é repetida no
+que sobra, com a penúltima avaliação como alvo (3.336 usuários). A conferência só foi rodada
 depois, uma vez, com o valor escolhido.
 
 | Meia-vida | conteúdo | coocorrência | híbrido |
@@ -376,14 +377,14 @@ depois, uma vez, com o valor escolhido.
 | 5 | 0,133 | 0,247 | 0,232 |
 | 8 | 0,131 | 0,245 | 0,227 |
 
-(hit@10 na validação, histórico completo.)
+(hit@10 no conjunto de escolha, histórico completo.)
 
 Escolha: **meia-vida 1**. No híbrido, 0,5 e 1 diferem em 0,001, bem abaixo da incerteza
 da medida (intervalos de cerca de ±0,014). Entre os dois, 1 mantém a coocorrência forte
 (0,253 contra 0,236), o que deixa o resultado menos dependente da fusão. O valor fica em
 `MEIA_VIDA_PADRAO`, em `mini_lcm/recomendacao.py`.
 
-#### Resultado no teste (meia-vida 1)
+#### Resultado na conferência (meia-vida 1)
 
 | Método | hit@10 | IC 95% | NDCG@10 | MRR | cobertura |
 |---|---|---|---|---|---|
@@ -404,7 +405,7 @@ Curva de histórico (hit@10):
 | 5 | 0,160 | 0,260 | 0,268 |
 | todas | 0,160 | 0,260 | 0,267 |
 
-Comparações pareadas no teste (bootstrap pareado, IC 95%):
+Comparações pareadas na conferência (bootstrap pareado, IC 95%):
 
 | A | B | A − B | IC 95% |
 |---|---|---|---|
@@ -451,7 +452,7 @@ Num universo de 1,6 milhão de produtos de Electronics, só 345 pessoas avaliara
 mais placas de vídeo. Placa de vídeo é compra rara e cara: a maioria das pessoas compra
 uma a cada poucos anos. A importação leu 2.220 avaliações; 197 eram repetições.
 
-#### Resultado no teste
+#### Resultado na conferência
 
 | Método | hit@10 média simples | hit@10 com recência (IC 95%) | cobertura (com recência) |
 |---|---|---|---|
@@ -472,7 +473,7 @@ Curva de histórico, com recência (hit@10):
 | todas | 0,070 | 0,041 | 0,060 |
 
 A meia-vida não foi reajustada para as placas: o valor das bonecas foi aplicado como
-está, para testar se generaliza. Na validação das placas (304 usuários), as meias-vidas
+está, para testar se generaliza. No conjunto de escolha das placas (304 usuários), as meias-vidas
 de 0,5 a 8 ficam todas entre 0,049 e 0,059 no híbrido, diferenças muito menores que a
 incerteza da medida.
 
@@ -491,11 +492,11 @@ Comparações pareadas (bootstrap pareado, IC 95%):
 A avaliação corta o tempo por usuário (limitação já registrada): a popularidade é
 contada com o treino de todas as pessoas, incluindo avaliações feitas depois do
 produto escondido de alguém. Em média, 30% das interações de treino das placas são
-posteriores ao teste de cada pessoa. Numa categoria movida por gerações de produto, isso
+posteriores ao alvo de cada pessoa. Numa categoria movida por gerações de produto, isso
 pesa: a popularidade "sabe" quais placas vão fazer sucesso.
 
-Teste: recalcular a popularidade de cada pessoa só com as interações anteriores ao
-momento do teste dela.
+Verificação: recalcular a popularidade de cada pessoa só com as interações anteriores ao
+momento do alvo dela.
 
 | Popularidade | Bonecas | Placas |
 |---|---|---|
@@ -509,7 +510,7 @@ mesmo vazamento e mesmo assim fica abaixo, então a conclusão principal se mant
 #### Popularidade recente
 
 Se o futuro ajuda tanto, o passado recente deve ajudar também. Variante testada:
-contar só as interações de uma janela antes do momento do teste ("o que está em alta").
+contar só as interações de uma janela antes do momento do alvo ("o que está em alta").
 
 | Janela | Bonecas | Placas |
 |---|---|---|
@@ -519,7 +520,7 @@ contar só as interações de uma janela antes do momento do teste ("o que está
 | 730 dias | 0,077 | **0,127** |
 | todo o passado | 0,042 | 0,092 |
 
-(hit@10; só interações anteriores ao teste, então sem vazamento.)
+(hit@10; só interações anteriores ao alvo, então sem vazamento.)
 
 A popularidade recente é uma linha de base bem mais forte que a popularidade global, sem
 nenhum vazamento: nas bonecas, sobe de 0,042 para 0,131 (ainda metade do híbrido, 0,267);
@@ -529,8 +530,8 @@ um a dois anos.
 
 As duas tabelas desta seção e da anterior são reproduzidas por
 `python scripts/analise_popularidade_temporal.py --categoria <categoria>`. A análise olha o
-teste diretamente; para virar método do sistema, a janela precisa ser escolhida na
-validação, o que foi feito no protocolo principal (acima).
+conjunto de conferência diretamente; para virar método do sistema, a janela precisa ser
+escolhida no conjunto de escolha, o que foi feito no protocolo principal (acima).
 
 #### Leitura
 
